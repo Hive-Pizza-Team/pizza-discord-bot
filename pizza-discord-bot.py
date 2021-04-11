@@ -198,22 +198,7 @@ Commands:
     if message.content == '!price':
         await update_bot_user_status()
 
-        last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
-        lowest_asking_price = float(market.get_sell_book(symbol=TOKEN_NAME)[-1]['price'])
-        highest_bidding_price = float(market.get_buy_book(symbol=TOKEN_NAME)[-1]['price'])
-
-        hive_usd = get_coin_price()
-
-        last_usd = last_price * hive_usd
-        ask_usd  = lowest_asking_price * hive_usd
-        bid_usd  = highest_bidding_price * hive_usd
-
-        response = '''```fix
-HiveEngine market info for $%s
-* last: %.5f HIVE | $%.5f USD
-* ask : %.5f HIVE | $%.5f USD
-* bid : %.5f HIVE | $%.5f USD
-```''' % (TOKEN_NAME, last_price, last_usd, lowest_asking_price, ask_usd, highest_bidding_price, bid_usd)
+        response = get_token_price_he_cg(TOKEN_NAME)
         await message.channel.send(response)
 
     elif message.content.startswith('!price'):
