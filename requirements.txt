@@ -1,0 +1,4 @@
+beem==0.24.19
+discord.py==1.7.1
+hiveengine==0.2.2
+python-dotenv==0.17.0
