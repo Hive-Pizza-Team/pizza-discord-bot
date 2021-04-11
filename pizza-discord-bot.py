@@ -70,12 +70,14 @@ def get_token_price_he_cg(coin):
         if trade_history: last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
 
-        sell_book = market.get_sell_book(symbol=coin)
-        if sell_book: lowest_asking_price = float(sell_book[-1]['price'])
+        sell_book = market.get_sell_book(symbol=coin, limit=1000)
+        sell_book = sorted(sell_book, key= lambda a: float(a['price']), reverse=False)
+        if sell_book: lowest_asking_price = float(sell_book[0]['price'])
         ask_usd  = lowest_asking_price * hive_usd
 
-        buy_book = market.get_buy_book(symbol=coin)
-        if buy_book: highest_bidding_price = float(buy_book[-1]['price'])
+        buy_book = market.get_buy_book(symbol=coin, limit=1000)
+        buy_book = sorted(buy_book, key= lambda a: float(a['price']), reverse=True)
+        if buy_book: highest_bidding_price = float(buy_book[0]['price'])
         bid_usd  = highest_bidding_price * hive_usd
 
 
