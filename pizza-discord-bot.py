@@ -49,21 +49,35 @@ PIZZA_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4q
 
 
 def get_token_price_he_cg(coin):
+    coin = coin.lower()
+
+    if coin == 'eth':
+        coin = 'ethereum'
+    elif coin == 'btc':
+        coin = 'bitcoin'
     
     found_in_hiveengine = False
     try:
         Token(coin)
         found_in_hiveengine = True
-
-        last_price = float(market.get_trades_history(symbol=coin)[-1]['price'])
-        lowest_asking_price = float(market.get_sell_book(symbol=coin)[-1]['price'])
-        highest_bidding_price = float(market.get_buy_book(symbol=coin)[-1]['price'])
-
         hive_usd = get_coin_price()
 
+        last_price = 0.0
+        lowest_asking_price = 0.0
+        highest_bidding_price = 0.0
+
+        trade_history = market.get_trades_history(symbol=coin)
+        if trade_history: last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
+
+        sell_book = market.get_sell_book(symbol=coin)
+        if sell_book: lowest_asking_price = float(sell_book[-1]['price'])
         ask_usd  = lowest_asking_price * hive_usd
+
+        buy_book = market.get_buy_book(symbol=coin)
+        if buy_book: highest_bidding_price = float(buy_book[-1]['price'])
         bid_usd  = highest_bidding_price * hive_usd
+
 
         message = '''```fix
 HiveEngine market info for $%s
