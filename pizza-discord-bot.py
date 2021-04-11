@@ -7,6 +7,7 @@ from hiveengine.market import Market
 from hiveengine.tokenobject import Token
 import random
 from pycoingecko import CoinGeckoAPI
+import hiveengine
 
 # Discord initialization
 load_dotenv()
@@ -45,6 +46,43 @@ PIZZA_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4q
 'https://files.peakd.com/file/peakd-hive/pizzabot/23zGkxUGqyXMTN7rVm2EPkLr6dsnk4T4nFyrEBejS9WB2VbKpJ3P356EcQjcrMF6gRTbz.gif',
 'https://files.peakd.com/file/peakd-hive/pizzabot/23x17QUuztsLf64Mav8m59nuRF4B9k3RAV6QGrtpvmc3hA9bxSJ2URkW7fuYSfaRLKAq2.gif',
 'https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif']
+
+
+def get_token_price_he_cg(coin):
+    
+    found_in_hiveengine = False
+    try:
+        Token(coin)
+        found_in_hiveengine = True
+
+        last_price = float(market.get_trades_history(symbol=coin)[-1]['price'])
+        lowest_asking_price = float(market.get_sell_book(symbol=coin)[-1]['price'])
+        highest_bidding_price = float(market.get_buy_book(symbol=coin)[-1]['price'])
+
+        hive_usd = get_coin_price()
+
+        last_usd = last_price * hive_usd
+        ask_usd  = lowest_asking_price * hive_usd
+        bid_usd  = highest_bidding_price * hive_usd
+
+        message = '''```fix
+HiveEngine market info for $%s
+* last: %.5f HIVE | $%.5f USD
+* ask : %.5f HIVE | $%.5f USD
+* bid : %.5f HIVE | $%.5f USD
+```''' % (coin, last_price, last_usd, lowest_asking_price, ask_usd, highest_bidding_price, bid_usd)
+        return message
+
+    except hiveengine.exceptions.TokenDoesNotExists:
+        print('Token not found in HE, trying CoinGeckoAPI')
+
+    if not found_in_hiveengine:
+        price =  get_coin_price(coin)
+        message = '''```fix
+CoinGecko market info for $%s
+* market price: $%.5f USD
+```''' % (coin, price)
+        return message
 
 
 def get_top10_holders():
@@ -160,6 +198,13 @@ HiveEngine market info for $%s
 * bid : %.5f HIVE | $%.5f USD
 ```''' % (TOKEN_NAME, last_price, last_usd, lowest_asking_price, ask_usd, highest_bidding_price, bid_usd)
         await message.channel.send(response)
+
+    elif message.content.startswith('!price'):
+        symbol = message.content.split(' ')[1]
+        if symbol:
+            response = get_token_price_he_cg(symbol)
+            await message.channel.send(response)
+
 
     if message.content == '!gif':
         response = random.choice(PIZZA_GIFS)
