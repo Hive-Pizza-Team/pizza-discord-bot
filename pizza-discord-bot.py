@@ -181,13 +181,14 @@ async def on_message(message):
     if message.content == '!help':
         response = '''```fix
 Commands:
-!help       : print this message
-!price      : print market info
-!top10      : print top10 token holders (excluding project accounts)
-!tokenomics : print token statistics
-!gif        : show me a pizza gif!
-!info       : learn more about $PIZZA
-!source     : print location of my source code
+!help          : print this message
+!price         : print market info
+!price <token> : get price info for any HE token or any coin on CoinGecko
+!top10         : print top10 token holders (excluding project accounts)
+!tokenomics    : print token statistics
+!gif           : show me a pizza gif!
+!info          : learn more about $PIZZA
+!source        : print location of my source code
 
 ```'''
         await message.channel.send(response)
