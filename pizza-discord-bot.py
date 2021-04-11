@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from hiveengine.market import Market
 from hiveengine.tokenobject import Token
 import random
-
+from pycoingecko import CoinGeckoAPI
 
 # Discord initialization
 load_dotenv()
@@ -65,6 +65,22 @@ Top 10 $PIZZA Holders --
 
     return message
 
+def get_coin_price(coin='hive'):
+    ''' Call into coingeck to get USD price of coins i.e. $HIVE '''
+    coingecko = CoinGeckoAPI()
+    response = coingecko.get_price(ids=coin, vs_currencies='usd')
+
+    if coin not in response.keys():
+        print('Error calling CoinGeckoAPI for %s price' % coin)
+        return -1
+
+    subresponse = response[coin]
+    if 'usd' not in subresponse.keys():
+        print('Error 2 calling CoinGeckoAPI for %s price' % coin)
+        return -1
+
+    return float(subresponse['usd'])
+
 
 def get_tokenomics():
     wallets = [x for x in Token(TOKEN_NAME).get_holder()]
@@ -92,11 +108,16 @@ $PIZZA tokenomics --
     return message
 
 
+async def update_bot_user_status():
+
+    last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
+    last_price_usd = round(get_coin_price() * last_price, 3)
+    await client.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
+
+
 @client.event
 async def on_ready():
-
-    last_price = market.get_trades_history(symbol=TOKEN_NAME)[-1]['price']
-    await client.change_presence(activity=discord.Game('$PIZZA ~ %.3f Hive' % round(float(last_price), 3)))
+    await update_bot_user_status()
     print(f'{client.user} has connected to Discord!')
 
 
@@ -120,8 +141,9 @@ Commands:
         await message.channel.send(response)
 
     if message.content == '!price':
+        await update_bot_user_status()
+
         last_price = market.get_trades_history(symbol=TOKEN_NAME)[-1]['price']
-        await client.change_presence(activity=discord.Game('$PIZZA ~ %.3f Hive' % round(float(last_price), 3)))
         lowest_asking_price = market.get_sell_book(symbol=TOKEN_NAME)[-1]['price']
         highest_bidding_price = market.get_buy_book(symbol=TOKEN_NAME)[-1]['price']
         response = '''```fix
