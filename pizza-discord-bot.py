@@ -2,12 +2,15 @@
 ''' Discord bot for $PIZZA token community '''
 import os
 import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 from hiveengine.market import Market
 from hiveengine.tokenobject import Token
 import random
 from pycoingecko import CoinGeckoAPI
 import hiveengine
+from bs4 import BeautifulSoup
+from urllib.request import urlopen
 
 # Discord initialization
 load_dotenv()
@@ -136,7 +139,22 @@ def get_coin_price(coin='hive'):
     return float(subresponse['usd'])
 
 
-def get_tokenomics():
+def get_hiveengine_history(token='PIZZA'):
+
+    message = '''```fix
+Latest 10 $%s HiveEngine Transactions --
+''' % token
+
+
+    for tx in market.get_trades_history(symbol=token)[:-1][0:10]:
+        message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
+
+    message += '```'
+
+    return message
+
+
+async def get_tokenomics(ctx):
     wallets = [x for x in Token(TOKEN_NAME).get_holder()]
 
     total_wallets = len(wallets)
@@ -183,14 +201,15 @@ async def on_message(message):
     if message.content == '!help':
         response = '''```fix
 Commands:
-!help          : print this message
-!price         : print market info
-!price <token> : get price info for any HE token or any coin on CoinGecko
-!top10         : print top10 token holders (excluding project accounts)
-!tokenomics    : print token statistics
-!gif           : show me a pizza gif!
-!info          : learn more about $PIZZA
-!source        : print location of my source code
+!help           : print this message
+!price          : print market info
+!price <token>  : get price info for any HE token or any coin on CoinGecko
+!top10          : print top10 token holders (excluding project accounts)
+!tokenomics     : print token statistics
+!history <token>: print last 10 trades
+!gif            : show me a pizza gif!
+!info           : learn more about $PIZZA
+!source         : print location of my source code
 
 ```'''
         await message.channel.send(response)
@@ -206,7 +225,6 @@ Commands:
         if symbol:
             response = get_token_price_he_cg(symbol)
             await message.channel.send(response)
-
 
     if message.content == '!gif':
         response = random.choice(PIZZA_GIFS)
@@ -229,5 +247,37 @@ Learn more about $PIZZA @ https://hive.pizza```'''
         response = get_top10_holders()
         await message.channel.send(response)
 
+    if False: #message.content.startswith('!wiki'):
+        keywords = '%20'.join(message.content.split(' ')[1:])
+
+
+        url = 'https://www.hive.wiki/index.php?title=Special:Search&search=%s&fulltext=Search&profile=default' % keywords
+
+        response = urlopen(url)
+
+        soup = BeautifulSoup(response.read(),features='html.parser')
+
+        results = soup.find_all('div', attrs={"class":"mw-search-result-heading"})
+        if results and results[0].contents and 'href' in results[0].contents[0].attrs.keys():
+            uri = results[0].contents[0].attrs['href']
+            result = 'https://www.hive.wiki%s' % uri
+            response = 'I found this: %s' % result
+        else:
+            response = 'I couldn\'t find that'
+
+        await message.channel.send(response)
+
+    if message.content.startswith('!history'):
+        splitmessage = message.content.split(' ')
+        symbol = ''
+        if len(splitmessage) > 1:
+            symbol = splitmessage[1]
+
+        if symbol:
+            response = get_hiveengine_history(symbol)
+        else:
+            response = get_hiveengine_history()
+
+        await message.channel.send(response)
 
 client.run(TOKEN)
