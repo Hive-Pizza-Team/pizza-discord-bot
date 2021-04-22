@@ -154,7 +154,7 @@ Latest 10 $%s HiveEngine Transactions --
     return message
 
 
-async def get_tokenomics(ctx):
+def get_tokenomics():
     wallets = [x for x in Token(TOKEN_NAME).get_holder()]
 
     total_wallets = len(wallets)
