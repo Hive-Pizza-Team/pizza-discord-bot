@@ -146,7 +146,7 @@ Latest 10 $%s HiveEngine Transactions --
 ''' % token
 
 
-    for tx in market.get_trades_history(symbol=token)[:-1][0:10]:
+    for tx in market.get_trades_history(symbol=token)[::-1][0:10]:
         message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
 
     message += '```'
