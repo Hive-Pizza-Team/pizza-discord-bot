@@ -25,7 +25,7 @@ ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy',
 
 
 # Miscellaneous defines
-GITHUB_URL = 'https://github.com/hiveuprss/pizza-discord-bot'
+GITHUB_URL = 'https://github.com/Hive-Pizza-Team/pizza-discord-bot'
 
 
 PIZZA_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4qKCGujxK4BvoMKN5RcN7sfaEJ5NKJtep8rt9afWsVtg3Kvjtq1pDjS.gif',
