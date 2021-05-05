@@ -175,10 +175,11 @@ Latest 10 $%s HiveEngine Transactions --
     return message
 
 
-def get_tokenomics():
-    wallets = [x for x in Token(TOKEN_NAME).get_holder()]
+def get_tokenomics(symbol):
 
-    total_wallets = len([x for x in wallets if float(x['balance']) >= 0])
+    wallets = [x for x in Token(symbol).get_holder()]
+
+    total_wallets = len([x for x in wallets if float(x['balance']) > 0])
 
     # count wallets with at least 1 token
     wallets_1plus = len([x for x in wallets if float(x['balance']) >= 1])
@@ -192,11 +193,11 @@ def get_tokenomics():
 
     message = '''```css
 $PIZZA tokenomics --
-%.4d wallets hold $PIZZA
-%.4d wallets hold >= 1 $PIZZA   ( 8-) )
-%.4d wallets hold >= 20 $PIZZA  (bot access level)
-%.4d wallets hold >= 100 $PIZZA (badass level)
-```''' % (total_wallets, wallets_1plus, wallets_20plus, wallets_100plus)
+%.4d wallets hold $%s
+%.4d wallets hold >= 1 $%s   ( 8-) )
+%.4d wallets hold >= 20 $%s  (bot access level)
+%.4d wallets hold >= 100 $%s (badass level)
+```''' % (total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_100plus, symbol)
 
     return message
 
