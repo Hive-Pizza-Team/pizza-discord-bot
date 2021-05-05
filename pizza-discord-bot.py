@@ -273,7 +273,7 @@ async def bal(ctx, wallet, symbol=''):
         balance = float(wallet_token_info['balance'])
         staked = float(wallet_token_info['stake'])
 
-    await ctx.send('Current ballance for %s is %0.3f %s liquid & %0.3f %s staked' % (wallet, balance, symbol, staked, symbol))
+    await ctx.send('Current balance for %s is %0.3f %s liquid & %0.3f %s staked' % (wallet, balance, symbol, staked, symbol))
 
 
 @bot.command()
