@@ -9,20 +9,15 @@ from hiveengine.tokenobject import Token
 import random
 from pycoingecko import CoinGeckoAPI
 import hiveengine
-from bs4 import BeautifulSoup
-from urllib.request import urlopen
-
-# Discord initialization
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-client = discord.Client()
-
+from hiveengine.wallet import Wallet
+import json
 
 # HiveEngine defines
 market = Market()
 TOKEN_NAME = 'PIZZA'
 ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot']
 
+CONFIG_FILE = 'config.json'
 
 # Miscellaneous defines
 GITHUB_URL = 'https://github.com/Hive-Pizza-Team/pizza-discord-bot'
@@ -49,6 +44,32 @@ PIZZA_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4q
 'https://files.peakd.com/file/peakd-hive/pizzabot/23zGkxUGqyXMTN7rVm2EPkLr6dsnk4T4nFyrEBejS9WB2VbKpJ3P356EcQjcrMF6gRTbz.gif',
 'https://files.peakd.com/file/peakd-hive/pizzabot/23x17QUuztsLf64Mav8m59nuRF4B9k3RAV6QGrtpvmc3hA9bxSJ2URkW7fuYSfaRLKAq2.gif',
 'https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif']
+
+
+def read_config_file():
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, 'r') as configfile:
+            configs = json.load(configfile)
+            custom_prefixes = configs['custom_prefixes']
+
+            return custom_prefixes
+    else:
+        return {}
+
+
+def write_config_file(custom_prefixes):
+    with open(CONFIG_FILE, 'w') as configfile:
+        configfile.write(json.dumps({'custom_prefixes': custom_prefixes}))
+
+
+async def determine_prefix(bot, message):
+
+    guild = message.guild
+    #Only allow custom prefixes in guild
+    if guild:
+        return custom_prefixes.get(str(guild.id), default_prefix)
+    else:
+        return default_prefix
 
 
 def get_token_price_he_cg(coin):
@@ -104,8 +125,8 @@ CoinGecko market info for $%s
         return message
 
 
-def get_top10_holders():
-    accounts = [x for x in Token(TOKEN_NAME).get_holder() if x['account'] not in ACCOUNT_FILTER_LIST]
+def get_top10_holders(symbol):
+    accounts = [x for x in Token(symbol).get_holder() if x['account'] not in ACCOUNT_FILTER_LIST]
     accounts = sorted(accounts, key= lambda a: float(a['balance']), reverse=True)
 
     # identify the top 10 token holders
@@ -116,9 +137,9 @@ def get_top10_holders():
         top10str += '%s - %s\n' % (account, balance)
 
     message = '''```fix
-Top 10 $PIZZA Holders --
+Top 10 $%s Holders --
 %s
-```''' % top10str
+```''' % (symbol, top10str)
 
     return message
 
@@ -184,100 +205,129 @@ async def update_bot_user_status():
 
     last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price() * last_price, 3)
-    await client.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
+    await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
 
 
-@client.event
+custom_prefixes = read_config_file()
+default_prefix = '!'
+bot = commands.Bot(command_prefix = determine_prefix)
+
+
+@bot.event
 async def on_ready():
     await update_bot_user_status()
-    print(f'{client.user} has connected to Discord!')
+    print(f'{bot.user} has connected to Discord!')
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+@bot.command()
+@commands.guild_only()
+async def prefix(ctx, arg=''):
+    """<prefix> : Print and change bot's command prefix"""
+    # get current prefix
+    if arg == '':
+        prefix = await determine_prefix(bot, ctx.message)
+        guild = ctx.message.guild
 
-    if message.content == '!help':
-        response = '''```fix
-Commands:
-!help           : print this message
-!price          : print market info
-!price <token>  : get price info for any HE token or any coin on CoinGecko
-!top10          : print top10 token holders (excluding project accounts)
-!tokenomics     : print token statistics
-!history <token>: print last 10 trades
-!gif            : show me a pizza gif!
-!info           : learn more about $PIZZA
-!source         : print location of my source code
+        await ctx.send('Current prefix is: %s for guild: %s' % (prefix,guild))
 
-```'''
-        await message.channel.send(response)
+    else:
+        guild = ctx.message.guild
+        if not ctx.message.author.guild_permissions.administrator:
+            await ctx.send('You must be an admin to change my command prefix for guild: %s' % (guild))
+            return
 
-    if message.content == '!price':
-        await update_bot_user_status()
+        custom_prefixes[str(guild.id)] = arg
+        await ctx.send('Changed prefix to: %s for guild: %s' % (arg,guild))
+        write_config_file(custom_prefixes)
 
-        response = get_token_price_he_cg(TOKEN_NAME)
-        await message.channel.send(response)
+@bot.command()
+async def bal(ctx, wallet, symbol=''):
+    """<wallet> <symbol> : Print HiveEngine wallet balances"""
 
-    elif message.content.startswith('!price'):
-        symbol = message.content.split(' ')[1]
-        if symbol:
-            response = get_token_price_he_cg(symbol)
-            await message.channel.send(response)
+    if symbol == '':
+        symbol = TOKEN_NAME
 
-    if message.content == '!gif':
-        response = random.choice(PIZZA_GIFS)
-        await message.channel.send(response)
+    wallet_token_info = Wallet(wallet).get_token(symbol)
 
-    if message.content == '!info':
-        response = '''```fix
-Learn more about $PIZZA @ https://hive.pizza```'''
-        await message.channel.send(response)
+    if not wallet_token_info:
+        balance = 0
+        staked = 0
+    else:
+        balance = float(wallet_token_info['balance'])
+        staked = float(wallet_token_info['stake'])
 
-    if message.content == '!tokenomics':
-        response = get_tokenomics()
-        await message.channel.send(response)
-
-    if message.content == '!source':
-        response = 'My source code is found here: %s' % GITHUB_URL
-        await message.channel.send(response)
-
-    if message.content == '!top10':
-        response = get_top10_holders()
-        await message.channel.send(response)
-
-    if False: #message.content.startswith('!wiki'):
-        keywords = '%20'.join(message.content.split(' ')[1:])
+    await ctx.send('Current ballance for %s is %0.3f %s liquid & %0.3f %s staked' % (wallet, balance, symbol, staked, symbol))
 
 
-        url = 'https://www.hive.wiki/index.php?title=Special:Search&search=%s&fulltext=Search&profile=default' % keywords
+@bot.command()
+async def price(ctx, symbol=''):
+    """<symbol> : Print HiveEngine market price info"""
+    await update_bot_user_status()
 
-        response = urlopen(url)
+    if symbol == '':
+        symbol = TOKEN_NAME
 
-        soup = BeautifulSoup(response.read(),features='html.parser')
+    response = get_token_price_he_cg(symbol)
+    await ctx.send(response)
 
-        results = soup.find_all('div', attrs={"class":"mw-search-result-heading"})
-        if results and results[0].contents and 'href' in results[0].contents[0].attrs.keys():
-            uri = results[0].contents[0].attrs['href']
-            result = 'https://www.hive.wiki%s' % uri
-            response = 'I found this: %s' % result
-        else:
-            response = 'I couldn\'t find that'
 
-        await message.channel.send(response)
+@bot.command()
+async def gif(ctx):
+    """ Drop a random GIF! """
+    response = random.choice(PIZZA_GIFS)
+    await ctx.send(response)
 
-    if message.content.startswith('!history'):
-        splitmessage = message.content.split(' ')
-        symbol = ''
-        if len(splitmessage) > 1:
-            symbol = splitmessage[1]
 
-        if symbol:
-            response = get_hiveengine_history(symbol)
-        else:
-            response = get_hiveengine_history()
+@bot.command()
+async def info(ctx):
+    """ Print Hive.Pizza project link """
+    response = '''Learn more about $PIZZA @ https://hive.pizza'''
+    await ctx.send(response)
 
-        await message.channel.send(response)
 
-client.run(TOKEN)
+@bot.command()
+async def tokenomics(ctx, symbol=''):
+    """<symbol> : Print HiveEngine token distribution info"""
+
+    if symbol == '':
+        symbol = TOKEN_NAME
+
+    response = get_hiveengine_history(symbol)
+    await ctx.send(response)
+
+
+@bot.command()
+async def source(ctx):
+    """ Print my source code location """
+    response = 'My source code is found here: %s' % GITHUB_URL
+    await ctx.send(response)
+
+
+@bot.command()
+async def top10(ctx, symbol=''):
+    """<symbol> : Print HiveEngine token rich list top 10"""
+    if symbol == '':
+        symbol = TOKEN_NAME
+
+    response = get_top10_holders(symbol)
+    await ctx.send(response)
+
+
+@bot.command()
+async def history(ctx, symbol=''):
+    """<symbol> : Print recent HiveEngine token trade history"""
+    if symbol == '':
+        symbol = TOKEN_NAME
+
+    response = get_hiveengine_history(symbol)
+
+    await ctx.send(response)
+
+
+# Discord initialization
+load_dotenv()
+TOKEN = os.getenv('DISCORD_TOKEN')
+
+
+
+bot.run(TOKEN)
