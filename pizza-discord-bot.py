@@ -178,7 +178,7 @@ Latest 10 $%s HiveEngine Transactions --
 def get_tokenomics():
     wallets = [x for x in Token(TOKEN_NAME).get_holder()]
 
-    total_wallets = len(wallets)
+    total_wallets = len([x for x in wallets if float(x['balance']) >= 0])
 
     # count wallets with at least 1 token
     wallets_1plus = len([x for x in wallets if float(x['balance']) >= 1])
@@ -292,7 +292,7 @@ async def tokenomics(ctx, symbol=''):
     if symbol == '':
         symbol = TOKEN_NAME
 
-    response = get_hiveengine_history(symbol)
+    response = get_tokenomics(symbol)
     await ctx.send(response)
 
 
