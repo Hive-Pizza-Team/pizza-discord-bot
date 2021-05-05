@@ -72,6 +72,18 @@ async def determine_prefix(bot, message):
         return default_prefix
 
 
+def get_token_holders(symbol):
+
+    holder_count = 1000
+    token_holders = []
+    while holder_count == 1000:
+        response = Token(symbol).get_holder(offset=len(token_holders))
+        holder_count = len(response)
+        token_holders += response
+
+    return token_holders
+
+
 def get_token_price_he_cg(coin):
     coin = coin.lower()
 
@@ -126,7 +138,7 @@ CoinGecko market info for $%s
 
 
 def get_top10_holders(symbol):
-    accounts = [x for x in Token(symbol).get_holder() if x['account'] not in ACCOUNT_FILTER_LIST]
+    accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
     accounts = sorted(accounts, key= lambda a: float(a['balance']), reverse=True)
 
     # identify the top 10 token holders
@@ -177,7 +189,7 @@ Latest 10 $%s HiveEngine Transactions --
 
 def get_tokenomics(symbol):
 
-    wallets = [x for x in Token(symbol).get_holder()]
+    wallets = get_token_holders(symbol)
 
     total_wallets = len([x for x in wallets if float(x['balance']) > 0])
 
@@ -189,7 +201,6 @@ def get_tokenomics(symbol):
 
     # count wallets with at least 200 tokens
     wallets_200plus = len([x for x in wallets if float(x['balance']) >= 200])
-
 
     # count wallets with at least 1000 tokens
     wallets_1000plus = len([x for x in wallets if float(x['balance']) >= 1000])
