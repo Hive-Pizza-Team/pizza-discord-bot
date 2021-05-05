@@ -187,17 +187,22 @@ def get_tokenomics(symbol):
     # count wallets with at least 20 tokens
     wallets_20plus = len([x for x in wallets if float(x['balance']) >= 20])
 
-    # count wallets with at least 20 tokens
-    wallets_100plus = len([x for x in wallets if float(x['balance']) >= 100])
+    # count wallets with at least 200 tokens
+    wallets_200plus = len([x for x in wallets if float(x['balance']) >= 200])
+
+
+    # count wallets with at least 1000 tokens
+    wallets_1000plus = len([x for x in wallets if float(x['balance']) >= 1000])
 
 
     message = '''```css
 $PIZZA tokenomics --
 %.4d wallets hold $%s
-%.4d wallets hold >= 1 $%s   ( 8-) )
-%.4d wallets hold >= 20 $%s  (bot access level)
-%.4d wallets hold >= 100 $%s (badass level)
-```''' % (total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_100plus, symbol)
+%.4d wallets hold >= 1 $%s    ( 8-) )
+%.4d wallets hold >= 20 $%s   (bot access level 1)
+%.4d wallets hold >= 200 $%s  (bot access level 2)
+%.4d wallets hold >= 1000 $%s (badass level)
+```''' % (total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol)
 
     return message
 
