@@ -102,7 +102,7 @@ def get_token_price_he_cg(coin):
         lowest_asking_price = 0.0
         highest_bidding_price = 0.0
 
-        trade_history = market.get_trades_history(symbol=coin)
+        trade_history = market.get_trades_history(symbol=coin, limit=1000)
         if trade_history: last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
 
