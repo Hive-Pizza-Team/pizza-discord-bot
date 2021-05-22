@@ -43,7 +43,24 @@ PIZZA_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4q
 'https://files.peakd.com/file/peakd-hive/pizzabot/23xAcRA5z5PG8aNLzq3jcDrSwP6eVYAagSSooGTzWQ4TZHPvNH8Ccc16zwtP6y3fkgX1e.gif',
 'https://files.peakd.com/file/peakd-hive/pizzabot/23zGkxUGqyXMTN7rVm2EPkLr6dsnk4T4nFyrEBejS9WB2VbKpJ3P356EcQjcrMF6gRTbz.gif',
 'https://files.peakd.com/file/peakd-hive/pizzabot/23x17QUuztsLf64Mav8m59nuRF4B9k3RAV6QGrtpvmc3hA9bxSJ2URkW7fuYSfaRLKAq2.gif',
-'https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif']
+'https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23wqwJUY56PuyQS3doAHbLfsjnNTcqLUry1cSmoSyGmRc49BswoxTGYhySmrXuevYWCJg',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23xpKDUUZXfKhB9t5HqVGiXABxtHMGKQppFrkYm44wRKkrz9RrTV2gsQrsefexJRUrBT2',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23xyfe5dVwRcVchBanZMRpBJiayFF7gsi3gk2kz4pGYJQDPCkmqTJgp25NvSpBhP3ST9e',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/EpNrELqqTJHoTQ9DmbSyiFmzDe9wufJWF82QFYgotTMPSBRYyyNA7hjCS6HnAPXp69i',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23xVY6km1hZyjvLewcHdBhDCM6u1jZ4PgBmj5K6Q8xghCuMcGLnNYvj1UmZyoQAhpMPeU',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23xpKbgbo6LSPutm7ntaeVDiVJfdaxiJGhs8N4sve1MNdENuRAKw37uJbutCNBqj2M7vU',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23yTsn5WYwUk4Jp3CUhvFPUMHNteobk1BTm1AUACa1wYvV9P8yRRKYuNx4QvCgeK9r4pk',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23z7SiUwzPi3WQ1nS8Lk4qBUqKtmgZRRTuQZP54mRiDpi8A22pk1ScoFgVa8CyhqQsAuS',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23xyjoitW8ML4sYcuExyrN6qgACEmSCqjT5J43E99DjzKqmEyZjA1THLR15mBghPbPKmN',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23wgeYo6UHBTHNz53UsykqxmyeRQWj7XdQZyXqnCBjj9sYQahMSrDAkqrsTf8P1Bq3bEU',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23wgW8wq2haFkqYdudbEBcrWiKBSRdtQuVsumxL3edzZkUwUMt36booRdQXiuZb1p6ng4',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23wr1XodaTgJAVzDu9sEV7q5r6RV3QppV2Nvxty4vD6BwYdHQLKGhgsynnz4fFC2GYyZW',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23x1L7zCvtMWjER4aUaQP2BJ8Y8rW5qy5nSVBtLktAos5JXMt6Ry9jN4ZYjvWJXe5g9yW',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23xpJztdYA9RpUnMRWDyYsWyixmqFMRSpix52vvx1vuxJSZHJL45YWmb9rUsswymZaSFE',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/242DhzmX9cZCijjJpD1qwqvcRdJMHPsxvsfesBYkQUVpXpn5s3g9SewPCeiJ1ne4zUC7N',
+'https://images.hive.blog/0x0/https://files.peakd.com/file/peakd-hive/pizzabot/23wr1BUi29btm7eRvcRbqee2e52DCmH5x5HWLVrrQ7GqLc5UQMYawfsHTAsgCLghj5Kwa'
+]
 
 
 def read_config_file():
