@@ -11,6 +11,7 @@ from pycoingecko import CoinGeckoAPI
 import hiveengine
 from hiveengine.wallet import Wallet
 import json
+from hiveengine.api import Api
 
 # HiveEngine defines
 market = Market()
@@ -353,6 +354,24 @@ async def history(ctx, symbol=''):
         symbol = TOKEN_NAME
 
     response = get_hiveengine_history(symbol)
+
+    await ctx.send(response)
+
+
+@bot.command()
+async def farms(ctx):
+    """Print $PIZZA VTF Farm deposits"""
+
+    api = Api()
+
+    response = '''```fix
+Pizza Farm deposits:
+'''
+    for tx in api.get_history("vftlab", "PIZZA"):
+        if 'quantity' in tx.keys():
+            response += '%0.3f from %s\n' % (float(tx['quantity']), tx['from'])
+
+    response += '```'
 
     await ctx.send(response)
 
