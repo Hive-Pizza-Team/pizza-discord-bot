@@ -360,7 +360,7 @@ async def history(ctx, symbol=''):
 
 @bot.command()
 async def farms(ctx):
-    """Print $PIZZA VTF Farm deposits"""
+    """Print $PIZZA VFT Farm deposits"""
 
     api = Api()
 
