@@ -16,7 +16,7 @@ from hiveengine.api import Api
 # HiveEngine defines
 market = Market()
 TOKEN_NAME = 'PIZZA'
-ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot']
+ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot','null','vftlab']
 
 CONFIG_FILE = 'config.json'
 
