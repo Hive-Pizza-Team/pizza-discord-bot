@@ -12,6 +12,7 @@ import hiveengine
 from hiveengine.wallet import Wallet
 import json
 from hiveengine.api import Api
+import beem
 
 # HiveEngine defines
 market = Market()
@@ -281,14 +282,20 @@ async def bal(ctx, wallet, symbol=''):
     if symbol == '':
         symbol = TOKEN_NAME
 
-    wallet_token_info = Wallet(wallet).get_token(symbol)
-
-    if not wallet_token_info:
-        balance = 0
-        staked = 0
+    if symbol.lower() == 'hive':
+        acc = beem.account.Account(wallet)
+        balance = acc.available_balances[0]
+        staked = acc.get_token_power(only_own_vests=True)
     else:
-        balance = float(wallet_token_info['balance'])
-        staked = float(wallet_token_info['stake'])
+        # hive engine token
+        wallet_token_info = Wallet(wallet).get_token(symbol)
+
+        if not wallet_token_info:
+            balance = 0
+            staked = 0
+        else:
+            balance = float(wallet_token_info['balance'])
+            staked = float(wallet_token_info['stake'])
 
     await ctx.send('Current balance for %s is %0.3f %s liquid & %0.3f %s staked' % (wallet, balance, symbol, staked, symbol))
 
