@@ -156,10 +156,10 @@ CoinGecko market info for $%s
 
 def get_top10_holders(symbol):
     accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
-    accounts = sorted(accounts, key= lambda a: float(a['balance']), reverse=True)
+    accounts = sorted(accounts, key= lambda a: float(a['balance']) + float(a['stake']), reverse=True)
 
     # identify the top 10 token holders
-    top10 = [(x['account'],x['balance']) for x in accounts[0:10]]
+    top10 = [(x['account'],float(x['balance']) + float(x['stake'])) for x in accounts[0:10]]
 
     top10str = ''
     for account, balance in top10:
@@ -208,29 +208,29 @@ def get_tokenomics(symbol):
 
     wallets = get_token_holders(symbol)
 
-    total_wallets = len([x for x in wallets if float(x['balance']) > 0])
+    total_wallets = len([x for x in wallets if float(x['balance']) + float(x['stake']) > 0])
 
     # count wallets with at least 1 token
-    wallets_1plus = len([x for x in wallets if float(x['balance']) >= 1])
+    wallets_1plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1])
 
     # count wallets with at least 20 tokens
-    wallets_20plus = len([x for x in wallets if float(x['balance']) >= 20])
+    wallets_20plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 20])
 
     # count wallets with at least 200 tokens
-    wallets_200plus = len([x for x in wallets if float(x['balance']) >= 200])
+    wallets_200plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 200])
 
     # count wallets with at least 1000 tokens
-    wallets_1000plus = len([x for x in wallets if float(x['balance']) >= 1000])
+    wallets_1000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1000])
 
 
     message = '''```css
-$PIZZA tokenomics --
+$%s tokenomics --
 %.4d wallets hold $%s
 %.4d wallets hold >= 1 $%s    ( 8-) )
 %.4d wallets hold >= 20 $%s   (bot access level 1)
 %.4d wallets hold >= 200 $%s  (bot access level 2)
 %.4d wallets hold >= 1000 $%s (badass level)
-```''' % (total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol)
+```''' % (symbol, total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol)
 
     return message
 
