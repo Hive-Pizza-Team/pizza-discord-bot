@@ -303,8 +303,8 @@ async def bal(ctx, wallet, symbol=''):
         acc = beem.account.Account(wallet)
         balance = acc.available_balances[0]
         staked = acc.get_token_power(only_own_vests=True)
-        delegation_in = 0
         delegation_out = get_hive_power_delegations(wallet)
+        delegation_in = acc.get_token_power() + delegation_out - staked
 
     else:
         # hive engine token
