@@ -275,6 +275,23 @@ async def prefix(ctx, arg=''):
         await ctx.send('Changed prefix to: %s for guild: %s' % (arg,guild))
         write_config_file(custom_prefixes)
 
+
+def get_hive_power_delegations(wallet):
+
+    hive = beem.hive.Hive()
+    acc = beem.account.Account(wallet)
+
+    incoming_delegations_total = 0
+
+    delegations = acc.get_vesting_delegations()
+
+    for delegation in delegations:
+        hive_power = hive.vests_to_token_power(delegation['vesting_shares']['amount']) / 10 ** delegation['vesting_shares']['precision']
+        incoming_delegations_total += hive_power
+
+    return incoming_delegations_total
+
+
 @bot.command()
 async def bal(ctx, wallet, symbol=''):
     """<wallet> <symbol> : Print HiveEngine wallet balances"""
@@ -286,8 +303,9 @@ async def bal(ctx, wallet, symbol=''):
         acc = beem.account.Account(wallet)
         balance = acc.available_balances[0]
         staked = acc.get_token_power(only_own_vests=True)
-        delegation_in = -1
-        delegation_out = -1
+        delegation_in = 0
+        delegation_out = get_hive_power_delegations(wallet)
+
     else:
         # hive engine token
         wallet_token_info = Wallet(wallet).get_token(symbol)
