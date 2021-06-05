@@ -286,6 +286,8 @@ async def bal(ctx, wallet, symbol=''):
         acc = beem.account.Account(wallet)
         balance = acc.available_balances[0]
         staked = acc.get_token_power(only_own_vests=True)
+        delegation_in = -1
+        delegation_out = -1
     else:
         # hive engine token
         wallet_token_info = Wallet(wallet).get_token(symbol)
@@ -293,11 +295,16 @@ async def bal(ctx, wallet, symbol=''):
         if not wallet_token_info:
             balance = 0
             staked = 0
+            delegation_in = 0
+            delegation_out = 0
         else:
             balance = float(wallet_token_info['balance'])
             staked = float(wallet_token_info['stake'])
+            delegation_in = float(wallet_token_info['delegationsIn'])
+            delegation_out = float(wallet_token_info['delegationsOut'])
 
-    await ctx.send('Current balance for %s is %0.3f %s liquid & %0.3f %s staked' % (wallet, balance, symbol, staked, symbol))
+    await ctx.send('Current balance for %s is %0.3f %s liquid, %0.3f %s staked, %0.3f %s incoming delegation, %0.3f %s outgoing delegation' % 
+        (wallet, balance, symbol, staked, symbol, delegation_in, symbol, delegation_out, symbol))
 
 
 @bot.command()
