@@ -333,13 +333,18 @@ async def bals(ctx, wallet):
     # hive engine token
     wallet_token_info = Wallet(wallet)
 
+    # sort by stake then balance
+    wallet_token_info.sort(key=lambda elem: float(elem['stake']) + float(elem['balance']))
+    wallet_token_info = wallet_token_info[::-1]
+
     longest_symbol_len = 0
     for token in wallet_token_info:
         if len(token['symbol']) > longest_symbol_len:
             longest_symbol_len = len(token['symbol'])
 
 
-    message_body = '```First 10 balances for %s:\n' % wallet
+    message_body = '''```apache
+First 10 balances for %s:\n''' % wallet
     message_body += 'SYMBOL'.ljust(longest_symbol_len, ' ') + ' |  LIQUID  |  STAKED  | INCOMING | OUTGOING\n'
 
     rows = []
@@ -352,7 +357,7 @@ async def bals(ctx, wallet):
         delegation_out = float(token['delegationsOut'])
 
         padded_symbol = symbol.ljust(longest_symbol_len, ' ')
-        rows.append('%s |%10.3f|%10.3f|%10.3f|%10.3f\n' % (padded_symbol, balance, staked, delegation_in, delegation_out))
+        rows.append('%s |%10.3f|%10.3f|%10.3f|%9.3f\n' % (padded_symbol, balance, staked, delegation_in, delegation_out))
 
     for row in rows[0:10]:
         message_body += row
