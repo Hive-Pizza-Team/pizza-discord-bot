@@ -299,6 +299,8 @@ async def bal(ctx, wallet, symbol=''):
     if symbol == '':
         symbol = TOKEN_NAME
 
+    symbol = symbol.upper()
+
     if symbol.lower() == 'hive':
         acc = beem.account.Account(wallet)
         balance = acc.available_balances[0]
@@ -323,6 +325,41 @@ async def bal(ctx, wallet, symbol=''):
 
     await ctx.send('Current balance for %s is %0.3f %s liquid, %0.3f %s staked, %0.3f %s incoming delegation, %0.3f %s outgoing delegation' % 
         (wallet, balance, symbol, staked, symbol, delegation_in, symbol, delegation_out, symbol))
+
+@bot.command()
+async def bals(ctx, wallet):
+    """<wallet>: Print HiveEngine wallet balances"""
+
+    # hive engine token
+    wallet_token_info = Wallet(wallet)
+
+    longest_symbol_len = 0
+    for token in wallet_token_info:
+        if len(token['symbol']) > longest_symbol_len:
+            longest_symbol_len = len(token['symbol'])
+
+
+    message_body = '```First 10 balances for %s:\n' % wallet
+    message_body += 'SYMBOL'.ljust(longest_symbol_len, ' ') + ' |  LIQUID  |  STAKED  | INCOMING | OUTGOING\n'
+
+    rows = []
+
+    for token in wallet_token_info:
+        symbol = token['symbol']
+        balance = float(token['balance'])
+        staked = float(token['stake'])
+        delegation_in = float(token['delegationsIn'])
+        delegation_out = float(token['delegationsOut'])
+
+        padded_symbol = symbol.ljust(longest_symbol_len, ' ')
+        rows.append('%s |%10.3f|%10.3f|%10.3f|%10.3f\n' % (padded_symbol, balance, staked, delegation_in, delegation_out))
+
+    for row in rows[0:10]:
+        message_body += row
+
+    message_body += '```'
+
+    await ctx.send(message_body)
 
 
 @bot.command()
