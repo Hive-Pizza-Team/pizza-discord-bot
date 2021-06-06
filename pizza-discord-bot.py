@@ -438,15 +438,50 @@ async def farms(ctx):
 
     api = Api()
 
-    response = '''```fix
-Recent 30 Pizza Farm deposits:
-'''
-    for tx in api.get_history("vftlab", "PIZZA")[0:30]:
-        if 'quantity' in tx.keys():
-            if tx['from'] == 'vftlab':
-                response += 'Withdrawal %0.3f to %s\n' % (float(tx['quantity']), tx['to'])
+    deposits = {}
+    total_deposits = 0
+    longest_name_len = 0
+
+    for tx in api.get_history("vftlab", "PIZZA"):
+
+        quantity = float(tx['quantity'])
+        to = tx['to']
+        tfrom = tx['from']
+
+        if len(tfrom) > longest_name_len:
+            longest_name_len = len(tfrom)
+
+        if tfrom == 'vftlab':
+            total_deposits -= quantity
+
+            if to in deposits.keys():
+                deposits[to] -= quantity
             else:
-                response += 'Deposit %0.3f from %s\n' % (float(tx['quantity']), tx['from'])
+                deposits[to] = -1 * quantity
+        else:
+            total_deposits += quantity
+
+            if tfrom in deposits.keys():
+                deposits[tfrom] += quantity - quantity * 0.03
+            else:
+                deposits[tfrom] = quantity - quantity * 0.03
+
+    list_deposits = []
+    for depositor in deposits.keys():
+        list_deposits.append({'name':depositor,'balance':deposits[depositor],'payout': 50 * deposits[depositor] / total_deposits})
+
+
+    list_deposits.sort(key= lambda a: float(a['balance']), reverse=True)
+
+
+    response = '''```fix
+Top 30 Pizza Farm deposits:
+'''
+
+    response += 'Depositor'.ljust(longest_name_len, ' ') + ' | $PIZZA Amount | Expected Daily Payout ($VFT)\n'
+
+    for deposit in list_deposits[0:30]:
+        response += '%s | %13.3f | %8.3f\n' % (deposit['name'].ljust(longest_name_len, ' '), deposit['balance'], deposit['payout'])
 
     response += '```'
 
