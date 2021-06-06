@@ -431,6 +431,20 @@ async def history(ctx, symbol=''):
 
     await ctx.send(response)
 
+@bot.command()
+async def blog(ctx, name=''):
+    """<symbol> : Link to last post from blog"""
+
+    if name == '':
+        name = 'thebeardflex'
+
+    from beem.discussions import Query, Discussions_by_blog
+    q = Query(limit=10, tag=name)
+    latest_blog = Discussions_by_blog(q)[0]
+
+    response = 'Latest post from @%s: https://peakd.com/@%s/%s' % (name, name, latest_blog['permlink'])
+
+    await ctx.send(response)
 
 @bot.command()
 async def farms(ctx):
