@@ -439,11 +439,14 @@ async def farms(ctx):
     api = Api()
 
     response = '''```fix
-Pizza Farm deposits:
+Recent 30 Pizza Farm deposits:
 '''
-    for tx in api.get_history("vftlab", "PIZZA"):
+    for tx in api.get_history("vftlab", "PIZZA")[0:30]:
         if 'quantity' in tx.keys():
-            response += '%0.3f from %s\n' % (float(tx['quantity']), tx['from'])
+            if tx['from'] == 'vftlab':
+                response += 'Withdrawal %0.3f to %s\n' % (float(tx['quantity']), tx['to'])
+            else:
+                response += 'Deposit %0.3f from %s\n' % (float(tx['quantity']), tx['from'])
 
     response += '```'
 
