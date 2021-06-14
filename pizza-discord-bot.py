@@ -442,7 +442,9 @@ async def blog(ctx, name=''):
     q = Query(limit=10, tag=name)
     latest_blog = Discussions_by_blog(q)[0]
 
-    response = 'Latest post from @%s: https://peakd.com/@%s/%s' % (name, name, latest_blog['permlink'])
+    reply_identifier = '@%s/%s' % (latest_blog['author'], latest_blog['permlink'])
+
+    response = 'Latest post from @%s: https://peakd.com/%s' % (name, reply_identifier)
 
     await ctx.send(response)
 
