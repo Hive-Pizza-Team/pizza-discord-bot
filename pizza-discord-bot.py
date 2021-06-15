@@ -300,6 +300,7 @@ async def bal(ctx, wallet, symbol=''):
         symbol = TOKEN_NAME
 
     symbol = symbol.upper()
+    wallet = wallet.lower()
 
     if symbol.lower() == 'hive':
         acc = beem.account.Account(wallet)
@@ -331,6 +332,7 @@ async def bals(ctx, wallet):
     """<wallet>: Print HiveEngine wallet balances"""
 
     # hive engine token
+    wallet = wallet.lower()
     wallet_token_info = Wallet(wallet)
 
     # sort by stake then balance
