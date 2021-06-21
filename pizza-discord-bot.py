@@ -207,7 +207,7 @@ Latest 10 $%s HiveEngine Transactions --
 
 def get_tokenomics(symbol):
 
-    wallets = get_token_holders(symbol)
+    wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
 
     total_wallets = len([x for x in wallets if float(x['balance']) + float(x['stake']) > 0])
 
@@ -223,15 +223,18 @@ def get_tokenomics(symbol):
     # count wallets with at least 1000 tokens
     wallets_1000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1000])
 
+    # count wallets with at least 1000 tokens
+    wallets_10000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 10000])
 
     message = '''```css
 $%s tokenomics --
-%.4d wallets hold $%s
-%.4d wallets hold >= 1 $%s    ( 8-) )
-%.4d wallets hold >= 20 $%s   (bot access level 1)
-%.4d wallets hold >= 200 $%s  (bot access level 2)
-%.4d wallets hold >= 1000 $%s (badass level)
-```''' % (symbol, total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol)
+%.4d wallets hold >       0 $%s
+%.4d wallets hold >=      1 $%s ( 8-) )
+%.4d wallets hold >=     20 $%s (bot access level 1)
+%.4d wallets hold >=    200 $%s (bot access level 2)
+%.4d wallets hold >=  1,000 $%s (badass level)
+%.4d wallets hold >= 10,000 $%s (baron level)
+```''' % (symbol, total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_10000plus, symbol)
 
     return message
 
