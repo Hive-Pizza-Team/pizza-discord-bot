@@ -13,6 +13,8 @@ from hiveengine.wallet import Wallet
 import json
 from hiveengine.api import Api
 import beem
+from beem.witness import Witness, WitnessesRankedByVote, WitnessesVotedByAccount
+
 
 # HiveEngine defines
 market = Market()
@@ -507,6 +509,70 @@ Top 30 Pizza Farm deposits:
     response += '```'
 
     await ctx.send(response)
+
+
+@bot.command()
+async def witness(ctx, name='pizza.witness'):
+    """Print Hive Witness Info"""
+    name = name.lower()
+    message_body = '```\n'
+
+    hive = beem.Hive()
+    witness = Witness(name, blockchain_instance=hive)
+
+    witness_json = witness.json()
+    witness_schedule = hive.get_witness_schedule()
+    config = hive.get_config()
+    if "VIRTUAL_SCHEDULE_LAP_LENGTH2" in config:
+        lap_length = int(config["VIRTUAL_SCHEDULE_LAP_LENGTH2"])
+    elif "HIVE_VIRTUAL_SCHEDULE_LAP_LENGTH2" in config:
+        lap_length = int(config["HIVE_VIRTUAL_SCHEDULE_LAP_LENGTH2"])
+    else:
+        lap_length = int(config["STEEM_VIRTUAL_SCHEDULE_LAP_LENGTH2"])
+    rank = 0
+    active_rank = 0
+    found = False
+    witnesses = WitnessesRankedByVote(limit=101, blockchain_instance=hive)
+    vote_sum = witnesses.get_votes_sum()
+    for w in witnesses:
+        rank += 1
+        if w.is_active:
+            active_rank += 1
+        if w["owner"] == witness["owner"]:
+            found = True
+            break
+    virtual_time_to_block_num = int(witness_schedule["num_scheduled_witnesses"]) / (lap_length / (vote_sum + 1))
+
+    for key in sorted(witness_json):
+        value = witness_json[key]
+        if key in ["props", "hbd_exchange_rate", 'last_work', 'pow_worker', 'available_witness_account_subsidies']:
+            continue
+        message_body += '%s | %s\n' % (key, value)
+    if found:
+        message_body += 'rank | %s\n' % rank
+        message_body += 'active_rank | %s\n' % active_rank
+    virtual_diff = int(witness_json["virtual_scheduled_time"]) - int(witness_schedule['current_virtual_time'])
+    block_diff_est = virtual_diff * virtual_time_to_block_num
+    if active_rank > 20:
+        #message_body += 'virtual_time_diff | %d\n' % virtual_diff
+        #message_body += 'block_diff_est | %d\n' % int(block_diff_est)
+        next_block_s = int(block_diff_est) * 3
+        next_block_min = next_block_s / 60
+        next_block_h = next_block_min / 60
+        next_block_d = next_block_h / 24
+        time_diff_est = ""
+        if next_block_d > 1:
+            time_diff_est = "%.2f days" % next_block_d
+        elif next_block_h > 1:
+            time_diff_est = "%.2f hours" % next_block_h
+        elif next_block_min > 1:
+            time_diff_est = "%.2f minutes" % next_block_min
+        else:
+            time_diff_est = "%.2f seconds" % next_block_s
+        message_body += 'Estimate time to next block | %s\n' % time_diff_est
+
+    message_body += '```'
+    await ctx.send(message_body)
 
 
 # Discord initialization
