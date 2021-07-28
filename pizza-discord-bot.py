@@ -545,7 +545,7 @@ async def witness(ctx, name='pizza.witness'):
 
     for key in sorted(witness_json):
         value = witness_json[key]
-        if key in ["props", "hbd_exchange_rate", 'last_work', 'pow_worker', 'available_witness_account_subsidies']:
+        if key not in ['total_missed', 'owner', 'running_version']:
             continue
         message_body += '%s | %s\n' % (key, value)
     if found:
@@ -554,8 +554,6 @@ async def witness(ctx, name='pizza.witness'):
     virtual_diff = int(witness_json["virtual_scheduled_time"]) - int(witness_schedule['current_virtual_time'])
     block_diff_est = virtual_diff * virtual_time_to_block_num
     if active_rank > 20:
-        #message_body += 'virtual_time_diff | %d\n' % virtual_diff
-        #message_body += 'block_diff_est | %d\n' % int(block_diff_est)
         next_block_s = int(block_diff_est) * 3
         next_block_min = next_block_s / 60
         next_block_h = next_block_min / 60
