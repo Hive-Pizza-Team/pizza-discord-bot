@@ -329,16 +329,16 @@ async def bal(ctx, wallet, symbol=''):
             delegation_in = float(wallet_token_info['delegationsIn'])
             delegation_out = float(wallet_token_info['delegationsOut'])
 
-    embedVar = discord.Embed(title="Balances for @%s" % wallet, description="$%s" % symbol, color=0x336EFF)
-    embedVar.add_field(name="Liquid", value="%0.3f" % (balance), inline=False)
-    embedVar.add_field(name="Staked", value="%0.3f" % (staked), inline=False)
+    embed = discord.Embed(title='Balances for @%s' % wallet, description='$%s' % symbol, color=0x336EFF)
+    embed.add_field(name='Liquid', value='%0.3f' % (balance), inline=False)
+    embed.add_field(name='Staked', value='%0.3f' % (staked), inline=False)
 
     if delegation_in > 0:
-        embedVar.add_field(name="Incoming Delegation", value="%0.3f" % (delegation_in), inline=False)
+        embed.add_field(name='Incoming Delegation', value='%0.3f' % (delegation_in), inline=False)
     if delegation_out > 0:
-        embedVar.add_field(name="Outgoing Delegation", value="%0.3f" % (delegation_out), inline=False)
+        embed.add_field(name='Outgoing Delegation', value='%0.3f' % (delegation_out), inline=False)
 
-    await ctx.send(embed=embedVar)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -552,16 +552,9 @@ async def witness(ctx, name='pizza.witness'):
             break
     virtual_time_to_block_num = int(witness_schedule["num_scheduled_witnesses"]) / (lap_length / (vote_sum + 1))
 
-    for key in sorted(witness_json):
-        value = witness_json[key]
-        if key not in ['total_missed', 'owner', 'running_version']:
-            continue
-        message_body += '%s | %s\n' % (key, value)
-    if found:
-        message_body += 'rank | %s\n' % rank
-        message_body += 'active_rank | %s\n' % active_rank
     virtual_diff = int(witness_json["virtual_scheduled_time"]) - int(witness_schedule['current_virtual_time'])
     block_diff_est = virtual_diff * virtual_time_to_block_num
+    est_time_to_next_block = ''
     if active_rank > 20:
         next_block_s = int(block_diff_est) * 3
         next_block_min = next_block_s / 60
@@ -576,10 +569,21 @@ async def witness(ctx, name='pizza.witness'):
             time_diff_est = "%.2f minutes" % next_block_min
         else:
             time_diff_est = "%.2f seconds" % next_block_s
-        message_body += 'Estimate time to next block | %s\n' % time_diff_est
+        est_time_to_next_block = time_diff_est
 
-    message_body += '```'
-    await ctx.send(message_body)
+    embed = discord.Embed(title='Witness info for @%s' % name, description='', color=0x336EFF)
+    embed.add_field(name='Running Version', value=witness_json['running_version'], inline=False)
+    embed.add_field(name='Missing Blocks', value=witness_json['total_missed'], inline=False)
+
+    if est_time_to_next_block:
+        embed.add_field(name='Estimate time to next block', value=est_time_to_next_block, inline=False)
+
+    if found:
+        embed.add_field(name='Rank', value='%d' % rank, inline=False)
+        embed.add_field(name='Active Rank', value='%d' % active_rank, inline=False)
+
+
+    await ctx.send(embed=embed)
 
 
 # Discord initialization
