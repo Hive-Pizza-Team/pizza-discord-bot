@@ -329,8 +329,17 @@ async def bal(ctx, wallet, symbol=''):
             delegation_in = float(wallet_token_info['delegationsIn'])
             delegation_out = float(wallet_token_info['delegationsOut'])
 
-    await ctx.send('Current balance for %s is %0.3f %s liquid, %0.3f %s staked, %0.3f %s incoming delegation, %0.3f %s outgoing delegation' % 
-        (wallet, balance, symbol, staked, symbol, delegation_in, symbol, delegation_out, symbol))
+    embedVar = discord.Embed(title="Balances for @%s" % wallet, description="$%s" % symbol, color=0x336EFF)
+    embedVar.add_field(name="Liquid", value="%0.3f" % (balance), inline=False)
+    embedVar.add_field(name="Staked", value="%0.3f" % (staked), inline=False)
+
+    if delegation_in > 0:
+        embedVar.add_field(name="Incoming Delegation", value="%0.3f" % (delegation_in), inline=False)
+    if delegation_out > 0:
+        embedVar.add_field(name="Outgoing Delegation", value="%0.3f" % (delegation_out), inline=False)
+
+    await ctx.send(embed=embedVar)
+
 
 @bot.command()
 async def bals(ctx, wallet):
