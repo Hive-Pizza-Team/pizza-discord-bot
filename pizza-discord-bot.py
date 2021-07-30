@@ -410,17 +410,38 @@ async def top10(ctx, symbol=''):
 
 
     accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
-    accounts = sorted(accounts, key= lambda a: float(a['stake']), reverse=True)
 
     # identify the top 10 token holders
-    top10 = [(x['account'], float(x['stake'])) for x in accounts[0:10]]
 
+    embed = discord.Embed(title='Top 10 $%s Holders' % symbol, description='', color=0xf8961e)
+
+    accounts_stake = sorted(accounts, key=lambda a: float(a['stake']), reverse=True)
+    top10stake = [(x['account'], float(x['stake'])) for x in accounts_stake[0:10]]
     count = 0
-
-    embed = discord.Embed(title='Top 10 $%s Stakers' % symbol, description='', color=0xf8961e)
-    for account, balance in top10:
+    stake_string = ''
+    for account, stake in top10stake:
         count += 1
-        embed.add_field(name='%d. %s' % (count,account), value=balance, inline=True)
+        stake_string += '%d. %s - %0.3f\n' % (count, account, stake)
+    embed.add_field(name='Top 10 $%s Staked' % symbol, value=stake_string, inline=True)
+
+    accounts_liquid = sorted(accounts, key=lambda a: float(a['balance']), reverse=True)
+    top10liquid = [(x['account'], float(x['balance'])) for x in accounts_liquid[0:10]]
+    count = 0
+    liquid_string = ''
+    for account, liquid in top10liquid:
+        count += 1
+        liquid_string += '%d. %s - %0.3f\n' % (count, account, liquid)
+    embed.add_field(name='Top 10 $%s Liquid' % symbol, value=liquid_string, inline=True)
+
+    accounts_total = sorted(accounts, key=lambda a: float(a['stake']) + float(a['balance']), reverse=True)
+    top10total = [(x['account'], float(x['stake']) + float(x['balance'])) for x in accounts_total[0:10]]
+    count = 0
+    total_string = ''
+    for account, total in top10total:
+        count += 1
+        total_string += '%d. %s - %0.3f\n' % (count, account, total)
+    embed.add_field(name='Top 10 $%s Total' % symbol, value=total_string, inline=True)
+
 
     await ctx.send(embed=embed)
 
