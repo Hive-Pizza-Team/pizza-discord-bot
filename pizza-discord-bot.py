@@ -136,7 +136,7 @@ def get_token_price_he_cg(coin):
         if buy_book: highest_bidding_price = float(buy_book[0]['price'])
         bid_usd  = highest_bidding_price * hive_usd
 
-        embed = discord.Embed(title='HiveEngine market info for $%s' % coin, last_usd='', color=0xf3722c)
+        embed = discord.Embed(title='HiveEngine market info for $%s' % coin.upper(), last_usd='', color=0xf3722c)
         embed.add_field(name='Last', value='%.5f HIVE | $%.5f USD' % (last_price, bid_usd), inline=False)
         embed.add_field(name='Ask', value='%.5f HIVE | $%.5f USD' % (lowest_asking_price, ask_usd), inline=False)
         embed.add_field(name='Bid', value='%.5f HIVE | $%.5f USD' % (highest_bidding_price, bid_usd), inline=False)
@@ -151,7 +151,7 @@ def get_token_price_he_cg(coin):
 market price: $%.5f USD
 ```''' % (price)
 
-        embed = discord.Embed(title='CoinGecko market info for $%s' % coin, description=message, color=0xf3722c)
+        embed = discord.Embed(title='CoinGecko market info for $%s' % coin.upper(), description=message, color=0xf3722c)
         return embed
 
 
