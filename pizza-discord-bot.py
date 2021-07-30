@@ -177,9 +177,7 @@ def get_coin_price(coin='hive'):
 def get_hiveengine_history(token='PIZZA'):
 
     message = '''```fix
-Latest 10 $%s HiveEngine Transactions --
-''' % token
-
+'''
 
     for tx in market.get_trades_history(symbol=token, limit=1000)[::-1][0:10]:
         message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
@@ -307,8 +305,7 @@ async def bals(ctx, wallet):
             longest_symbol_len = len(token['symbol'])
 
 
-    message_body = '''```apache
-First 10 balances for %s:\n''' % wallet
+    message_body = '```'
     message_body += 'SYMBOL'.ljust(longest_symbol_len, ' ') + ' |  LIQUID  |  STAKED  | INCOMING | OUTGOING\n'
 
     rows = []
@@ -328,7 +325,8 @@ First 10 balances for %s:\n''' % wallet
 
     message_body += '```'
 
-    await ctx.send(message_body)
+    embed = discord.Embed(title='First 10 balances for @%s' % wallet, description=message_body, color=0x90be6d)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -434,7 +432,9 @@ async def history(ctx, symbol=''):
 
     response = get_hiveengine_history(symbol)
 
-    await ctx.send(response)
+    embed = discord.Embed(title='Latest 10 $%s HiveEngine Transactions' % symbol, description=response, color=0x277da1)
+    await ctx.send(embed=embed)
+
 
 @bot.command()
 async def blog(ctx, name=''):
