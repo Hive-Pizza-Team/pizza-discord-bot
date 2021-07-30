@@ -146,7 +146,7 @@ def get_token_price_he_cg(coin):
         print('Token not found in HE, trying CoinGeckoAPI')
 
     if not found_in_hiveengine:
-        price =  get_coin_price(coin)
+        price = get_coin_price(coin)
         message = '''```fix
 market price: $%.5f USD
 ```''' % (price)
@@ -281,6 +281,9 @@ async def bal(ctx, wallet, symbol=''):
         embed.add_field(name='Incoming Delegation', value='%0.3f' % (delegation_in), inline=False)
     if delegation_out > 0:
         embed.add_field(name='Outgoing Delegation', value='%0.3f' % (delegation_out), inline=False)
+
+    total = balance + staked + delegation_in - delegation_out
+    embed.add_field(name='Total', value='%0.3f' % (total), inline=False)
 
     await ctx.send(embed=embed)
 
