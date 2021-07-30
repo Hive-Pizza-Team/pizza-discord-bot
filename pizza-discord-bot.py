@@ -157,24 +157,6 @@ CoinGecko market info for $%s
         return message
 
 
-def get_top10_holders(symbol):
-    accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
-    accounts = sorted(accounts, key= lambda a: float(a['stake']), reverse=True)
-
-    # identify the top 10 token holders
-    top10 = [(x['account'], float(x['stake'])) for x in accounts[0:10]]
-
-    top10str = ''
-    for account, balance in top10:
-        top10str += '%s - %s\n' % (account, balance)
-
-    message = '''```fix
-Top 10 $%s Stakers --
-%s
-```''' % (symbol, top10str)
-
-    return message
-
 def get_coin_price(coin='hive'):
     ''' Call into coingeck to get USD price of coins i.e. $HIVE '''
     coingecko = CoinGeckoAPI()
@@ -433,8 +415,21 @@ async def top10(ctx, symbol=''):
     if symbol == '':
         symbol = TOKEN_NAME
 
-    response = get_top10_holders(symbol)
-    await ctx.send(response)
+
+    accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+    accounts = sorted(accounts, key= lambda a: float(a['stake']), reverse=True)
+
+    # identify the top 10 token holders
+    top10 = [(x['account'], float(x['stake'])) for x in accounts[0:10]]
+
+    count = 0
+
+    embed = discord.Embed(title='Top 10 $%s Stakers' % symbol, description='', color=0xf8961e)
+    for account, balance in top10:
+        count += 1
+        embed.add_field(name='%d. %s' % (count,account), value=balance, inline=True)
+
+    await ctx.send(embed=embed)
 
 
 @bot.command()
