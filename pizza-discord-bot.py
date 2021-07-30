@@ -136,14 +136,11 @@ def get_token_price_he_cg(coin):
         if buy_book: highest_bidding_price = float(buy_book[0]['price'])
         bid_usd  = highest_bidding_price * hive_usd
 
-
-        message = '''```fix
-HiveEngine market info for $%s
-* last: %.5f HIVE | $%.5f USD
-* ask : %.5f HIVE | $%.5f USD
-* bid : %.5f HIVE | $%.5f USD
-```''' % (coin, last_price, last_usd, lowest_asking_price, ask_usd, highest_bidding_price, bid_usd)
-        return message
+        embed = discord.Embed(title='HiveEngine market info for $%s' % coin, last_usd='', color=0xf3722c)
+        embed.add_field(name='Last', value='%.5f HIVE | $%.5f USD' % (last_price, bid_usd), inline=False)
+        embed.add_field(name='Ask', value='%.5f HIVE | $%.5f USD' % (lowest_asking_price, ask_usd), inline=False)
+        embed.add_field(name='Bid', value='%.5f HIVE | $%.5f USD' % (highest_bidding_price, bid_usd), inline=False)
+        return embed
 
     except hiveengine.exceptions.TokenDoesNotExists:
         print('Token not found in HE, trying CoinGeckoAPI')
@@ -151,10 +148,11 @@ HiveEngine market info for $%s
     if not found_in_hiveengine:
         price =  get_coin_price(coin)
         message = '''```fix
-CoinGecko market info for $%s
-* market price: $%.5f USD
-```''' % (coin, price)
-        return message
+market price: $%.5f USD
+```''' % (price)
+
+        embed = discord.Embed(title='CoinGecko market info for $%s' % coin, description=message, color=0xf3722c)
+        return embed
 
 
 def get_coin_price(coin='hive'):
@@ -337,8 +335,8 @@ async def price(ctx, symbol=''):
     if symbol == '':
         symbol = TOKEN_NAME
 
-    response = get_token_price_he_cg(symbol)
-    await ctx.send(response)
+    embed = get_token_price_he_cg(symbol)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
