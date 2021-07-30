@@ -412,6 +412,7 @@ async def top10(ctx, symbol=''):
     accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
 
     # identify the top 10 token holders
+    symbol = symbol.upper()
 
     embed = discord.Embed(title='Top 10 $%s Holders' % symbol, description='', color=0xf8961e)
 
