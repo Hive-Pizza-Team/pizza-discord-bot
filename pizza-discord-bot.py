@@ -189,40 +189,6 @@ Latest 10 $%s HiveEngine Transactions --
     return message
 
 
-def get_tokenomics(symbol):
-
-    wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
-
-    total_wallets = len([x for x in wallets if float(x['balance']) + float(x['stake']) > 0])
-
-    # count wallets with at least 1 token
-    wallets_1plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1])
-
-    # count wallets with at least 20 tokens
-    wallets_20plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 20])
-
-    # count wallets with at least 200 tokens
-    wallets_200plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 200])
-
-    # count wallets with at least 1000 tokens
-    wallets_1000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1000])
-
-    # count wallets with at least 1000 tokens
-    wallets_10000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 10000])
-
-    message = '''```css
-$%s tokenomics --
-%.4d wallets hold >       0 $%s
-%.4d wallets hold >=      1 $%s ( 8-) )
-%.4d wallets hold >=     20 $%s (bot access level 1)
-%.4d wallets hold >=    200 $%s (bot access level 2)
-%.4d wallets hold >=  1,000 $%s (badass level)
-%.4d wallets hold >= 10,000 $%s (baron level)
-```''' % (symbol, total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_10000plus, symbol)
-
-    return message
-
-
 async def update_bot_user_status():
 
     last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
@@ -398,8 +364,36 @@ async def tokenomics(ctx, symbol=''):
     if symbol == '':
         symbol = TOKEN_NAME
 
-    response = get_tokenomics(symbol)
-    await ctx.send(response)
+    wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+
+    total_wallets = len([x for x in wallets if float(x['balance']) + float(x['stake']) > 0])
+
+    # count wallets with at least 1 token
+    wallets_1plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1])
+
+    # count wallets with at least 20 tokens
+    wallets_20plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 20])
+
+    # count wallets with at least 200 tokens
+    wallets_200plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 200])
+
+    # count wallets with at least 1000 tokens
+    wallets_1000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1000])
+
+    # count wallets with at least 1000 tokens
+    wallets_10000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 10000])
+
+    message = '''```
+%.4d wallets hold >       0 $%s
+%.4d wallets hold >=      1 $%s ( 8-) )
+%.4d wallets hold >=     20 $%s (bot access level 1)
+%.4d wallets hold >=    200 $%s (bot access level 2)
+%.4d wallets hold >=  1,000 $%s (badass level)
+%.4d wallets hold >= 10,000 $%s (baron level)
+```''' % (symbol, total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_10000plus, symbol)
+
+    embed = discord.Embed(title='$%s Token Distribution' % symbol, description=message, color=0x43aa8b)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
@@ -566,7 +560,7 @@ async def witness(ctx, name='pizza.witness'):
             time_diff_est = "%.2f seconds" % next_block_s
         est_time_to_next_block = time_diff_est
 
-    embed = discord.Embed(title='Witness info for @%s' % name, description='', color=0x336EFF)
+    embed = discord.Embed(title='Witness info for @%s' % name, description='', color=0xf3722c)
     embed.add_field(name='Running Version', value=witness_json['running_version'], inline=False)
     embed.add_field(name='Missing Blocks', value=witness_json['total_missed'], inline=False)
 
