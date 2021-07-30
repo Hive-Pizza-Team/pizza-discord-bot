@@ -497,7 +497,6 @@ async def farms(ctx):
 
 
     response = '''```fix
-Top 30 Pizza Farm deposits:
 '''
 
     response += 'Depositor'.ljust(longest_name_len, ' ') + ' | $PIZZA Amount | Expected Daily Payout ($VFT)\n'
@@ -507,7 +506,8 @@ Top 30 Pizza Farm deposits:
 
     response += '```'
 
-    await ctx.send(response)
+    embed = discord.Embed(title='Top 30 Pizza Farm deposits:', description=response, color=0x277da1)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
