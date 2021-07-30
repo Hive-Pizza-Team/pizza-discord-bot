@@ -585,7 +585,7 @@ async def witness(ctx, name='pizza.witness'):
 
     embed = discord.Embed(title='Witness info for @%s' % name, description='', color=0xf3722c)
     embed.add_field(name='Running Version', value=witness_json['running_version'], inline=False)
-    embed.add_field(name='Missing Blocks', value=witness_json['total_missed'], inline=False)
+    embed.add_field(name='Missed Blocks', value=witness_json['total_missed'], inline=False)
 
     if est_time_to_next_block:
         embed.add_field(name='Estimate time to next block', value=est_time_to_next_block, inline=False)
