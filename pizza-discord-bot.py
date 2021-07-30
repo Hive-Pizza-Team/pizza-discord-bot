@@ -19,7 +19,7 @@ from beem.witness import Witness, WitnessesRankedByVote, WitnessesVotedByAccount
 # HiveEngine defines
 market = Market()
 TOKEN_NAME = 'PIZZA'
-ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot','null','vftlab']
+ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
 
 CONFIG_FILE = 'config.json'
 
