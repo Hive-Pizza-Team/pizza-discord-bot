@@ -345,8 +345,10 @@ async def price(ctx, symbol=''):
 @bot.command()
 async def gif(ctx):
     """ Drop a random GIF! """
-    response = random.choice(PIZZA_GIFS)
-    await ctx.send(response)
+    gif_url = random.choice(PIZZA_GIFS)
+    embed = discord.Embed()
+    embed.set_image(url=gif_url)
+    await ctx.send(embed=embed)
 
 
 @bot.command()
