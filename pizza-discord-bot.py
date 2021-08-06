@@ -111,6 +111,10 @@ def get_token_price_he_cg(coin):
         coin = 'ethereum'
     elif coin == 'btc':
         coin = 'bitcoin'
+    elif coin == 'cro':
+        coin = 'crypto-com-chain'
+    elif coin == 'polygon' or coin == 'matic':
+        coin = 'matic-network'
     
     found_in_hiveengine = False
     try:
@@ -147,9 +151,15 @@ def get_token_price_he_cg(coin):
 
     if not found_in_hiveengine:
         price = get_coin_price(coin)
-        message = '''```fix
+
+        if int(price) == -1:
+            message = 'Failed to find coin or token called $%s' % coin
+        else:
+            message = '''```fix
 market price: $%.5f USD
 ```''' % (price)
+
+
 
         embed = discord.Embed(title='CoinGecko market info for $%s' % coin.upper(), description=message, color=0xf3722c)
         return embed
@@ -618,12 +628,17 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
     """<pool>: Check Hive-Engine DIESEL Pool Info"""
     pool = pool.upper()
     api = Api()
-    results = api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})[0]
+    results = api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})
+
     embed = discord.Embed(title='DIESEL Pool info for %s' % pool, description='', color=0xf3722c)
 
-    for key in results.keys():
-        if key not in ['_id','precision','creator']:
-            embed.add_field(name=key, value=results[key], inline=True)
+    if len(results) == 0:
+        embed.add_field(name='DIESEL Pool %s' % pool, value='Not Found')
+    else:
+        result = results[0]
+        for key in result.keys():
+            if key not in ['_id','precision','creator']:
+                embed.add_field(name=key, value=result[key], inline=True)
 
     await ctx.send(embed=embed)
 
