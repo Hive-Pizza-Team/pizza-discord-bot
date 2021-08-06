@@ -536,7 +536,7 @@ async def farms(ctx):
 
 @bot.command()
 async def witness(ctx, name='pizza.witness'):
-    """Print Hive Witness Info"""
+    """<witness name>: Print Hive Witness Info"""
     name = name.lower()
     message_body = '```\n'
 
@@ -596,6 +596,19 @@ async def witness(ctx, name='pizza.witness'):
         embed.add_field(name='Rank', value='%d' % rank, inline=False)
         embed.add_field(name='Active Rank', value='%d' % active_rank, inline=False)
 
+
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def pools(ctx, wallet):
+    """<wallet>: Check Hive-Engine DIESEL Pool Balances"""
+    api = Api()
+    results = api.find('marketpools', 'liquidityPositions', query={"account":"%s" % wallet})
+    embed = discord.Embed(title='DIESEL Pool info for @%s' % wallet, description='', color=0xf3722c)
+
+    for result in results:
+        embed.add_field(name=result['tokenPair'], value='%s shares' % result['shares'], inline=False)
 
     await ctx.send(embed=embed)
 
