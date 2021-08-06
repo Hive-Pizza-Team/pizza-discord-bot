@@ -616,9 +616,10 @@ async def pools(ctx, wallet):
 @bot.command()
 async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
     """<pool>: Check Hive-Engine DIESEL Pool Info"""
+    pool = pool.upper()
     api = Api()
     results = api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})[0]
-    embed = discord.Embed(title='DIESEL Pool info for @%s' % pool, description='', color=0xf3722c)
+    embed = discord.Embed(title='DIESEL Pool info for %s' % pool, description='', color=0xf3722c)
 
     for key in results.keys():
         if key not in ['_id','precision','creator']:
