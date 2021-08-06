@@ -618,7 +618,7 @@ async def pools(ctx, wallet):
     embed = discord.Embed(title='DIESEL Pool info for @%s' % wallet, description='', color=0xf3722c)
 
     for result in results:
-        embed.add_field(name=result['tokenPair'], value='%s shares' % result['shares'], inline=False)
+        embed.add_field(name=result['tokenPair'], value='%0.3f shares' % float(result['shares']), inline=False)
 
     await ctx.send(embed=embed)
 
@@ -643,7 +643,7 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
 
         results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["SWAP.HIVE:PIZZA"]}})
         for result in results:
-            embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']))
+            embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']), inline=True)
 
     await ctx.send(embed=embed)
 
