@@ -640,6 +640,11 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
             if key not in ['_id','precision','creator']:
                 embed.add_field(name=key, value=result[key], inline=True)
 
+
+        results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["SWAP.HIVE:PIZZA"]}})
+        for result in results:
+            embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']))
+
     await ctx.send(embed=embed)
 
 
