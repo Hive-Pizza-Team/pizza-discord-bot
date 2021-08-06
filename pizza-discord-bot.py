@@ -618,7 +618,7 @@ async def pools(ctx, wallet):
     embed = discord.Embed(title='DIESEL Pool info for @%s' % wallet, description='', color=0xf3722c)
 
     for result in results:
-        embed.add_field(name=result['tokenPair'], value='%0.3f shares' % float(result['shares']), inline=False)
+        embed.add_field(name=result['tokenPair'], value='%0.3f shares' % float(result['shares']), inline=True)
 
     await ctx.send(embed=embed)
 
