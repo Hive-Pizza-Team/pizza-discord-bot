@@ -602,13 +602,27 @@ async def witness(ctx, name='pizza.witness'):
 
 @bot.command()
 async def pools(ctx, wallet):
-    """<wallet>: Check Hive-Engine DIESEL Pool Balances"""
+    """<wallet>: Check Hive-Engine DIESEL Pool Balances for Wallet"""
     api = Api()
     results = api.find('marketpools', 'liquidityPositions', query={"account":"%s" % wallet})
     embed = discord.Embed(title='DIESEL Pool info for @%s' % wallet, description='', color=0xf3722c)
 
     for result in results:
         embed.add_field(name=result['tokenPair'], value='%s shares' % result['shares'], inline=False)
+
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
+    """<pool>: Check Hive-Engine DIESEL Pool Info"""
+    api = Api()
+    results = api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})[0]
+    embed = discord.Embed(title='DIESEL Pool info for @%s' % pool, description='', color=0xf3722c)
+
+    for key in results.keys():
+        if key not in ['_id','precision','creator']:
+            embed.add_field(name=key, value=results[key], inline=True)
 
     await ctx.send(embed=embed)
 
