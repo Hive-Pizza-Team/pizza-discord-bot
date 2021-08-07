@@ -14,6 +14,7 @@ import json
 from hiveengine.api import Api
 import beem
 from beem.witness import Witness, WitnessesRankedByVote, WitnessesVotedByAccount
+import datetime
 
 
 # HiveEngine defines
@@ -665,6 +666,40 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
         results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["%s" % pool]}})
         for result in results:
             embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']), inline=True)
+
+    await ctx.send(embed=embed)
+
+
+
+@bot.command()
+async def poolrewards(ctx, pool='SWAP.HIVE:PIZZA'):
+    """<pool>: Check Hive-Engine DIESEL Pool Rewards Info"""
+    pool = pool.upper()
+    api = Api()
+
+    query = {
+        "tokenPair": {
+            "$in": ["%s" % pool]
+        }
+    }
+
+    results = api.find('distribution', 'batches', query=query)
+
+    embed = discord.Embed(title='DIESEL Pool Rewards for %s' % pool, description='', color=0xf3722c)
+
+    if len(results) == 0:
+        embed.add_field(name='DIESEL Pool %s' % pool, value='Not Found')
+    else:
+        result = results[0]
+
+        embed.add_field(name='Payouts', value=result['numTicks'], inline=True)
+        embed.add_field(name='Payouts Remaining', value=result['numTicksLeft'], inline=True)
+
+        embed.add_field(name='Last Payout Time', value='%s' % datetime.datetime.fromtimestamp(result['lastTickTime'] / 1000))
+
+        tokens = result['tokenBalances']
+        for token in tokens:
+            embed.add_field(name=token['symbol'], value='%0.3f' % float(token['quantity']), inline=True)
 
     await ctx.send(embed=embed)
 
