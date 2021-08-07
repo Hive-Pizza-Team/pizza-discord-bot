@@ -596,7 +596,7 @@ async def witness(ctx, name='pizza.witness'):
             time_diff_est = "%.2f seconds" % next_block_s
         est_time_to_next_block = time_diff_est
 
-    embed = discord.Embed(title='Witness info for @%s' % name, description='', color=0xf3722c)
+    embed = discord.Embed(title='Hive Witness info for @%s' % name, description='', color=0xf3722c)
     embed.add_field(name='Running Version', value=witness_json['running_version'], inline=False)
     embed.add_field(name='Missed Blocks', value=witness_json['total_missed'], inline=False)
 
@@ -606,6 +606,26 @@ async def witness(ctx, name='pizza.witness'):
     if found:
         embed.add_field(name='Rank', value='%d' % rank, inline=False)
         embed.add_field(name='Active Rank', value='%d' % active_rank, inline=False)
+
+
+    await ctx.send(embed=embed)
+
+@bot.command()
+async def hewitness(ctx, name='pizza-engine'):
+    """<witness name>: Print Hive-Engine Witness Info"""
+
+    api = Api()
+    results = api.find('witnesses', 'witnesses', query={"account":{"$in":["%s" % name]}})
+
+    embed = discord.Embed(title='Hive-Engine Witness info for @%s' % name, description='', color=0xf3722c)
+    
+    if len(results) == 0:
+        embed.add_field(name='Hive-Engine Witness %s' % name, value='Not Found')
+    else:
+        result = results[0]
+        for key in result.keys():
+            if key not in ['_id','signingKey','IP','RPCPort','P2PPort','approvalWeight']:
+                embed.add_field(name=key, value=result[key], inline=True)
 
 
     await ctx.send(embed=embed)
