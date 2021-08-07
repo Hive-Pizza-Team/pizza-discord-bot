@@ -642,7 +642,7 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
                 embed.add_field(name=key, value=result[key], inline=True)
 
 
-        results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["SWAP.HIVE:PIZZA"]}})
+        results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["%s" % pool]}})
         for result in results:
             embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']), inline=True)
 
