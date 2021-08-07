@@ -17,7 +17,8 @@ from beem.witness import Witness, WitnessesRankedByVote, WitnessesVotedByAccount
 
 
 # HiveEngine defines
-market = Market()
+hive = beem.Hive(node=['https://api.deathwing.me'])
+market = Market(blockchain_instance=hive)
 TOKEN_NAME = 'PIZZA'
 ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
 
@@ -644,6 +645,36 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
         results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["SWAP.HIVE:PIZZA"]}})
         for result in results:
             embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']), inline=True)
+
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def buybook(ctx, symbol='PIZZA'):
+    """<symbol>: Check Hive-Engine buy book for token"""
+    buy_book = market.get_buy_book(symbol=symbol, limit=1000)
+    buy_book = sorted(buy_book, key= lambda a: float(a['price']), reverse=True)
+    buy_book = buy_book[0:10]
+
+    embed = discord.Embed(title='Buy Book for $%s (first 10 orders)' % symbol.upper(), description='', color=0xf3722c)
+
+    for row in buy_book:
+        embed.add_field(value=row['account'], name='%0.3f @ %0.3f HIVE' % (float(row['quantity']),float(row['price'])), inline=False)
+
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def sellbook(ctx, symbol='PIZZA'):
+    """<symbol>: Check Hive-Engine sell book for token"""
+    sell_book = market.get_sell_book(symbol=symbol, limit=1000)
+    sell_book = sorted(sell_book, key= lambda a: float(a['price']), reverse=False)
+    sell_book = sell_book[0:10]
+
+    embed = discord.Embed(title='Sell Book for $%s (first 10 orders)' % symbol.upper(), description='', color=0xf3722c)
+
+    for row in sell_book:
+        embed.add_field(value=row['account'], name='%0.3f @ %0.3f HIVE' % (float(row['quantity']),float(row['price'])), inline=False)
 
     await ctx.send(embed=embed)
 
