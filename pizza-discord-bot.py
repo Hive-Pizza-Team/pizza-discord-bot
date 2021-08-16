@@ -665,8 +665,10 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
 
 
         results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["%s" % pool]}})
+        results = sorted(results, key= lambda a: float(a['shares']), reverse=True)[0:13]
         for result in results:
             embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']), inline=True)
+        embed.add_field(name='LP: ...', value='... shares', inline=True)
 
     await ctx.send(embed=embed)
 
