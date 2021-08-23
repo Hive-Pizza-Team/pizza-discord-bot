@@ -2,7 +2,7 @@
 ''' Discord bot for $PIZZA token community '''
 import os
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from hiveengine.market import Market
 from hiveengine.tokenobject import Token
@@ -198,11 +198,12 @@ def get_hiveengine_history(token='PIZZA'):
     return message
 
 
-async def update_bot_user_status():
+async def update_bot_user_status(bot):
 
     last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price() * last_price, 3)
-    await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
+    if bot:
+        await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
 
 
 custom_prefixes = read_config_file()
@@ -212,14 +213,37 @@ bot = commands.Bot(command_prefix = determine_prefix)
 
 @bot.event
 async def on_ready():
-    await update_bot_user_status()
     print(f'{bot.user} has connected to Discord!')
+    await update_bot_user_status(bot)
+
+
+class PizzaCog(commands.Cog):
+    """This is a cog to peridiocally update the TOKEN price in bot status."""
+
+    def __init__(self, bot):
+        """Constructor."""
+        self.price_check.start()
+        self.bot = bot
+
+    def cog_unload(self):
+        """Stop the task loop on shutdown."""
+        self.price_check.cancel()
+
+    @tasks.loop(minutes=1.0)
+    async def price_check(self):
+        """Task to run every N execution."""
+        if self.bot.user:
+            await update_bot_user_status(self.bot)
+
+cog = PizzaCog(bot)
+
+# Bot commands
 
 
 @bot.command()
 @commands.guild_only()
 async def prefix(ctx, arg=''):
-    """<prefix> : Print and change bot's command prefix"""
+    """<prefix> : Print and change bot's command prefix."""
     # get current prefix
     if arg == '':
         prefix = await determine_prefix(bot, ctx.message)
@@ -346,7 +370,6 @@ async def bals(ctx, wallet):
 @bot.command()
 async def price(ctx, symbol=''):
     """<symbol> : Print HiveEngine market price info"""
-    await update_bot_user_status()
 
     if symbol == '':
         symbol = TOKEN_NAME
