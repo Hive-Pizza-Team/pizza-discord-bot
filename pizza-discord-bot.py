@@ -22,7 +22,7 @@ import requests
 hive = beem.Hive(node=['https://api.deathwing.me'])
 market = Market(blockchain_instance=hive)
 TOKEN_NAME = 'PIZZA'
-ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','hive.pizza','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
+ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
 
 CONFIG_FILE = 'config.json'
 
