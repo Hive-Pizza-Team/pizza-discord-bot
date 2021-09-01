@@ -778,6 +778,23 @@ async def dluxnodes(ctx):
     await ctx.send(embed=embed)
 
 
+@bot.command()
+async def player(ctx, player):
+    """<player>: Check Splinterlands Player Stats"""
+    api = 'https://api2.splinterlands.com/players/details?name=%s' % player
+
+    profile = requests.get(api).json()
+
+    embed = discord.Embed(title='Splinterlands profile for %s:' % player, description='', color=0x336EFF)
+
+    for k in profile.keys():
+        if k not in ['guild', 'display_name', 'season_details']:
+            embed.add_field(name=k, value=profile[k], inline=True)
+
+    await ctx.send(embed=embed)
+
+
+
 # Discord initialization
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
