@@ -788,8 +788,9 @@ async def player(ctx, player):
     embed = discord.Embed(title='Splinterlands profile for %s:' % player, description='', color=0x336EFF)
 
     for k in profile.keys():
-        if k not in ['guild', 'display_name', 'season_details']:
-            embed.add_field(name=k, value=profile[k], inline=True)
+        if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
+            prettyname = k.replace('_',' ').title()
+            embed.add_field(name=prettyname, value=profile[k], inline=True)
 
     await ctx.send(embed=embed)
 
