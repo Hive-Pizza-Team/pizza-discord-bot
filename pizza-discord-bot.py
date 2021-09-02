@@ -779,7 +779,7 @@ async def dluxnodes(ctx):
 
 
 @bot.command()
-async def player(ctx, player):
+async def slplayer(ctx, player):
     """<player>: Check Splinterlands Player Stats"""
     api = 'https://api2.splinterlands.com/players/details?name=%s' % player
 
@@ -790,6 +790,23 @@ async def player(ctx, player):
     for k in profile.keys():
         if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
             prettyname = k.replace('_',' ').title()
+            embed.add_field(name=prettyname, value=profile[k], inline=True)
+
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def rsplayer(ctx, player):
+    """<player>: Check Rising Star Player Stats"""
+    api = 'https://www.risingstargame.com/playerstats.asp?player=%s' % player
+
+    profile = requests.get(api).json()[0]
+
+    embed = discord.Embed(title='Rising Star profile for %s:' % player, description='', color=0x336EFF)
+
+    for k in profile.keys():
+        if k not in []:
+            prettyname = k.title()
             embed.add_field(name=prettyname, value=profile[k], inline=True)
 
     await ctx.send(embed=embed)
