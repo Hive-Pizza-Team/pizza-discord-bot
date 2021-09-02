@@ -107,7 +107,7 @@ def get_token_holders(symbol):
         holder_count = len(response)
         token_holders += response
 
-    return token_holders
+    return token_holdersfget
 
 
 def get_token_price_he_cg(coin):
@@ -126,7 +126,7 @@ def get_token_price_he_cg(coin):
     try:
         Token(coin)
         found_in_hiveengine = True
-        hive_usd = get_coin_price()
+        hive_usd = get_coin_price()[0]
 
         last_price = 0.0
         lowest_asking_price = 0.0
@@ -156,14 +156,15 @@ def get_token_price_he_cg(coin):
         print('Token not found in HE, trying CoinGeckoAPI')
 
     if not found_in_hiveengine:
-        price = get_coin_price(coin)
+        price, daily_change = get_coin_price(coin)
 
         if int(price) == -1:
             message = 'Failed to find coin or token called $%s' % coin
         else:
             message = '''```fix
 market price: $%.5f USD
-```''' % (price)
+24 hour change: $%.3f USD
+```''' % (price,daily_change)
 
 
 
@@ -174,7 +175,7 @@ market price: $%.5f USD
 def get_coin_price(coin='hive'):
     ''' Call into coingeck to get USD price of coins i.e. $HIVE '''
     coingecko = CoinGeckoAPI()
-    response = coingecko.get_price(ids=coin, vs_currencies='usd')
+    response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true')
 
     if coin not in response.keys():
         print('Error calling CoinGeckoAPI for %s price' % coin)
@@ -185,7 +186,7 @@ def get_coin_price(coin='hive'):
         print('Error 2 calling CoinGeckoAPI for %s price' % coin)
         return -1
 
-    return float(subresponse['usd'])
+    return float(subresponse['usd']), float(subresponse['usd_24h_change'])
 
 
 def get_hiveengine_history(token='PIZZA'):
@@ -204,7 +205,7 @@ def get_hiveengine_history(token='PIZZA'):
 async def update_bot_user_status(bot):
 
     last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
-    last_price_usd = round(get_coin_price() * last_price, 3)
+    last_price_usd = round(get_coin_price()[0] * last_price, 3)
     if bot:
         await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
 
@@ -805,7 +806,7 @@ async def rsplayer(ctx, player):
 
     profile = requests.get(api).json()[0]
 
-    embed = discord.Embed(title='Rising Star profile for %s:' % player, description='', color=0x336EFF)
+    embed = discord.Embed(title='Rising Star profile for %s:' % player, description='', color=0xf3722c)
 
     for k in profile.keys():
         if k not in []:
