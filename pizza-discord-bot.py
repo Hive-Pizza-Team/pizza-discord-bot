@@ -163,7 +163,7 @@ def get_token_price_he_cg(coin):
         else:
             message = '''```fix
 market price: $%.5f USD
-24 hour change: $%.3f USD
+24 hour change: %.3f%
 ```''' % (price,daily_change)
 
 
