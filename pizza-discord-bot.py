@@ -22,6 +22,7 @@ import requests
 hive = beem.Hive(node=['https://api.deathwing.me'])
 market = Market(blockchain_instance=hive)
 TOKEN_NAME = 'PIZZA'
+DEFAULT_DIESEL_POOL = 'PIZZA:STARBITS'
 ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
 
 CONFIG_FILE = 'config.json'
@@ -107,7 +108,7 @@ def get_token_holders(symbol):
         holder_count = len(response)
         token_holders += response
 
-    return token_holdersfget
+    return token_holders
 
 
 def get_token_price_he_cg(coin):
@@ -189,7 +190,7 @@ def get_coin_price(coin='hive'):
     return float(subresponse['usd']), float(subresponse['usd_24h_change'])
 
 
-def get_hiveengine_history(token='PIZZA'):
+def get_hiveengine_history(token=TOKEN_NAME):
 
     message = '''```fix
 '''
@@ -283,11 +284,8 @@ def get_hive_power_delegations(wallet):
 
 
 @bot.command()
-async def bal(ctx, wallet, symbol=''):
+async def bal(ctx, wallet, symbol=TOKEN_NAME):
     """<wallet> <symbol> : Print HiveEngine wallet balances"""
-
-    if symbol == '':
-        symbol = TOKEN_NAME
 
     symbol = symbol.upper()
     wallet = wallet.lower()
@@ -372,11 +370,8 @@ async def bals(ctx, wallet):
 
 
 @bot.command()
-async def price(ctx, symbol=''):
+async def price(ctx, symbol=TOKEN_NAME):
     """<symbol> : Print HiveEngine market price info"""
-
-    if symbol == '':
-        symbol = TOKEN_NAME
 
     embed = get_token_price_he_cg(symbol)
     await ctx.send(embed=embed)
@@ -399,11 +394,9 @@ async def info(ctx):
 
 
 @bot.command()
-async def tokenomics(ctx, symbol=''):
+async def tokenomics(ctx, symbol=TOKEN_NAME):
     """<symbol> : Print HiveEngine token distribution info"""
 
-    if symbol == '':
-        symbol = TOKEN_NAME
 
     wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
 
@@ -445,10 +438,8 @@ async def source(ctx):
 
 
 @bot.command()
-async def top10(ctx, symbol=''):
+async def top10(ctx, symbol=TOKEN_NAME):
     """<symbol> : Print HiveEngine token rich list top 10"""
-    if symbol == '':
-        symbol = TOKEN_NAME
 
 
     accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
@@ -502,11 +493,8 @@ async def history(ctx, symbol=''):
 
 
 @bot.command()
-async def blog(ctx, name=''):
+async def blog(ctx, name):
     """<symbol> : Link to last post from blog"""
-
-    if name == '':
-        name = 'thebeardflex'
 
     from beem.discussions import Query, Discussions_by_blog
     q = Query(limit=10, tag=name)
@@ -674,7 +662,7 @@ async def pools(ctx, wallet):
 
 
 @bot.command()
-async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
+async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Info"""
     pool = pool.upper()
     api = Api()
@@ -702,7 +690,7 @@ async def pool(ctx, pool='SWAP.HIVE:PIZZA'):
 
 
 @bot.command()
-async def poolrewards(ctx, pool='SWAP.HIVE:PIZZA'):
+async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Rewards Info"""
     pool = pool.upper()
     api = Api()
@@ -735,7 +723,7 @@ async def poolrewards(ctx, pool='SWAP.HIVE:PIZZA'):
 
 
 @bot.command()
-async def buybook(ctx, symbol='PIZZA'):
+async def buybook(ctx, symbol=TOKEN_NAME):
     """<symbol>: Check Hive-Engine buy book for token"""
     buy_book = market.get_buy_book(symbol=symbol, limit=1000)
     buy_book = sorted(buy_book, key= lambda a: float(a['price']), reverse=True)
@@ -750,7 +738,7 @@ async def buybook(ctx, symbol='PIZZA'):
 
 
 @bot.command()
-async def sellbook(ctx, symbol='PIZZA'):
+async def sellbook(ctx, symbol=TOKEN_NAME):
     """<symbol>: Check Hive-Engine sell book for token"""
     sell_book = market.get_sell_book(symbol=symbol, limit=1000)
     sell_book = sorted(sell_book, key= lambda a: float(a['price']), reverse=False)
