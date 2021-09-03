@@ -157,7 +157,7 @@ def get_token_price_he_cg(coin):
         print('Token not found in HE, trying CoinGeckoAPI')
 
     if not found_in_hiveengine:
-        price, daily_change = get_coin_price(coin)
+        price, daily_change, daily_volume = get_coin_price(coin)
 
         if int(price) == -1:
             message = 'Failed to find coin or token called $%s' % coin
@@ -165,7 +165,8 @@ def get_token_price_he_cg(coin):
             message = '''```fix
 market price: $%.5f USD
 24 hour change: %.3f%%
-```''' % (price,daily_change)
+24 hour volume: $%s USD
+```''' % (price,daily_change, "{:,.2f}".format(daily_volume))
 
 
 
@@ -176,7 +177,7 @@ market price: $%.5f USD
 def get_coin_price(coin='hive'):
     ''' Call into coingeck to get USD price of coins i.e. $HIVE '''
     coingecko = CoinGeckoAPI()
-    response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true')
+    response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
 
     if coin not in response.keys():
         print('Error calling CoinGeckoAPI for %s price' % coin)
@@ -187,7 +188,7 @@ def get_coin_price(coin='hive'):
         print('Error 2 calling CoinGeckoAPI for %s price' % coin)
         return -1
 
-    return float(subresponse['usd']), float(subresponse['usd_24h_change'])
+    return float(subresponse['usd']), float(subresponse['usd_24h_change']),  float(subresponse['usd_24h_vol'])
 
 
 def get_hiveengine_history(token=TOKEN_NAME):
