@@ -517,7 +517,8 @@ async def history(ctx, symbol=''):
     if symbol == '':
         symbol = determine_native_token(ctx)
 
-    message = '''```fix'''
+    message = '''```fix
+'''
 
     for tx in market.get_trades_history(symbol, limit=1000)[::-1][0:10]:
         message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
