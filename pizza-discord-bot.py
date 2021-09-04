@@ -16,13 +16,14 @@ import beem
 from beem.witness import Witness, WitnessesRankedByVote, WitnessesVotedByAccount
 import datetime
 import requests
-
+import traceback
+import sys
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.deathwing.me'])
 market = Market(blockchain_instance=hive)
 
-TOKEN_NAME = 'PIZZA'
+DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:STARBITS'
 DEFAULT_GIF_CATEGORY = 'PIZZA'
 ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
@@ -70,6 +71,22 @@ async def determine_prefix(bot, message):
         return custom_prefixes.get(str(guild.id), default_prefix)
     else:
         return default_prefix
+
+
+def determine_native_token(ctx):
+    guild = ctx.message.guild
+
+    if not guild:
+        return DEFAULT_TOKEN_NAME
+
+    if guild == 'Hive Pizza':
+        return DEFAULT_TOKEN_NAME
+    elif guild == 'Rising Star Game':
+        return 'STARBITS'
+    elif guild == 'The Man Cave':
+        return 'BRO'
+    else:
+        return DEFAULT_TOKEN_NAME
 
 
 def get_token_holders(symbol):
@@ -174,22 +191,10 @@ def get_coin_price(coin='hive'):
     return float(subresponse['usd']), float(subresponse['usd_24h_change']),  float(subresponse['usd_24h_vol'])
 
 
-def get_hiveengine_history(token=TOKEN_NAME):
-
-    message = '''```fix
-'''
-
-    for tx in market.get_trades_history(symbol=token, limit=1000)[::-1][0:10]:
-        message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
-
-    message += '```'
-
-    return message
-
 
 async def update_bot_user_status(bot):
 
-    last_price = float(market.get_trades_history(symbol=TOKEN_NAME)[-1]['price'])
+    last_price = float(market.get_trades_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price()[0] * last_price, 3)
     if bot:
         await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
@@ -271,8 +276,11 @@ def get_hive_power_delegations(wallet):
 
 
 @bot.command()
-async def bal(ctx, wallet, symbol=TOKEN_NAME):
+async def bal(ctx, wallet, symbol=''):
     """<wallet> <symbol> : Print Hive-Engine wallet balances"""
+
+    if not symbol:
+        symbol = determine_native_token(ctx)
 
     symbol = symbol.upper()
     wallet = wallet.lower()
@@ -357,8 +365,10 @@ async def bals(ctx, wallet):
 
 
 @bot.command()
-async def price(ctx, symbol=TOKEN_NAME):
+async def price(ctx, symbol=''):
     """<symbol> : Print Hive-Engine / CoinGecko market price info"""
+    if not symbol:
+        symbol = determine_native_token(ctx)
 
     embed = get_token_price_he_cg(symbol)
     await ctx.send(embed=embed)
@@ -419,9 +429,11 @@ async def info(ctx):
 
 
 @bot.command()
-async def tokenomics(ctx, symbol=TOKEN_NAME):
+async def tokenomics(ctx, symbol=''):
     """<symbol> : Print Hive-Engine token distribution info"""
 
+    if not symbol:
+        symbol = determine_native_token(ctx)
 
     wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
 
@@ -455,9 +467,11 @@ async def tokenomics(ctx, symbol=TOKEN_NAME):
     await ctx.send(embed=embed)
 
 @bot.command()
-async def top10(ctx, symbol=TOKEN_NAME):
+async def top10(ctx, symbol=''):
     """<symbol> : Print Hive-Engine token rich list top 10"""
 
+    if not symbol:
+        symbol = determine_native_token(ctx)
 
     accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
 
@@ -501,17 +515,23 @@ async def top10(ctx, symbol=TOKEN_NAME):
 async def history(ctx, symbol=''):
     """<symbol> : Print recent Hive-Engine token trade history"""
     if symbol == '':
-        symbol = TOKEN_NAME
+        symbol = determine_native_token(ctx)
 
-    response = get_hiveengine_history(symbol)
+    message = '''```fix'''
 
-    embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' % symbol, description=response, color=0x277da1)
+    for tx in market.get_trades_history(symbol, limit=1000)[::-1][0:10]:
+        message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
+
+    message += '```'
+
+
+    embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' % symbol, description=message, color=0x277da1)
     await ctx.send(embed=embed)
 
 
 @bot.command()
 async def blog(ctx, name):
-    """<symbol> : Link to last post from blog"""
+    """<name> : Link to last post from blog"""
 
     from beem.discussions import Query, Discussions_by_blog
     q = Query(limit=10, tag=name)
@@ -533,7 +553,7 @@ async def farms(ctx):
     total_deposits = 0
     longest_name_len = 0
 
-    for tx in api.get_history("vftlab", "PIZZA"):
+    for tx in api.get_history("vftlab", DEFAULT_TOKEN_NAME):
 
         quantity = float(tx['quantity'])
         to = tx['to']
@@ -644,6 +664,7 @@ async def witness(ctx, name='pizza.witness'):
 
     await ctx.send(embed=embed)
 
+
 @bot.command()
 async def hewitness(ctx, name='pizza-engine'):
     """<witness name>: Print Hive-Engine Witness Info"""
@@ -705,7 +726,6 @@ async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
     await ctx.send(embed=embed)
 
 
-
 @bot.command()
 async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Rewards Info"""
@@ -740,8 +760,11 @@ async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
 
 
 @bot.command()
-async def buybook(ctx, symbol=TOKEN_NAME):
+async def buybook(ctx, symbol=''):
     """<symbol>: Check Hive-Engine buy book for token"""
+    if not symbol:
+        symbol = determine_native_token(ctx)
+
     buy_book = market.get_buy_book(symbol=symbol, limit=1000)
     buy_book = sorted(buy_book, key= lambda a: float(a['price']), reverse=True)
     buy_book = buy_book[0:10]
@@ -755,8 +778,12 @@ async def buybook(ctx, symbol=TOKEN_NAME):
 
 
 @bot.command()
-async def sellbook(ctx, symbol=TOKEN_NAME):
+async def sellbook(ctx, symbol=''):
     """<symbol>: Check Hive-Engine sell book for token"""
+
+    if not symbol:
+        symbol = determine_native_token(ctx)
+
     sell_book = market.get_sell_book(symbol=symbol, limit=1000)
     sell_book = sorted(sell_book, key= lambda a: float(a['price']), reverse=False)
     sell_book = sell_book[0:10]
@@ -823,9 +850,12 @@ async def rsplayer(ctx, player):
 
 @bot.event
 async def on_command_error(ctx, error):
-    prefix = await determine_prefix(bot, ctx.message)
-    await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands' % prefix)
 
+    if isinstance(error, commands.CommandNotFound):
+        prefix = await determine_prefix(bot, ctx.message)
+        await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands' % prefix)
+    else:
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
 # Discord initialization
