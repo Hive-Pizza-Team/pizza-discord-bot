@@ -18,17 +18,20 @@ import datetime
 import requests
 
 
-# HiveEngine defines
+# Hive-Engine defines
 hive = beem.Hive(node=['https://api.deathwing.me'])
 market = Market(blockchain_instance=hive)
+
 TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:STARBITS'
+DEFAULT_GIF_CATEGORY = 'PIZZA'
 ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
 
 CONFIG_FILE = 'config.json'
 
 # Miscellaneous defines
 GITHUB_URL = 'https://github.com/Hive-Pizza-Team/pizza-discord-bot'
+
 
 
 PIZZA_GIFS = ['https://media.giphy.com/media/0gYYWq5dHfhnYVrYtI/giphy.gif',
@@ -133,6 +136,8 @@ def get_token_price_he_cg(coin):
         coin = 'crypto-com-chain'
     elif coin == 'polygon' or coin == 'matic':
         coin = 'matic-network'
+    elif coin == 'hbd':
+        coin = 'hive_dollar'
     
     found_in_hiveengine = False
     try:
@@ -158,7 +163,7 @@ def get_token_price_he_cg(coin):
         if buy_book: highest_bidding_price = float(buy_book[0]['price'])
         bid_usd  = highest_bidding_price * hive_usd
 
-        embed = discord.Embed(title='HiveEngine market info for $%s' % coin.upper(), last_usd='', color=0xf3722c)
+        embed = discord.Embed(title='Hive-Engine market info for $%s' % coin.upper(), last_usd='', color=0xf3722c)
         embed.add_field(name='Last', value='%.5f HIVE | $%.5f USD' % (last_price, last_usd), inline=False)
         embed.add_field(name='Ask', value='%.5f HIVE | $%.5f USD' % (lowest_asking_price, ask_usd), inline=False)
         embed.add_field(name='Bid', value='%.5f HIVE | $%.5f USD' % (highest_bidding_price, bid_usd), inline=False)
@@ -262,6 +267,9 @@ cog = PizzaCog(bot)
 async def prefix(ctx, arg=''):
     """<prefix> : Print and change bot's command prefix."""
     # get current prefix
+
+    print(ctx)
+
     if arg == '':
         prefix = await determine_prefix(bot, ctx.message)
         guild = ctx.message.guild
@@ -297,7 +305,7 @@ def get_hive_power_delegations(wallet):
 
 @bot.command()
 async def bal(ctx, wallet, symbol=TOKEN_NAME):
-    """<wallet> <symbol> : Print HiveEngine wallet balances"""
+    """<wallet> <symbol> : Print Hive-Engine wallet balances"""
 
     symbol = symbol.upper()
     wallet = wallet.lower()
@@ -341,7 +349,7 @@ async def bal(ctx, wallet, symbol=TOKEN_NAME):
 
 @bot.command()
 async def bals(ctx, wallet):
-    """<wallet>: Print HiveEngine wallet balances"""
+    """<wallet>: Print Hive-Engine wallet balances"""
 
     # hive engine token
     wallet = wallet.lower()
@@ -383,16 +391,32 @@ async def bals(ctx, wallet):
 
 @bot.command()
 async def price(ctx, symbol=TOKEN_NAME):
-    """<symbol> : Print HiveEngine market price info"""
+    """<symbol> : Print Hive-Engine market price info"""
 
     embed = get_token_price_he_cg(symbol)
     await ctx.send(embed=embed)
 
 
 @bot.command()
-async def gif(ctx):
+@commands.guild_only()
+async def gif(ctx, category=''):
     """ Drop a random GIF! """
-    gif_url = random.choice(PIZZA_GIFS)
+
+    gif_set = PIZZA_GIFS
+
+    if not category:
+        guild = ctx.message.guild
+        if guild == 'Hive Pizza':
+            gif_set = PIZZA_GIFS
+        else:
+            gif_set = PIZZA_GIFS
+    elif category.lower() == 'pizza':
+        gif_set = PIZZA_GIFS
+    else:
+        gif_set = PIZZA_GIFS
+
+    gif_url = random.choice(gif_set)
+
     embed = discord.Embed()
     embed.set_image(url=gif_url)
     await ctx.send(embed=embed)
@@ -407,7 +431,7 @@ async def info(ctx):
 
 @bot.command()
 async def tokenomics(ctx, symbol=TOKEN_NAME):
-    """<symbol> : Print HiveEngine token distribution info"""
+    """<symbol> : Print Hive-Engine token distribution info"""
 
 
     wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
@@ -451,7 +475,7 @@ async def source(ctx):
 
 @bot.command()
 async def top10(ctx, symbol=TOKEN_NAME):
-    """<symbol> : Print HiveEngine token rich list top 10"""
+    """<symbol> : Print Hive-Engine token rich list top 10"""
 
 
     accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
@@ -494,13 +518,13 @@ async def top10(ctx, symbol=TOKEN_NAME):
 
 @bot.command()
 async def history(ctx, symbol=''):
-    """<symbol> : Print recent HiveEngine token trade history"""
+    """<symbol> : Print recent Hive-Engine token trade history"""
     if symbol == '':
         symbol = TOKEN_NAME
 
     response = get_hiveengine_history(symbol)
 
-    embed = discord.Embed(title='Latest 10 $%s HiveEngine Transactions' % symbol, description=response, color=0x277da1)
+    embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' % symbol, description=response, color=0x277da1)
     await ctx.send(embed=embed)
 
 
