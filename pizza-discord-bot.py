@@ -32,6 +32,7 @@ CONFIG_FILE = 'config.json'
 # Miscellaneous defines
 GITHUB_URL = 'https://github.com/Hive-Pizza-Team/pizza-discord-bot'
 
+MARKET_HISTORY_URL = 'https://enginehistory.ryamer.com/marketHistory?symbol=%s&volumetoken'
 
 
 PIZZA_GIFS = ['https://media.giphy.com/media/0gYYWq5dHfhnYVrYtI/giphy.gif',
@@ -163,10 +164,18 @@ def get_token_price_he_cg(coin):
         if buy_book: highest_bidding_price = float(buy_book[0]['price'])
         bid_usd  = highest_bidding_price * hive_usd
 
+
+        volume_data = requests.get(MARKET_HISTORY_URL % coin.upper()).json()
+        
+        #date = datetime.datetime.fromtimestamp(volume_data[0]['timestamp']).date()
+        volume_str = '%s %s | %s HIVE\n' % (volume_data[0]['volumeToken'], volume_data[0]['symbol'], volume_data[0]['volumeHive'])
+
+
         embed = discord.Embed(title='Hive-Engine market info for $%s' % coin.upper(), last_usd='', color=0xf3722c)
         embed.add_field(name='Last', value='%.5f HIVE | $%.5f USD' % (last_price, last_usd), inline=False)
         embed.add_field(name='Ask', value='%.5f HIVE | $%.5f USD' % (lowest_asking_price, ask_usd), inline=False)
         embed.add_field(name='Bid', value='%.5f HIVE | $%.5f USD' % (highest_bidding_price, bid_usd), inline=False)
+        embed.add_field(name='Today Volume', value=volume_str, inline=False)
         return embed
 
     except hiveengine.exceptions.TokenDoesNotExists:
@@ -265,7 +274,7 @@ cog = PizzaCog(bot)
 @bot.command()
 @commands.guild_only()
 async def prefix(ctx, arg=''):
-    """<prefix> : Print and change bot's command prefix."""
+    """<prefix> : Admin-only - print and change bot's command prefix."""
     # get current prefix
 
     print(ctx)
