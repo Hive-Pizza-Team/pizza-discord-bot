@@ -376,6 +376,8 @@ async def gif(ctx, category=''):
         guild = ctx.message.guild
         if guild == 'Hive Pizza':
             gif_set = PIZZA_GIFS
+        elif guild == 'Rising Star Game':
+            gif_set = RISINGSTAR_GIFS
         else:
             gif_set = PIZZA_GIFS
     elif category.lower() == 'pizza':
