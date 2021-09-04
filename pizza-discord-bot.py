@@ -368,7 +368,7 @@ async def price(ctx, symbol=TOKEN_NAME):
 @bot.command()
 @commands.guild_only()
 async def gif(ctx, category=''):
-    """ Drop a random GIF! """
+    """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt"""
 
     gif_set = PIZZA_GIFS
 
