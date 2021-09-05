@@ -74,7 +74,7 @@ async def determine_prefix(bot, message):
 
 
 def determine_native_token(ctx):
-    guild = ctx.message.guild
+    guild = str(ctx.message.guild)
 
     if not guild:
         return DEFAULT_TOKEN_NAME
@@ -86,6 +86,7 @@ def determine_native_token(ctx):
     elif guild == 'The Man Cave':
         return 'BRO'
     else:
+        print('I am here')
         return DEFAULT_TOKEN_NAME
 
 
@@ -382,7 +383,7 @@ async def gif(ctx, category=''):
     gif_set = PIZZA_GIFS
 
     if not category:
-        guild = ctx.message.guild
+        guild = str(ctx.message.guild)
         if guild == 'Hive Pizza':
             gif_set = PIZZA_GIFS
         elif guild == 'Rising Star Game':
