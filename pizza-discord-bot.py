@@ -457,11 +457,11 @@ async def tokenomics(ctx, symbol=''):
 
     message = '''```
 %.4d wallets hold >       0 $%s
-%.4d wallets hold >=      1 $%s ( 8-) )
-%.4d wallets hold >=     20 $%s (bot access level 1)
-%.4d wallets hold >=    200 $%s (bot access level 2)
-%.4d wallets hold >=  1,000 $%s (badass level)
-%.4d wallets hold >= 10,000 $%s (baron level)
+%.4d wallets hold >=      1 $%s
+%.4d wallets hold >=     20 $%s
+%.4d wallets hold >=    200 $%s
+%.4d wallets hold >=  1,000 $%s
+%.4d wallets hold >= 10,000 $%s
 ```''' % (total_wallets, symbol, wallets_1plus, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_10000plus, symbol)
 
     embed = discord.Embed(title='$%s Token Distribution' % symbol, description=message, color=0x43aa8b)
