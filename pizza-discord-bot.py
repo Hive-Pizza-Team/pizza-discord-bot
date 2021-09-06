@@ -87,6 +87,10 @@ def determine_native_token(ctx):
         return 'BRO'
     elif guild == 'CTP Talk':
         return 'CTP'
+    elif guild == 'HiveLIST':
+        return 'LIST'
+    elif guild == 'HiveHustlers':
+        return 'COM'
     else:
         print('I am here')
         return DEFAULT_TOKEN_NAME
