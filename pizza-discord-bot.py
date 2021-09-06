@@ -85,6 +85,8 @@ def determine_native_token(ctx):
         return 'STARBITS'
     elif guild == 'The Man Cave':
         return 'BRO'
+    elif guild == 'CTP Talk':
+        return 'CTP'
     else:
         print('I am here')
         return DEFAULT_TOKEN_NAME
@@ -435,6 +437,7 @@ async def tokenomics(ctx, symbol=''):
 
     if not symbol:
         symbol = determine_native_token(ctx)
+    symbol = symbol.upper()
 
     wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
 
