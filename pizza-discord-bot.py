@@ -21,7 +21,9 @@ import sys
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.deathwing.me'])
-market = Market(blockchain_instance=hive)
+hiveengine_api = Api(url='https://fi.engine.rishipanthee.com/')
+market = Market(api=hiveengine_api, blockchain_instance=hive)
+
 
 DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:STARBITS'
@@ -92,7 +94,6 @@ def determine_native_token(ctx):
     elif guild == 'HiveHustlers':
         return 'COM'
     else:
-        print('I am here')
         return DEFAULT_TOKEN_NAME
 
 
@@ -101,7 +102,7 @@ def get_token_holders(symbol):
     holder_count = 1000
     token_holders = []
     while holder_count == 1000:
-        response = Token(symbol).get_holder(offset=len(token_holders))
+        response = Token(symbol, api=hiveengine_api).get_holder(offset=len(token_holders))
         holder_count = len(response)
         token_holders += response
 
@@ -124,7 +125,7 @@ def get_token_price_he_cg(coin):
     
     found_in_hiveengine = False
     try:
-        Token(coin)
+        Token(coin, api=hiveengine_api)
         found_in_hiveengine = True
         hive_usd = get_coin_price()[0]
 
@@ -573,13 +574,11 @@ async def blog(ctx, name):
 async def farms(ctx):
     """Print $PIZZA VFT Farm deposits"""
 
-    api = Api()
-
     deposits = {}
     total_deposits = 0
     longest_name_len = 0
 
-    for tx in api.get_history("vftlab", DEFAULT_TOKEN_NAME):
+    for tx in hiveengine_api.get_history("vftlab", DEFAULT_TOKEN_NAME):
 
         quantity = float(tx['quantity'])
         to = tx['to']
@@ -695,8 +694,7 @@ async def witness(ctx, name='pizza.witness'):
 async def hewitness(ctx, name='pizza-engine'):
     """<witness name>: Print Hive-Engine Witness Info"""
 
-    api = Api()
-    results = api.find('witnesses', 'witnesses', query={"account":{"$in":["%s" % name]}})
+    results = hiveengine_api.find('witnesses', 'witnesses', query={"account":{"$in":["%s" % name]}})
 
     embed = discord.Embed(title='Hive-Engine Witness info for @%s' % name, description='', color=0xf3722c)
     
@@ -715,8 +713,8 @@ async def hewitness(ctx, name='pizza-engine'):
 @bot.command()
 async def pools(ctx, wallet):
     """<wallet>: Check Hive-Engine DIESEL Pool Balances for Wallet"""
-    api = Api()
-    results = api.find('marketpools', 'liquidityPositions', query={"account":"%s" % wallet})
+
+    results = hiveengine_api.find('marketpools', 'liquidityPositions', query={"account":"%s" % wallet})
     embed = discord.Embed(title='DIESEL Pool info for @%s' % wallet, description='', color=0xf3722c)
 
     for result in results:
@@ -729,8 +727,8 @@ async def pools(ctx, wallet):
 async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Info"""
     pool = pool.upper()
-    api = Api()
-    results = api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})
+
+    results = hiveengine_api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})
 
     embed = discord.Embed(title='DIESEL Pool info for %s' % pool, description='', color=0xf3722c)
 
@@ -743,7 +741,7 @@ async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
                 embed.add_field(name=key, value=result[key], inline=True)
 
 
-        results = api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["%s" % pool]}})
+        results = hiveengine_api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["%s" % pool]}})
         results = sorted(results, key= lambda a: float(a['shares']), reverse=True)[0:13]
         for result in results:
             embed.add_field(name='LP: %s' % result['account'], value='%0.3f shares' % float(result['shares']), inline=True)
@@ -756,7 +754,6 @@ async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
 async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Rewards Info"""
     pool = pool.upper()
-    api = Api()
 
     query = {
         "tokenPair": {
@@ -764,7 +761,7 @@ async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
         }
     }
 
-    results = api.find('distribution', 'batches', query=query)
+    results = hiveengine_api.find('distribution', 'batches', query=query)
 
     embed = discord.Embed(title='DIESEL Pool Rewards for %s' % pool, description='', color=0xf3722c)
 
