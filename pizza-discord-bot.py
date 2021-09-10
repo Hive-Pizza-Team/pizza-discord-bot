@@ -48,6 +48,8 @@ BEARD_GIFS = ['https://media.giphy.com/media/GDGgyNaADzlfgFxsQ8/giphy.gif', 'htt
 LEGO_GIFS = ['https://media.giphy.com/media/G4kwvrvmlt8ciKjXP9/giphy.gif', 'https://media.giphy.com/media/h0tq5gDYnlOIJqvIfF/giphy.gif', 'https://media.giphy.com/media/mxjWb3yvsHUL4GMTst/giphy.gif', 'https://media.giphy.com/media/ImgQcjJ03oLToYZJWn/giphy.gif', 'https://media.giphy.com/media/EU1IkLvFtXXvx5qAVw/giphy.gif', 'https://media.giphy.com/media/uxMzxj8lK1FjruVaYo/giphy.gif', 'https://media.giphy.com/media/zgsuashHk2AH3kT0rj/giphy.gif', 'https://media.giphy.com/media/Pf9LofhYG1LTOHlziK/giphy.gif', 'https://media.giphy.com/media/FYCT2NgFyiZFzOHg8Y/giphy.gif', 'https://media.giphy.com/media/Z6RiM5gsJhlM91gybi/giphy.gif', 'https://media.giphy.com/media/Wj01dlce8lonswtCT3/giphy.gif', 'https://media.giphy.com/media/pbXQYjv9PaPUqil4MW/giphy.gif', 'https://media.giphy.com/media/B4wi6kDqDlZrv8NxTU/giphy.gif', 'https://media.giphy.com/media/El1P68jATWuZY6EYlQ/giphy.gif', 'https://media.giphy.com/media/DbYb1CUpnPNuZJVaNN/giphy.gif', 'https://media.giphy.com/media/dPpWDZk0XVRToXdZLy/giphy.gif', 'https://media.giphy.com/media/7FYC9A7LuEYf9e30na/giphy.gif', 'https://media.giphy.com/media/FhRwcmMEH9PkgjpllS/giphy.gif', 'https://media.giphy.com/media/H6rOWKlATmWnybS9mq/giphy.gif', 'https://media.giphy.com/media/NVktVqdCuzQ8dIVaVa/giphy.gif', 'https://media.giphy.com/media/CkOlg6FupoHZww9tIk/giphy.gif']
 BLURT_GIFS = ['https://media.giphy.com/media/NDiXQBhcBe3i9pdsiw/giphy.gif', 'https://media.giphy.com/media/Sda1O3NXrO3s5pKtHw/giphy.gif', 'https://media.giphy.com/media/rWRW4322Cfru0Z5eEf/giphy.gif', 'https://media.giphy.com/media/geqRxwm5vx1QB0DWCR/giphy.gif', 'https://media.giphy.com/media/jytuKu4PXw6KYmcdc8/giphy.gif', 'https://media.giphy.com/media/RQ5qYz9BGWJbPXO8H4/giphy.gif', 'https://media.giphy.com/media/RV4cxcOAG45gX7KOix/giphy.gif', 'https://media.giphy.com/media/YM5Gw9xULBqF2qumB3/giphy.gif', 'https://media.giphy.com/media/QzIeA2TVcgCUIw2E8w/giphy.gif', 'https://media.giphy.com/media/p76jXuNFEVMOk59IAo/giphy.gif', 'https://media.giphy.com/media/fwZoVhxb3sVxoYDbep/giphy.gif', 'https://media.giphy.com/media/So8RwXWYlRKIZDlBqC/giphy.gif', 'https://media.giphy.com/media/d8PqnnR3AD7yCyfuhA/giphy.gif', 'https://media.giphy.com/media/rhyFAc2RcmEtxGiARK/giphy.gif', 'https://media.giphy.com/media/JB7YYqDDQxzdJtwF9Q/giphy.gif', 'https://media.giphy.com/media/BOUIxbEFm4CWtW72EK/giphy.gif', 'https://media.giphy.com/media/Pt9Qe5vR0dCRDQh7H4/giphy.gif', 'https://media.giphy.com/media/ffdprDwi9tVotD7m38/giphy.gif', 'https://media.giphy.com/media/3kGxK0wO8M8BlIDCBZ/giphy.gif', 'https://media.giphy.com/media/Q41Dxo5RGLtfDCXSmV/giphy.gif', 'https://media.giphy.com/media/FsfS2UQOZKjSa8w10I/giphy.gif']
 FOXON_GIFS = ['https://media.giphy.com/media/DhKudYKoGOyJFHKA1r/giphy.gif', 'https://media.giphy.com/media/9ZNogzYmzRLHYXDtcR/giphy.gif', 'https://media.giphy.com/media/t3q7z5EcDmmPMwBd0i/giphy.gif', 'https://media.giphy.com/media/8imbHuhI8ZhMUQ8p0r/giphy.gif', 'https://media.giphy.com/media/BlMaitisfAtUEzKQLS/giphy.gif']
+STICKUP_GIFS = ['https://media.giphy.com/media/XjjTY8qh3fZoQq5Tdu/giphy.gif', 'https://media.giphy.com/media/RrY68snArrNqERTCgc/giphy.gif', 'https://media.giphy.com/media/GNo3xnUtqNi5OIMhsu/giphy.gif', 'https://media.giphy.com/media/E5mi11dBhuiW4fOC2c/giphy.gif', 'https://media.giphy.com/media/Mm1wJNenpnBj76BlJJ/giphy.gif', 'https://media.giphy.com/media/utx5mlMfovTsUs5F69/giphy.gif', 'https://media.giphy.com/media/VchyhdU86WbsUjVNP7/giphy.gif', 'https://media.giphy.com/media/Fd6NEw3kR6ZaMnn5sX/giphy.gif', 'https://media.giphy.com/media/JFOdcPiOiaOwXhIz4q/giphy.gif', 'https://media.giphy.com/media/DqB8cqbWW0g6GfSBwu/giphy.gif', 'https://media.giphy.com/media/79K306oJupprCsf8DU/giphy.gif', 'https://media.giphy.com/media/lEqhVHS94PIlzoZCxP/giphy.gif', 'https://media.giphy.com/media/fLHHHzwYx61oHKBFT9/giphy.gif', 'https://media.giphy.com/media/npsHLArWNwR9kBp9Hz/giphy.gif', 'https://media.giphy.com/media/1s8xWlUv6pwE1LacIN/giphy.gif', 'https://media.giphy.com/media/qx8ydGluxIZctEpN7x/giphy.gif', 'https://media.giphy.com/media/LTTnOl7BDBQfeyGB0B/giphy.gif', 'https://media.giphy.com/media/2pcDVqocJ7uaZHYiFI/giphy.gif', 'https://media.giphy.com/media/p8BTBEsZrtG59Dni6t/giphy.gif', 'https://media.giphy.com/media/eVBNtrAXJu3mZ7bXGF/giphy.gif', 'https://media.giphy.com/media/FSIP4YFjm2fmaiRLk9/giphy.gif', 'https://media.giphy.com/media/MywBmUQxpNEJrNEwhz/giphy.gif', 'https://media.giphy.com/media/uVjVmXIPgwIoHYHsto/giphy.gif', 'https://media.giphy.com/media/1AhvGqvRafICfhu62z/giphy.gif', 'https://media.giphy.com/media/NGadEwb2motzfaoBV7/giphy.gif']
+
 
 def read_config_file():
     if os.path.exists(CONFIG_FILE):
@@ -269,8 +271,7 @@ async def prefix(ctx, arg=''):
 
 def get_hive_power_delegations(wallet):
 
-    hive = beem.hive.Hive()
-    acc = beem.account.Account(wallet)
+    acc = beem.account.Account(wallet, blockchain_instance=hive)
 
     incoming_delegations_total = 0
 
@@ -302,7 +303,7 @@ async def bal(ctx, wallet, symbol=''):
 
     else:
         # hive engine token
-        wallet_token_info = Wallet(wallet).get_token(symbol)
+        wallet_token_info = Wallet(wallet, blockchain_instance=hive).get_token(symbol)
 
         if not wallet_token_info:
             balance = 0
@@ -336,7 +337,7 @@ async def bals(ctx, wallet):
 
     # hive engine token
     wallet = wallet.lower()
-    wallet_token_info = Wallet(wallet)
+    wallet_token_info = Wallet(wallet, blockchain_instance=hive)
 
     # sort by stake then balance
     wallet_token_info.sort(key=lambda elem: float(elem['stake']) + float(elem['balance']))
@@ -421,6 +422,8 @@ async def gif(ctx, category=''):
         gif_set = BLURT_GIFS
     elif category.lower() == 'foxon':
         gif_set = FOXON_GIFS
+    elif category.lower() == 'stickup':
+        gif_set = STICKUP_GIFS
     else:
         gif_set = PIZZA_GIFS
 
@@ -872,27 +875,40 @@ async def rsplayer(ctx, player):
 
     await ctx.send(embed=embed)
 
-'''
+
 @bot.command()
-async def apr(ctx, delegation_amount)
+async def apr(ctx, delegation_amount):
     """<delegation amount>: Calculate approx. APR for HP delegation"""
 
+    # get rewards pool size
+    # TODO: make this dynamic
+    reward_pool_size = 60
+
     # get incoming delegation to hive.pizza
-    acc = beem.account.Account('hive.pizza')
+    wallet = 'hive.pizza'
+    acc = beem.account.Account(wallet, blockchain_instance=hive)
     balance = acc.available_balances[0]
     staked = acc.get_token_power(only_own_vests=True)
     delegation_out = get_hive_power_delegations(wallet)
     delegation_in = acc.get_token_power() + delegation_out - staked
 
-    # get current PIZZA price
+
+    shares = float(delegation_amount) / delegation_in
+
+    approx_payout = round(reward_pool_size * shares, 2)
+
+    # get current TOKEN price
     last_price = float(market.get_trades_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price()[0] * last_price, 3)
 
-    # get rewards pool size
+    est_payout_value_hive = approx_payout * last_price
 
+    annualized_payout = 365 * est_payout_value_hive
 
-    await ctx.send()
-'''
+    annualized_pct = round(annualized_payout / float(delegation_amount), 3)
+
+    await ctx.send('Approx. daily payout: %0.2f $PIZZA | Market value: %0.3f HIVE | APR: %0.3f%%' % (approx_payout, est_payout_value_hive, annualized_pct * 100))
+
 
 @bot.event
 async def on_command_error(ctx, error):
