@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-''' Discord bot for $PIZZA token community '''
+''' Discord bot for $PIZZA token community .'''
 import os
 import discord
 from discord.ext import commands, tasks
@@ -860,6 +860,25 @@ async def slplayer(ctx, player):
 
     await ctx.send(embed=embed)
 
+'''
+@bot.command()
+async def slbrawls(ctx, player):
+    """<player>: Check Splinterlands Player Brawl History"""
+    api = 'https://api2.splinterlands.com/battle/history2?player=%s&leaderboard=1' % player
+
+    battle_history = requests.get(api).json()
+
+    embed = discord.Embed(title='Splinterlands Brawl History for %s:' % player, description='', color=0x336EFF)
+
+    for battle in battle_history['battles']:
+        if 'is_brawl' in battle['details'].keys() and battle['details']['is_brawl']:
+            battle_replay = 'https://splinterlands.com/?p=battle&id=%s' % battle['battle_queue_id_1']
+
+            embed.add_field(name='Winner', value=battle['winner'], inline=False)
+            embed.add_field(name='Replay', value=battle_replay, inline=False)
+
+    await ctx.send(embed=embed)
+'''
 
 @bot.command()
 async def rsplayer(ctx, player):
@@ -879,12 +898,10 @@ async def rsplayer(ctx, player):
 
 
 @bot.command()
-async def apr(ctx, delegation_amount):
+async def apr(ctx, delegation_amount, pool_size=70):
     """<delegation amount>: Calculate approx. APR for HP delegation"""
 
-    # get rewards pool size
-    # TODO: make this dynamic
-    reward_pool_size = 60
+    reward_pool_size = float(pool_size)
 
     # get incoming delegation to hive.pizza
     wallet = 'hive.pizza'
