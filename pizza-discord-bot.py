@@ -898,7 +898,7 @@ async def rsplayer(ctx, player):
 
 
 @bot.command()
-async def apr(ctx, delegation_amount, pool_size=70):
+async def apr(ctx, delegation_amount, pool_size=95):
     """<delegation amount>: Calculate approx. APR for HP delegation"""
 
     reward_pool_size = float(pool_size)
