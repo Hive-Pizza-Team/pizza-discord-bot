@@ -930,7 +930,7 @@ async def apr(ctx, delegation_amount, pool_size=95):
 
 
 @bot.command()
-async def pizza():
+async def PIZZA(ctx):
     await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments.')
 
 
