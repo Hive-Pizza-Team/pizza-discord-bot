@@ -929,6 +929,11 @@ async def apr(ctx, delegation_amount, pool_size=95):
     await ctx.send('Approx. daily payout: %0.2f $PIZZA | Market value: %0.3f HIVE | APR: %0.3f%%' % (approx_payout, est_payout_value_hive, annualized_pct * 100))
 
 
+@bot.command()
+async def pizza():
+    await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments.')
+
+
 @bot.event
 async def on_command_error(ctx, error):
 
