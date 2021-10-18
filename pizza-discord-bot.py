@@ -101,6 +101,18 @@ def determine_native_token(ctx):
         return DEFAULT_TOKEN_NAME
 
 
+def get_market_history(symbol):
+
+    order_count = 1000
+    orders = []
+    while order_count == 1000:
+        response = market.get_trades_history(symbol, limit=1000, offset=len(orders))
+        order_count = len(response)
+        orders += response
+
+    return orders
+
+
 def get_token_holders(symbol):
 
     holder_count = 1000
@@ -137,7 +149,7 @@ def get_token_price_he_cg(coin):
         lowest_asking_price = 0.0
         highest_bidding_price = 0.0
 
-        trade_history = market.get_trades_history(symbol=coin, limit=1000)
+        trade_history = get_market_history(symbol=coin)
         if trade_history: last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
 
@@ -206,7 +218,7 @@ def get_coin_price(coin='hive'):
 
 async def update_bot_user_status(bot):
 
-    last_price = float(market.get_trades_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
+    last_price = float(get_market_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price()[0] * last_price, 3)
     if bot:
         await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
@@ -559,7 +571,7 @@ async def history(ctx, symbol=''):
     message = '''```fix
 '''
 
-    for tx in market.get_trades_history(symbol, limit=1000)[::-1][0:10]:
+    for tx in get_market_history(symbol)[::-1][0:10]:
         message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
 
     message += '```'
@@ -923,7 +935,7 @@ async def apr(ctx, delegation_amount, pool_size=95):
     approx_payout = round(reward_pool_size * shares, 2)
 
     # get current TOKEN price
-    last_price = float(market.get_trades_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
+    last_price = float(get_market_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price()[0] * last_price, 3)
 
     est_payout_value_hive = approx_payout * last_price
