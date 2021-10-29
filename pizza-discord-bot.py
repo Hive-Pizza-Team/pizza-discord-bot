@@ -961,17 +961,6 @@ async def on_command_error(ctx, error):
     else:
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-
-    if 'number-game' in message.channel.name:
-        cur_num = int(message.content)
-        new_num = cur_num + 1
-        await message.channel.send(str(new_num))
-
-
 
 # Discord initialization
 load_dotenv()
