@@ -353,9 +353,9 @@ async def bals(ctx, wallet):
     wallet = wallet.lower()
     wallet_token_info = Wallet(wallet, blockchain_instance=hive)
 
+
     # sort by stake then balance
-    wallet_token_info.sort(key=lambda elem: float(elem['stake']) + float(elem['balance']))
-    wallet_token_info = wallet_token_info[::-1]
+    wallet_token_info.sort(key=lambda elem: float(elem['stake']) + float(elem['balance']), reverse=True)
 
     longest_symbol_len = 0
     for token in wallet_token_info:
@@ -374,6 +374,9 @@ async def bals(ctx, wallet):
         staked = float(token['stake'])
         delegation_in = float(token['delegationsIn'])
         delegation_out = float(token['delegationsOut'])
+
+        if balance + staked + delegation_in + delegation_out == 0.0:
+            continue
 
         padded_symbol = symbol.ljust(longest_symbol_len, ' ')
         rows.append('%s |%10.3f|%10.3f|%10.3f|%9.3f\n' % (padded_symbol, balance, staked, delegation_in, delegation_out))
@@ -960,6 +963,18 @@ async def on_command_error(ctx, error):
         await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands' % prefix)
     else:
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+
+
+'''@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    # check channel name
+    if 'general' in message.channel.name:
+        if 'good morning' in message.content:
+        #await message.channel.send(str(new_num))
+'''
 
 
 # Discord initialization
