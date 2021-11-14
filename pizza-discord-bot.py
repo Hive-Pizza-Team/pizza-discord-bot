@@ -881,6 +881,53 @@ async def slplayer(ctx, player):
 
     await ctx.send(embed=embed)
 
+
+@bot.command()
+async def exodecards(ctx, player):
+    """<player>: Get a player's Exode card collection info"""
+    api = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=singleCards' % player
+    cards = requests.get(api).json()['elements']
+    embed = discord.Embed(title='Exode cards for %s:' % player, description='', color=0x336EFF)
+    embed.add_field(name='Card count', value=len(cards), inline=True)
+
+    await ctx.send(embed=embed)
+
+'''
+GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf','00fbd7938f9a652883e9b50f1a93c324b3646f0e','e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
+__url__ = 'https://api2.splinterlands.com/'
+
+
+def get_guild_member_list(guild_ids=[]):
+
+    member_list = []
+
+    for guild_id in guild_ids:
+
+        response = None
+        cnt2 = 0
+        while str(response) != '<Response [200]>' and cnt2 < 10:
+            query = __url__ + "guilds/members?guild_id=" + guild_id
+
+            try:
+                response = requests.get(query)
+            except:
+                response = 'ERROR'
+
+            if str(response) != '<Response [200]>':
+                sleep(1)
+            cnt2 += 1
+
+        member_list += [row['player'] for row in response.json() if row['status'] == 'active']
+
+    return member_list
+
+@bot.command()
+async def slbrawl(ctx, player):
+"""https://api2.splinterlands.com/players/messages?tid=GUILD-BC47-BL12-BRAWL15"""
+    api = 'https://api2.splinterlands.com/players/messages?tid=GUILD-BC47-BL12-BRAWL15'
+
+    profile = requests.get(api).json()[0]
+'''
 '''
 @bot.command()
 async def slbrawls(ctx, player):
