@@ -899,16 +899,16 @@ async def exodecards(ctx, player):
 
     await ctx.send(embed=embed)
 
-'''
-GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf','00fbd7938f9a652883e9b50f1a93c324b3646f0e','e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
-__url__ = 'https://api2.splinterlands.com/'
 
+def get_sl_guild_member_list():
 
-def get_guild_member_list(guild_ids=[]):
+    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf','00fbd7938f9a652883e9b50f1a93c324b3646f0e','e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
+    __url__ = 'https://api2.splinterlands.com/'
+
 
     member_list = []
 
-    for guild_id in guild_ids:
+    for guild_id in GUILD_IDS:
 
         response = None
         cnt2 = 0
@@ -928,6 +928,101 @@ def get_guild_member_list(guild_ids=[]):
 
     return member_list
 
+
+def get_sl_guild_donations():
+
+    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf','00fbd7938f9a652883e9b50f1a93c324b3646f0e','e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
+    __url__ = 'https://api2.splinterlands.com/'
+
+
+    contributions = {}
+
+    for guild_id in GUILD_IDS:
+
+        response = None
+        cnt2 = 0
+        while str(response) != '<Response [200]>' and cnt2 < 10:
+            query = __url__ + "guilds/members?guild_id=" + guild_id
+
+            try:
+                response = requests.get(query)
+            except:
+                response = 'ERROR'
+
+            if str(response) != '<Response [200]>':
+                sleep(1)
+            cnt2 += 1
+
+        guild_info = response.json()
+
+        for row in guild_info:
+            if row['status'] != 'active':
+                continue
+            contributions[row['player']] = json.loads(row['data'])['contributions']
+
+    return contributions
+
+
+def get_sl_card_collection(player):
+    cards = requests.get('https://api2.splinterlands.com/cards/collection/%s' % player).json()['cards']
+    return cards
+
+
+@bot.command()
+async def slguildteamwork(ctx):
+
+    delegations = {}
+
+    guild_member_list = get_sl_guild_member_list()
+
+
+    delegations_string = ''
+    for member in guild_member_list:
+        delegations[member] = 0
+
+        for card in get_sl_card_collection(member):
+            if card['player'] == member and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
+                delegations[member] += 1
+
+
+    list_delegations = list(delegations.items())
+    list_delegations.sort(key=lambda tup: tup[1], reverse=True)
+    for delegation in list_delegations:
+        if delegation[1] > 0:
+            delegations_string += '%s - %d cards\n' % (delegation[0],delegation[1])
+
+    # Fetch DEC donations info
+    donations = get_sl_guild_donations()
+
+    donations_string = ''
+
+    list_donations = []
+    for member in donations.keys():
+        if donations[member]:
+            cur_donation = donations[member]
+            total_dec_donated = 0
+            for key in ['barracks','arena','guild_shop']:
+                if key in donations[member].keys() and 'DEC' in donations[member][key].keys():
+                    total_dec_donated += donations[member][key]['DEC']
+
+            for key in ['guild_hall']:
+                if key in donations[member].keys():
+                    total_dec_donated += donations[member][key]
+
+            list_donations.append((member,total_dec_donated))
+
+    list_donations.sort(key=lambda tup: tup[1], reverse=True)
+    for donation in list_donations:
+        if donation[1] > 0:
+            donations_string += '%s - %d DEC\n' % (donation[0], donation[1])
+
+
+    embed = discord.Embed(title='Teamwork Leaderboard for PIZZA Guilds', description='', color=0x336EFF)
+    embed.add_field(name='Card delegations to Guildmates', value=delegations_string, inline=True)
+    embed.add_field(name='DEC donations', value=donations_string, inline=True)
+    await ctx.send(embed=embed)
+
+'''
 @bot.command()
 async def slbrawl(ctx, player):
 """https://api2.splinterlands.com/players/messages?tid=GUILD-BC47-BL12-BRAWL15"""
