@@ -887,12 +887,15 @@ async def exodecards(ctx, player):
     """<player>: Get a player's Exode card collection info"""
     api = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=singleCards' % player
     cards = requests.get(api).json()['elements']
+    market_prices = [card['market_price'] for card in cards]
 
     elite_cards = [card for card in cards if card['is_elite']]
 
     embed = discord.Embed(title='Exode cards for %s:' % player, description='', color=0x336EFF)
     embed.add_field(name='Card count', value=len(cards), inline=True)
     embed.add_field(name='Elite card count', value=len(elite_cards), inline=True)
+    embed.add_field(name='Total market value', value='$%0.3f' % sum(market_prices), inline=True)
+
 
     await ctx.send(embed=embed)
 
