@@ -974,7 +974,7 @@ async def slguildteamwork(ctx):
     delegations = {}
 
     guild_member_list = get_sl_guild_member_list()
-    guild_member_list.append('cryptoniusrex')
+    guild_member_list_ext = [('cryptoniusrex','cryptoniusraptor')]
 
 
     delegations_string = ''
@@ -984,6 +984,13 @@ async def slguildteamwork(ctx):
         for card in get_sl_card_collection(member):
             if card['player'] == member and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
                 delegations[member] += 1
+
+    for ext_name, int_name in guild_member_list_ext:
+        for card in get_sl_card_collection(ext_name):
+            if card['player'] == ext_name and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
+                if card['delegated_to'] != int_name:
+                    delegations[int_name] += 1
+
 
 
     list_delegations = list(delegations.items())
