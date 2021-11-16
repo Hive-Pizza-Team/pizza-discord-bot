@@ -974,6 +974,7 @@ async def slguildteamwork(ctx):
     delegations = {}
 
     guild_member_list = get_sl_guild_member_list()
+    guild_member_list.append('cryptoniusrex')
 
 
     delegations_string = ''
