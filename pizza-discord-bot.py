@@ -891,10 +891,15 @@ async def exodecards(ctx, player):
 
     elite_cards = [card for card in cards if card['is_elite']]
 
+    packsapi = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=packs' % player
+    packs = requests.get(packsapi).json()['elements']
+    pack_market_prices = [pack['market_price'] for pack in packs]
+
     embed = discord.Embed(title='Exode cards for %s:' % player, description='', color=0x336EFF)
     embed.add_field(name='Card count', value=len(cards), inline=True)
     embed.add_field(name='Elite card count', value=len(elite_cards), inline=True)
-    embed.add_field(name='Total market value', value='$%0.3f' % sum(market_prices), inline=True)
+    embed.add_field(name='Packs count', value=len(packs), inline=True)
+    embed.add_field(name='Total market value', value='$%0.3f' % (sum(market_prices)+sum(pack_market_prices)), inline=True)
 
 
     await ctx.send(embed=embed)
