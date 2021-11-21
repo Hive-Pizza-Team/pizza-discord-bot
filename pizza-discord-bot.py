@@ -1079,7 +1079,7 @@ async def rsplayer(ctx, player):
     embed = discord.Embed(title='Rising Star Profile for @%s' % player, description='', color=0xf3722c)
 
     for k in profile.keys():
-        if k not in []:
+        if k not in ['name']:
             prettyname = k.title()
             if prettyname == 'Missionego':
                 prettyname = 'Mission Ego'
