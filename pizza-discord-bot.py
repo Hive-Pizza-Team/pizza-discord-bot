@@ -1076,11 +1076,26 @@ async def rsplayer(ctx, player):
 
     profile = requests.get(api).json()[0]
 
-    embed = discord.Embed(title='Rising Star profile for %s:' % player, description='', color=0xf3722c)
+    embed = discord.Embed(title='Rising Star Profile for @%s' % player, description='', color=0xf3722c)
 
     for k in profile.keys():
         if k not in []:
             prettyname = k.title()
+            if prettyname == 'Missionego':
+                prettyname = 'Mission Ego'
+            elif prettyname == 'Lessonskill':
+                prettyname = 'Lesson Skill'
+            elif prettyname == 'Totalnfts':
+                prettyname = 'Total NFTs'
+            elif prettyname == 'Cardsfans':
+                prettyname = 'Cards Fans'
+            elif prettyname == 'Cardskill':
+                prettyname = 'Cards Skill'
+            elif prettyname == 'Cardsluck':
+                prettyname = 'Cards Luck'
+            elif prettyname == 'Cardsim':
+                prettyname = 'Cards Income'
+
             embed.add_field(name=prettyname, value=profile[k], inline=True)
 
     await ctx.send(embed=embed)
