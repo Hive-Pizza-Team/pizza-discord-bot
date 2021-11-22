@@ -979,8 +979,8 @@ def get_sl_card_collection(player):
 @bot.command()
 async def slguildteamwork(ctx):
 
-    if ctx.message.guild != 'Hive Pizza':
-        return
+    #if ctx.message.guild != 'Hive Pizza':
+    #    return
 
     delegations = {}
 
