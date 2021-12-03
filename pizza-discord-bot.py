@@ -318,7 +318,7 @@ async def bal(ctx, wallet, symbol=''):
 
     else:
         # hive engine token
-        wallet_token_info = Wallet(wallet, blockchain_instance=hive).get_token(symbol)
+        wallet_token_info = Wallet(wallet, blockchain_instance=hive, api=hiveengine_api).get_token(symbol)
 
         if not wallet_token_info:
             balance = 0
@@ -352,7 +352,7 @@ async def bals(ctx, wallet):
 
     # hive engine token
     wallet = wallet.lower()
-    wallet_token_info = Wallet(wallet, blockchain_instance=hive)
+    wallet_token_info = Wallet(wallet, blockchain_instance=hive, api=hiveengine_api)
 
 
     # sort by stake then balance
