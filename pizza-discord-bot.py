@@ -601,59 +601,6 @@ async def blog(ctx, name):
 
     await ctx.send(response)
 
-@bot.command()
-async def farms(ctx):
-    """Print $PIZZA VFT Farm deposits"""
-
-    deposits = {}
-    total_deposits = 0
-    longest_name_len = 0
-
-    for tx in hiveengine_api.get_history("vftlab", DEFAULT_TOKEN_NAME):
-
-        quantity = float(tx['quantity'])
-        to = tx['to']
-        tfrom = tx['from']
-
-        if len(tfrom) > longest_name_len:
-            longest_name_len = len(tfrom)
-
-        if tfrom == 'vftlab':
-            total_deposits -= quantity
-
-            if to in deposits.keys():
-                deposits[to] -= quantity
-            else:
-                deposits[to] = -1 * quantity
-        else:
-            total_deposits += quantity
-
-            if tfrom in deposits.keys():
-                deposits[tfrom] += quantity - quantity * 0.03
-            else:
-                deposits[tfrom] = quantity - quantity * 0.03
-
-    list_deposits = []
-    for depositor in deposits.keys():
-        list_deposits.append({'name':depositor,'balance':deposits[depositor],'payout': 50 * deposits[depositor] / total_deposits})
-
-
-    list_deposits.sort(key= lambda a: float(a['balance']), reverse=True)
-
-
-    response = '''```fix
-'''
-
-    response += 'Depositor'.ljust(longest_name_len, ' ') + ' | $PIZZA Amount | Expected Daily Payout ($VFT)\n'
-
-    for deposit in list_deposits[0:30]:
-        response += '%s | %13.3f | %8.3f\n' % (deposit['name'].ljust(longest_name_len, ' '), deposit['balance'], deposit['payout'])
-
-    response += '```'
-
-    embed = discord.Embed(title='Top 30 Pizza Farm deposits:', description=response, color=0x277da1)
-    await ctx.send(embed=embed)
-
 
 @bot.command()
 async def witness(ctx, name='pizza.witness'):
@@ -1135,7 +1082,8 @@ async def apr(ctx, delegation_amount, pool_size=350):
 
 @bot.command()
 async def PIZZA(ctx):
-    await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments.')
+    """Discord tips aren't supported. Use @tip.cc instead!"""
+    await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments. Use @tip.cc if you want to send a tip in Discord!')
 
 
 @bot.event
