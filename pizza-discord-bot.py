@@ -1086,6 +1086,22 @@ async def PIZZA(ctx):
     await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments. Use @tip.cc if you want to send a tip in Discord!')
 
 
+@bot.command()
+async def links(ctx):
+    """Use these links to support Hive.Pizza"""
+
+    embed = discord.Embed(title='Hive.Pizza links', description='Please consider supporting Hive.Pizza by using these referral links.', color=0xf3722c)
+    embed.add_field(name='Hive Signup (1)', value='https://hive.pizza/hiveonboard', inline=False)
+    embed.add_field(name='Hive Signup (2)', value='https://hive.pizza/ecency', inline=False)
+    embed.add_field(name='Splinterlands', value='https://hive.pizza/splinterlands', inline=False)
+    embed.add_field(name='Exode', value='https://hive.pizza/exode', inline=False)
+    embed.add_field(name='Rising Star', value='https://hive.pizza/risingstar', inline=False)
+    embed.add_field(name='NFTShowroom', value='https://hive.pizza/nftshowroom', inline=False)
+    embed.add_field(name='top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
+
+    await ctx.send(embed=embed)
+
+
 @bot.event
 async def on_command_error(ctx, error):
 
