@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-''' Discord bot for $PIZZA token community .'''
+"""Discord bot for $PIZZA token community."""
 import os
 import discord
 from discord.ext import commands, tasks
+from discord_slash import SlashCommand, SlashContext
+from discord_slash.utils.manage_components import create_button, create_actionrow
+from discord_slash.model import ButtonStyle
 from dotenv import load_dotenv
 from hiveengine.market import Market
 from hiveengine.tokenobject import Token
@@ -13,22 +16,26 @@ from hiveengine.wallet import Wallet
 import json
 from hiveengine.api import Api
 import beem
-from beem.witness import Witness, WitnessesRankedByVote, WitnessesVotedByAccount
+from beem.witness import Witness, WitnessesRankedByVote
 import datetime
 import requests
 import traceback
 import sys
+from datetime import datetime, timedelta
+import dateutil.parser
 
 # Hive-Engine defines
-hive = beem.Hive(node=['https://api.deathwing.me'])
-hiveengine_api = Api(url='https://fi.engine.rishipanthee.com/')
+hive = beem.Hive(node=['https://api.hive.blog'])
+beem.instance.set_shared_blockchain_instance(hive)
+hiveengine_api = Api()
 market = Market(api=hiveengine_api, blockchain_instance=hive)
 
 
 DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:STARBITS'
 DEFAULT_GIF_CATEGORY = 'PIZZA'
-ACCOUNT_FILTER_LIST = ['thebeardflex','pizzaexpress','datbeardguy','pizzabot','null','vftlab','pizza-rewards']
+ACCOUNT_FILTER_LIST = ['thebeardflex', 'pizzaexpress', 'datbeardguy',
+                       'pizzabot', 'null', 'vftlab', 'pizza-rewards']
 
 CONFIG_FILE = 'config.json'
 
@@ -139,7 +146,7 @@ def get_token_price_he_cg(coin):
         coin = 'matic-network'
     elif coin == 'hbd':
         coin = 'hive_dollar'
-    
+
     found_in_hiveengine = False
     try:
         Token(coin, api=hiveengine_api)
@@ -151,25 +158,24 @@ def get_token_price_he_cg(coin):
         highest_bidding_price = 0.0
 
         trade_history = get_market_history(symbol=coin)
-        if trade_history: last_price = float(trade_history[-1]['price'])
+        if trade_history:
+            last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
 
         sell_book = market.get_sell_book(symbol=coin, limit=1000)
-        sell_book = sorted(sell_book, key= lambda a: float(a['price']), reverse=False)
-        if sell_book: lowest_asking_price = float(sell_book[0]['price'])
-        ask_usd  = lowest_asking_price * hive_usd
+        sell_book = sorted(sell_book, key=lambda a: float(a['price']), reverse=False)
+        if sell_book:
+            lowest_asking_price = float(sell_book[0]['price'])
+        ask_usd = lowest_asking_price * hive_usd
 
         buy_book = market.get_buy_book(symbol=coin, limit=1000)
-        buy_book = sorted(buy_book, key= lambda a: float(a['price']), reverse=True)
-        if buy_book: highest_bidding_price = float(buy_book[0]['price'])
-        bid_usd  = highest_bidding_price * hive_usd
-
+        buy_book = sorted(buy_book, key=lambda a: float(a['price']), reverse=True)
+        if buy_book:
+            highest_bidding_price = float(buy_book[0]['price'])
+        bid_usd = highest_bidding_price * hive_usd
 
         volume_data = requests.get(MARKET_HISTORY_URL % coin.upper()).json()
-        
-        #date = datetime.datetime.fromtimestamp(volume_data[0]['timestamp']).date()
         volume_str = '%s %s | %s HIVE\n' % (volume_data[0]['volumeToken'], volume_data[0]['symbol'], volume_data[0]['volumeHive'])
-
 
         embed = discord.Embed(title='Hive-Engine market info for $%s' % coin.upper(), last_usd='', color=0xf3722c)
         embed.add_field(name='Last', value='%.5f HIVE | $%.5f USD' % (last_price, last_usd), inline=False)
@@ -191,9 +197,7 @@ def get_token_price_he_cg(coin):
 market price: $%.5f USD
 24 hour change: %.3f%%
 24 hour volume: $%s USD
-```''' % (price,daily_change, "{:,.2f}".format(daily_volume))
-
-
+```''' % (price, daily_change, "{:,.2f}".format(daily_volume))
 
         embed = discord.Embed(title='CoinGecko market info for $%s' % coin.upper(), description=message, color=0xf3722c)
         return embed
@@ -216,9 +220,8 @@ def get_coin_price(coin='hive'):
     return float(subresponse['usd']), float(subresponse['usd_24h_change']),  float(subresponse['usd_24h_vol'])
 
 
-
 async def update_bot_user_status(bot):
-
+    """Update the bot's status."""
     last_price = float(get_market_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price()[0] * last_price, 3)
     if bot:
@@ -227,11 +230,13 @@ async def update_bot_user_status(bot):
 
 custom_prefixes = read_config_file()
 default_prefix = '!'
-bot = commands.Bot(command_prefix = determine_prefix)
+bot = commands.Bot(command_prefix=determine_prefix)
+slash = SlashCommand(bot)
 
 
 @bot.event
 async def on_ready():
+    """Event handler for bot comnnection."""
     print(f'{bot.user} has connected to Discord!')
     await update_bot_user_status(bot)
 
@@ -285,7 +290,7 @@ async def prefix(ctx, arg=''):
 
 
 def get_hive_power_delegations(wallet):
-
+    """Get a total of incoming HP delegation to wallet."""
     acc = beem.account.Account(wallet, blockchain_instance=hive)
 
     incoming_delegations_total = 0
@@ -301,8 +306,7 @@ def get_hive_power_delegations(wallet):
 
 @bot.command()
 async def bal(ctx, wallet, symbol=''):
-    """<wallet> <symbol> : Print Hive-Engine wallet balances"""
-
+    """<wallet> <symbol> : Print Hive-Engine wallet balances."""
     if not symbol:
         symbol = determine_native_token(ctx)
 
@@ -348,12 +352,10 @@ async def bal(ctx, wallet, symbol=''):
 
 @bot.command()
 async def bals(ctx, wallet):
-    """<wallet>: Print Hive-Engine wallet balances"""
-
+    """<wallet>: Print Hive-Engine wallet balances."""
     # hive engine token
     wallet = wallet.lower()
     wallet_token_info = Wallet(wallet, blockchain_instance=hive, api=hiveengine_api)
-
 
     # sort by stake then balance
     wallet_token_info.sort(key=lambda elem: float(elem['stake']) + float(elem['balance']), reverse=True)
@@ -362,7 +364,6 @@ async def bals(ctx, wallet):
     for token in wallet_token_info:
         if len(token['symbol']) > longest_symbol_len:
             longest_symbol_len = len(token['symbol'])
-
 
     message_body = '```'
     message_body += 'SYMBOL'.ljust(longest_symbol_len, ' ') + ' |  LIQUID  |  STAKED  | INCOMING | OUTGOING\n'
@@ -393,7 +394,7 @@ async def bals(ctx, wallet):
 
 @bot.command()
 async def price(ctx, symbol=''):
-    """<symbol> : Print Hive-Engine / CoinGecko market price info"""
+    """<symbol> : Print Hive-Engine / CoinGecko market price info."""
     if not symbol:
         symbol = determine_native_token(ctx)
 
@@ -401,11 +402,24 @@ async def price(ctx, symbol=''):
     await ctx.send(embed=embed)
 
 
-@bot.command()
-@commands.guild_only()
-async def gif(ctx, category=''):
-    """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt"""
+#@bot.command()
+#@commands.guild_only()
+@slash.slash(name="test")
+async def test(ctx: SlashContext):
+    embed = Embed(title="Embed Test")
+    await ctx.send(embed=embed)
 
+    buttons = [
+        create_button(style=ButtonStyle.green, label="A green button"),
+        create_button(style=ButtonStyle.blue, label="A blue button")
+    ]
+    action_row = create_actionrow(*buttons)
+
+    await ctx.send(components=[action_row])
+
+    return
+    """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt."""
+    category=''
     gif_set = PIZZA_GIFS
 
     if not category:
@@ -815,51 +829,14 @@ async def dluxnodes(ctx):
     await ctx.send(embed=embed)
 
 
-@bot.command()
-async def slplayer(ctx, player):
-    """<player>: Check Splinterlands Player Stats"""
-    api = 'https://api2.splinterlands.com/players/details?name=%s' % player
-
-    profile = requests.get(api).json()
-
-    embed = discord.Embed(title='Splinterlands profile for %s:' % player, description='', color=0x336EFF)
-
-    for k in profile.keys():
-        if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
-            prettyname = k.replace('_',' ').title()
-            embed.add_field(name=prettyname, value=profile[k], inline=True)
-
-    await ctx.send(embed=embed)
-
-
-@bot.command()
-async def exodecards(ctx, player):
-    """<player>: Get a player's Exode card collection info"""
-    api = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=singleCards' % player
-    cards = requests.get(api).json()['elements']
-    market_prices = [card['market_price'] for card in cards]
-
-    elite_cards = [card for card in cards if card['is_elite']]
-
-    packsapi = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=packs' % player
-    packs = requests.get(packsapi).json()['elements']
-    pack_market_prices = [pack['market_price'] for pack in packs]
-
-    embed = discord.Embed(title='Exode cards for %s:' % player, description='', color=0x336EFF)
-    embed.add_field(name='Card count', value=len(cards), inline=True)
-    embed.add_field(name='Elite card count', value=len(elite_cards), inline=True)
-    embed.add_field(name='Packs count', value=len(packs), inline=True)
-    embed.add_field(name='Total market value', value='$%0.3f' % (sum(market_prices)+sum(pack_market_prices)), inline=True)
-
-
-    await ctx.send(embed=embed)
-
+# Splinterlands related helper functions and commands
 
 def get_sl_guild_member_list():
-
-    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf','00fbd7938f9a652883e9b50f1a93c324b3646f0e','e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
+    """Get a list of Splinterlands guild members."""
+    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf',
+                 '00fbd7938f9a652883e9b50f1a93c324b3646f0e',
+                 'e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
     __url__ = 'https://api2.splinterlands.com/'
-
 
     member_list = []
 
@@ -885,10 +862,11 @@ def get_sl_guild_member_list():
 
 
 def get_sl_guild_donations():
-
-    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf','00fbd7938f9a652883e9b50f1a93c324b3646f0e','e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
+    """Get a list of DEC guild donations."""
+    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf',
+                 '00fbd7938f9a652883e9b50f1a93c324b3646f0e',
+                 'e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
     __url__ = 'https://api2.splinterlands.com/'
-
 
     contributions = {}
 
@@ -919,106 +897,141 @@ def get_sl_guild_donations():
 
 
 def get_sl_card_collection(player):
+    """Git a list of cards in a players Splinterlands collection."""
     cards = requests.get('https://api2.splinterlands.com/cards/collection/%s' % player).json()['cards']
     return cards
 
 
 @bot.command()
-async def slguildteamwork(ctx):
+async def sl(ctx, subcommand, arg):
+    """player <player>: Check Splinterlands Player Stats.
+       guildteamwork: Only available in HivePizza discord."""
+    if subcommand == 'player':
+        player = arg
+        api = 'https://api2.splinterlands.com/players/details?name=%s' % player
 
-    #if ctx.message.guild != 'Hive Pizza':
-    #    return
+        profile = requests.get(api).json()
 
-    delegations = {}
+        embed = discord.Embed(title='Splinterlands profile for %s:' % player, description='', color=0x336EFF)
 
-    guild_member_list = get_sl_guild_member_list()
-    guild_member_list_ext = [('cryptoniusrex','cryptoniusraptor')]
+        for k in profile.keys():
+            if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
+                prettyname = k.replace('_',' ').title()
+                embed.add_field(name=prettyname, value=profile[k], inline=True)
+
+        await ctx.send(embed=embed)
+
+    elif subcommand == 'guildteamwork':
+        if str(ctx.message.guild) != 'Hive Pizza':
+            await ctx.send('Command only available in Hive Pizza discord')
+            return
+
+        delegations = {}
+
+        guild_member_list = get_sl_guild_member_list()
+        guild_member_list_ext = [('cryptoniusrex','cryptoniusraptor')]
+
+        delegations_string = ''
+        for member in guild_member_list:
+            delegations[member] = 0
+
+            for card in get_sl_card_collection(member):
+                if card['player'] == member and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
+                    delegations[member] += 1
+
+        for ext_name, int_name in guild_member_list_ext:
+            for card in get_sl_card_collection(ext_name):
+                if card['player'] == ext_name and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
+                    if card['delegated_to'] != int_name:
+                        delegations[int_name] += 1
+
+        list_delegations = list(delegations.items())
+        list_delegations.sort(key=lambda tup: tup[1], reverse=True)
+        for delegation in list_delegations:
+            if delegation[1] > 0:
+                delegations_string += '%s - %d cards\n' % (delegation[0],delegation[1])
+
+        # Fetch DEC donations info
+        donations = get_sl_guild_donations()
+
+        donations_string = ''
+
+        list_donations = []
+        for member in donations.keys():
+            if donations[member]:
+                cur_donation = donations[member]
+                total_dec_donated = 0
+                for key in ['barracks','arena','guild_shop']:
+                    if key in donations[member].keys() and 'DEC' in donations[member][key].keys():
+                        total_dec_donated += donations[member][key]['DEC']
+
+                for key in ['guild_hall']:
+                    if key in donations[member].keys():
+                        total_dec_donated += donations[member][key]
+
+                list_donations.append((member,total_dec_donated))
+
+        list_donations.sort(key=lambda tup: tup[1], reverse=True)
+        for donation in list_donations:
+            if donation[1] > 0:
+                donations_string += '%s - %d DEC\n' % (donation[0], donation[1])
+
+        embed = discord.Embed(title='Teamwork Leaderboard for PIZZA Guilds', description='', color=0x336EFF)
+        embed.add_field(name='Card delegations to Guildmates', value=delegations_string, inline=True)
+        embed.add_field(name='DEC donations', value=donations_string, inline=True)
+        await ctx.send(embed=embed)
+
+    elif subcommand == 'brawl' and arg == 'timer':
+        # get brawl ID
+        api = 'https://api2.splinterlands.com/guilds/find?id=d258d4e976c88fe47ca89f987f52efaf305b2ccf&ext=brawl'
+        brawl_id = requests.get(api).json()['tournament_id']
+
+        # get brawl start time
+        api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=GUILD-BC57-BL12-BRAWL39&guild_id=d258d4e976c88fe47ca89f987f52efaf305b2ccf'
+        brawl_start_time = requests.get(api).json()['start_date']
+        brawl_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
+        combat_start_time = brawl_start_time + timedelta(hours=48)
+        combat_end_time = brawl_start_time + timedelta(hours=48 * 2)
+        now = datetime.utcnow()
+
+        if now < combat_start_time:
+            time_remaining = combat_start_time - now - timedelta(days=2)
+            await ctx.send('Combat starts in: %s minutes' % (time_remaining.seconds / 60))
+        else:
+            time_remaining = combat_end_time - now - timedelta(days=2)
+            await ctx.send('Combat ends in: %s' % (time_remaining.seconds / 60))
 
 
-    delegations_string = ''
-    for member in guild_member_list:
-        delegations[member] = 0
+# Exode related commands
 
-        for card in get_sl_card_collection(member):
-            if card['player'] == member and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
-                delegations[member] += 1
+@bot.command()
+async def exodecards(ctx, player):
+    """<player>: Get a player's Exode card collection info."""
+    api = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=singleCards' % player
+    cards = requests.get(api).json()['elements']
+    market_prices = [card['market_price'] for card in cards]
 
-    for ext_name, int_name in guild_member_list_ext:
-        for card in get_sl_card_collection(ext_name):
-            if card['player'] == ext_name and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
-                if card['delegated_to'] != int_name:
-                    delegations[int_name] += 1
+    elite_cards = [card for card in cards if card['is_elite']]
 
+    packsapi = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=packs' % player
+    packs = requests.get(packsapi).json()['elements']
+    pack_market_prices = [pack['market_price'] for pack in packs]
 
-
-    list_delegations = list(delegations.items())
-    list_delegations.sort(key=lambda tup: tup[1], reverse=True)
-    for delegation in list_delegations:
-        if delegation[1] > 0:
-            delegations_string += '%s - %d cards\n' % (delegation[0],delegation[1])
-
-    # Fetch DEC donations info
-    donations = get_sl_guild_donations()
-
-    donations_string = ''
-
-    list_donations = []
-    for member in donations.keys():
-        if donations[member]:
-            cur_donation = donations[member]
-            total_dec_donated = 0
-            for key in ['barracks','arena','guild_shop']:
-                if key in donations[member].keys() and 'DEC' in donations[member][key].keys():
-                    total_dec_donated += donations[member][key]['DEC']
-
-            for key in ['guild_hall']:
-                if key in donations[member].keys():
-                    total_dec_donated += donations[member][key]
-
-            list_donations.append((member,total_dec_donated))
-
-    list_donations.sort(key=lambda tup: tup[1], reverse=True)
-    for donation in list_donations:
-        if donation[1] > 0:
-            donations_string += '%s - %d DEC\n' % (donation[0], donation[1])
+    embed = discord.Embed(title='Exode cards for %s:' % player, description='', color=0x336EFF)
+    embed.add_field(name='Card count', value=len(cards), inline=True)
+    embed.add_field(name='Elite card count', value=len(elite_cards), inline=True)
+    embed.add_field(name='Packs count', value=len(packs), inline=True)
+    embed.add_field(name='Total market value', value='$%0.3f' % (sum(market_prices)+sum(pack_market_prices)), inline=True)
 
 
-    embed = discord.Embed(title='Teamwork Leaderboard for PIZZA Guilds', description='', color=0x336EFF)
-    embed.add_field(name='Card delegations to Guildmates', value=delegations_string, inline=True)
-    embed.add_field(name='DEC donations', value=donations_string, inline=True)
     await ctx.send(embed=embed)
 
-'''
-@bot.command()
-async def slbrawl(ctx, player):
-"""https://api2.splinterlands.com/players/messages?tid=GUILD-BC47-BL12-BRAWL15"""
-    api = 'https://api2.splinterlands.com/players/messages?tid=GUILD-BC47-BL12-BRAWL15'
 
-    profile = requests.get(api).json()[0]
-'''
-'''
-@bot.command()
-async def slbrawls(ctx, player):
-    """<player>: Check Splinterlands Player Brawl History"""
-    api = 'https://api2.splinterlands.com/battle/history2?player=%s&leaderboard=1' % player
-
-    battle_history = requests.get(api).json()
-
-    embed = discord.Embed(title='Splinterlands Brawl History for %s:' % player, description='', color=0x336EFF)
-
-    for battle in battle_history['battles']:
-        if 'is_brawl' in battle['details'].keys() and battle['details']['is_brawl']:
-            battle_replay = 'https://splinterlands.com/?p=battle&id=%s' % battle['battle_queue_id_1']
-
-            embed.add_field(name='Winner', value=battle['winner'], inline=False)
-            embed.add_field(name='Replay', value=battle_replay, inline=False)
-
-    await ctx.send(embed=embed)
-'''
+# Rising Star related commands
 
 @bot.command()
 async def rsplayer(ctx, player):
-    """<player>: Check Rising Star Player Stats"""
+    """<player>: Check Rising Star Player Stats."""
     api = 'https://www.risingstargame.com/playerstats.asp?player=%s' % player
 
     profile = requests.get(api).json()[0]
@@ -1050,7 +1063,7 @@ async def rsplayer(ctx, player):
 
 @bot.command()
 async def apr(ctx, delegation_amount, pool_size=350):
-    """<delegation amount>: Calculate approx. APR for HP delegation"""
+    """<delegation amount>: Calculate approx. APR for HP delegation."""
 
     reward_pool_size = float(pool_size)
 
@@ -1061,7 +1074,6 @@ async def apr(ctx, delegation_amount, pool_size=350):
     staked = acc.get_token_power(only_own_vests=True)
     delegation_out = get_hive_power_delegations(wallet)
     delegation_in = acc.get_token_power() + delegation_out - staked
-
 
     shares = float(delegation_amount) / delegation_in
 
@@ -1082,14 +1094,13 @@ async def apr(ctx, delegation_amount, pool_size=350):
 
 @bot.command()
 async def PIZZA(ctx):
-    """Discord tips aren't supported. Use @tip.cc instead!"""
+    """Discord tips aren't supported. Use @tip.cc instead."""
     await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments. Use @tip.cc if you want to send a tip in Discord!')
 
 
 @bot.command()
 async def links(ctx):
-    """Use these links to support Hive.Pizza"""
-
+    """Use these links to support Hive.Pizza."""
     embed = discord.Embed(title='Hive.Pizza links', description='Please consider supporting Hive.Pizza by using these referral links.', color=0xf3722c)
     embed.add_field(name='Hive Signup (1)', value='https://hive.pizza/hiveonboard', inline=False)
     embed.add_field(name='Hive Signup (2)', value='https://hive.pizza/ecency', inline=False)
@@ -1104,24 +1115,12 @@ async def links(ctx):
 
 @bot.event
 async def on_command_error(ctx, error):
-
+    """Return a nice error message for unrecognized commands."""
     if isinstance(error, commands.CommandNotFound):
         prefix = await determine_prefix(bot, ctx.message)
         await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands' % prefix)
     else:
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
-
-
-'''@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-
-    # check channel name
-    if 'general' in message.channel.name:
-        if 'good morning' in message.content:
-        #await message.channel.send(str(new_num))
-'''
 
 
 # Discord initialization
