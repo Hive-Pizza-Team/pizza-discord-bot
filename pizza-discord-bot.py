@@ -3,9 +3,9 @@
 import os
 import discord
 from discord.ext import commands, tasks
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.utils.manage_components import create_button, create_actionrow
-from discord_slash.model import ButtonStyle
+#from discord_slash import SlashCommand, SlashContext
+#from discord_slash.utils.manage_components import create_button, create_actionrow
+#from discord_slash.model import ButtonStyle
 from dotenv import load_dotenv
 from hiveengine.market import Market
 from hiveengine.tokenobject import Token
@@ -231,7 +231,7 @@ async def update_bot_user_status(bot):
 custom_prefixes = read_config_file()
 default_prefix = '!'
 bot = commands.Bot(command_prefix=determine_prefix)
-slash = SlashCommand(bot)
+#slash = SlashCommand(bot)
 
 
 @bot.event
@@ -402,22 +402,9 @@ async def price(ctx, symbol=''):
     await ctx.send(embed=embed)
 
 
-#@bot.command()
-#@commands.guild_only()
-@slash.slash(name="test")
-async def test(ctx: SlashContext):
-    embed = Embed(title="Embed Test")
-    await ctx.send(embed=embed)
-
-    buttons = [
-        create_button(style=ButtonStyle.green, label="A green button"),
-        create_button(style=ButtonStyle.blue, label="A blue button")
-    ]
-    action_row = create_actionrow(*buttons)
-
-    await ctx.send(components=[action_row])
-
-    return
+@bot.command()
+@commands.guild_only()
+async def gif(ctx: SlashContext):
     """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt."""
     category=''
     gif_set = PIZZA_GIFS
