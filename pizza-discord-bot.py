@@ -973,19 +973,18 @@ async def sl(ctx, subcommand, arg):
         brawl_id = requests.get(api).json()['tournament_id']
 
         # get brawl start time
-        api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=GUILD-BC57-BL12-BRAWL39&guild_id=d258d4e976c88fe47ca89f987f52efaf305b2ccf'
+        api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=d258d4e976c88fe47ca89f987f52efaf305b2ccf' % brawl_id
         brawl_start_time = requests.get(api).json()['start_date']
-        brawl_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
-        combat_start_time = brawl_start_time + timedelta(hours=48)
-        combat_end_time = brawl_start_time + timedelta(hours=48 * 2)
+        combat_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
+        combat_end_time = combat_start_time + timedelta(hours=48)
         now = datetime.utcnow()
 
         if now < combat_start_time:
-            time_remaining = combat_start_time - now - timedelta(days=2)
-            await ctx.send('Combat starts in: %s minutes' % (time_remaining.seconds / 60))
+            time_remaining = combat_start_time - now
+            await ctx.send('Combat starts in: %s' % (time_remaining))
         else:
-            time_remaining = combat_end_time - now - timedelta(days=2)
-            await ctx.send('Combat ends in: %s' % (time_remaining.seconds / 60))
+            time_remaining = combat_end_time - now
+            await ctx.send('Combat ends in: %s' % (time_remaining))
 
 
 # Exode related commands
