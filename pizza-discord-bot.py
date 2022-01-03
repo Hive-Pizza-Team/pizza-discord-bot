@@ -3,7 +3,7 @@
 import os
 import discord
 from discord.ext import commands, tasks
-#from discord_slash import SlashCommand, SlashContext
+from discord_slash import SlashCommand, SlashContext
 #from discord_slash.utils.manage_components import create_button, create_actionrow
 #from discord_slash.model import ButtonStyle
 from dotenv import load_dotenv
@@ -232,7 +232,8 @@ async def update_bot_user_status(bot):
 custom_prefixes = read_config_file()
 default_prefix = '!'
 bot = commands.Bot(command_prefix=determine_prefix)
-#slash = SlashCommand(bot)
+#bot2 = discord.Client(intents=discord.Intents.default())
+#slash = SlashCommand(bot2)
 
 
 @bot.event
@@ -405,7 +406,9 @@ async def price(ctx, symbol=''):
 
 @bot.command()
 @commands.guild_only()
-async def gif(ctx, category):
+#@slash.slash(name="gif")
+#async def gif(ctx: SlashContext):
+async def gif(ctx, category=''):
     """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt."""
     gif_set = PIZZA_GIFS
 
@@ -1041,13 +1044,14 @@ async def sl(ctx, subcommand, arg):
             member_rating = member_info['rating']
             member_power = member_info['collection_power']
 
-            for league in leagues:
+            for league in leagues[::-1]:
                 if member_rating > league['min_rating'] and member_power < league['min_power']:
                     missing_power = int(league['min_power']) - int(member_power)
                     message = '%s can advance to %s league but needs %d more power.' % (member.title(), league['name'], missing_power)
                     embed.add_field(name=member.title(),
                                     value=message,
                                     inline=False)
+                    break
 
         await ctx.send(embed=embed)
 
@@ -1176,3 +1180,4 @@ async def on_command_error(ctx, error):
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot.run(TOKEN)
+#bot2.run(TOKEN)
