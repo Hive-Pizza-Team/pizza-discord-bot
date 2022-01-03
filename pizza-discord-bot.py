@@ -920,7 +920,7 @@ async def sl(ctx, subcommand, arg):
         delegations = {}
 
         guild_member_list = get_sl_guild_member_list()
-        guild_member_list_ext = [('cryptoniusrex','cryptoniusraptor')]
+        guild_member_list_ext = [('cryptoniusrex', 'cryptoniusraptor')]
 
         delegations_string = ''
         for member in guild_member_list:
@@ -1021,6 +1021,34 @@ async def sl(ctx, subcommand, arg):
             embed.add_field(name='Draws',
                             value='%d' % pizza_guild['draws'],
                             inline=True)
+        await ctx.send(embed=embed)
+
+    elif subcommand == 'guild' and arg == 'power':
+        if str(ctx.message.guild) != 'Hive Pizza':
+            await ctx.send('Command only available in Hive Pizza discord')
+            return
+        guild_members = get_sl_guild_member_list()
+
+        api = 'https://api2.splinterlands.com/settings'
+        games_settings = requests.get(api).json()
+        leagues = games_settings['leagues']
+
+        embed = discord.Embed(title='Collection Power Check for PIZZA Guilds', description='', color=0x336EFF)
+
+        for member in guild_members:
+            api = 'https://api2.splinterlands.com/players/details?name=%s' % member
+            member_info = requests.get(api).json()
+            member_rating = member_info['rating']
+            member_power = member_info['collection_power']
+
+            for league in leagues:
+                if member_rating > league['min_rating'] and member_power < league['min_power']:
+                    missing_power = int(league['min_power']) - int(member_power)
+                    message = '%s can advance to %s league but needs %d more power.' % (member.title(), league['name'], missing_power)
+                    embed.add_field(name=member.title(),
+                                    value=message,
+                                    inline=False)
+
         await ctx.send(embed=embed)
 
 # Exode related commands
