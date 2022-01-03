@@ -23,6 +23,7 @@ import traceback
 import sys
 from datetime import datetime, timedelta
 import dateutil.parser
+from operator import itemgetter
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.hive.blog'])
@@ -892,6 +893,10 @@ def get_sl_card_collection(player):
 async def sl(ctx, subcommand, arg):
     """player <player>: Check Splinterlands Player Stats.
        guildteamwork: Only available in HivePizza discord."""
+    GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf',
+                 '00fbd7938f9a652883e9b50f1a93c324b3646f0e',
+                 'e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
+
     if subcommand == 'player':
         player = arg
         api = 'https://api2.splinterlands.com/players/details?name=%s' % player
@@ -986,6 +991,37 @@ async def sl(ctx, subcommand, arg):
             time_remaining = combat_end_time - now
             await ctx.send('Combat ends in: %s' % (time_remaining))
 
+    elif subcommand == 'brawl' and arg == 'status':
+        if str(ctx.message.guild) != 'Hive Pizza':
+            await ctx.send('Command only available in Hive Pizza discord')
+            return
+        embed = discord.Embed(title='Brawl Status for PIZZA Guilds', description='', color=0x336EFF)
+        for guild_id in GUILD_IDS:
+            # get brawl ID
+            api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
+            guild_info = requests.get(api).json()
+            brawl_id = guild_info['tournament_id']
+
+            # get brawl start time
+            api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
+            brawl_info = requests.get(api).json()
+
+            pizza_guild_index = list(map(itemgetter('id'), brawl_info['guilds'])).index(guild_id)
+            pizza_guild = brawl_info['guilds'][pizza_guild_index]
+
+            embed.add_field(name='%s - %s' % (guild_info['name'], 'Rank %d' % (pizza_guild_index + 1)),
+                            value='Remaining Battles: %d' % (pizza_guild['total_battles'] - pizza_guild['completed_battles']),
+                            inline=False)
+            embed.add_field(name='Wins',
+                            value='%d' % pizza_guild['wins'],
+                            inline=True)
+            embed.add_field(name='Losses',
+                            value='%d' % pizza_guild['losses'],
+                            inline=True)
+            embed.add_field(name='Draws',
+                            value='%d' % pizza_guild['draws'],
+                            inline=True)
+        await ctx.send(embed=embed)
 
 # Exode related commands
 
