@@ -412,7 +412,10 @@ async def gif(ctx, category=''):
     """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt."""
     gif_set = PIZZA_GIFS
 
+    #category=''
+
     if not category:
+        print(str(ctx))
         guild = str(ctx.message.guild)
         if guild == 'Hive Pizza':
             gif_set = PIZZA_GIFS
@@ -461,8 +464,8 @@ async def gif(ctx, category=''):
 
     embed = discord.Embed()
     embed.set_image(url=gif_url)
-    await ctx.send(embed=embed)
-
+    #await ctx.send(embed=embed)
+    await ctx.send(gif_url)
 
 @bot.command()
 async def info(ctx):
@@ -915,7 +918,7 @@ async def sl(ctx, subcommand, arg):
 
         await ctx.send(embed=embed)
 
-    elif subcommand == 'guildteamwork':
+    elif subcommand == 'guild' and arg == 'teamwork':
         if str(ctx.message.guild) != 'Hive Pizza':
             await ctx.send('Command only available in Hive Pizza discord')
             return
