@@ -976,23 +976,32 @@ async def sl(ctx, subcommand, arg):
         await ctx.send(embed=embed)
 
     elif subcommand == 'brawl' and arg == 'timer':
-        # get brawl ID
-        api = 'https://api2.splinterlands.com/guilds/find?id=d258d4e976c88fe47ca89f987f52efaf305b2ccf&ext=brawl'
-        brawl_id = requests.get(api).json()['tournament_id']
+        embed = discord.Embed(title='Brawl Timers for PIZZA Guilds', description='', color=0x336EFF)
+        for guild_id in GUILD_IDS:
+            # get brawl ID
+            api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
+            guild_info = requests.get(api).json()
+            guild_name = guild_info['name']
+            brawl_id = guild_info['tournament_id']
+            tournament_status = guild_info['tournament_status']
 
-        # get brawl start time
-        api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=d258d4e976c88fe47ca89f987f52efaf305b2ccf' % brawl_id
-        brawl_start_time = requests.get(api).json()['start_date']
-        combat_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
-        combat_end_time = combat_start_time + timedelta(hours=48)
-        now = datetime.utcnow()
+            # get brawl start time
+            api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
+            brawl_start_time = requests.get(api).json()['start_date']
+            combat_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
+            combat_end_time = combat_start_time + timedelta(hours=48)
+            now = datetime.utcnow()
 
-        if now < combat_start_time:
-            time_remaining = combat_start_time - now
-            await ctx.send('Combat starts in: %s' % (time_remaining))
-        else:
-            time_remaining = combat_end_time - now
-            await ctx.send('Combat ends in: %s' % (time_remaining))
+            if now < combat_start_time:
+                time_remaining = combat_start_time - now
+                embed.add_field(name=guild_name, value='Combat starts in: %s' % time_remaining, inline=False)
+            elif tournament_status == 2:
+                embed.add_field(name=guild_name, value='Waiting for next brawl', inline=False)
+            else:
+                time_remaining = combat_end_time - now
+                embed.add_field(name=guild_name, value='Combat ends in: %s' % time_remaining, inline=False)
+
+        await ctx.send(embed=embed)
 
     elif subcommand == 'brawl' and arg == 'status':
         if str(ctx.message.guild) != 'Hive Pizza':
