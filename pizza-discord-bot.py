@@ -3,7 +3,7 @@
 import os
 import discord
 from discord.ext import commands, tasks
-#from discord_slash import SlashCommand, SlashContext
+from discord_slash import SlashCommand, SlashContext
 #from discord_slash.utils.manage_components import create_button, create_actionrow
 #from discord_slash.model import ButtonStyle
 from dotenv import load_dotenv
@@ -43,7 +43,8 @@ CONFIG_FILE = 'config.json'
 # Miscellaneous defines
 MARKET_HISTORY_URL = 'https://history.hive-engine.com/marketHistory?symbol=%s&volumetoken'
 
-PIZZA_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4qKCGujxK4BvoMKN5RcN7sfaEJ5NKJtep8rt9afWsVtg3Kvjtq1pDjS.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23zGqBEBBrndd2a4j4sFd7pfokJbPP78MUeXbhTF7tpkm68TDPNKpyEQx6SyXfw2TvxCc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xouo4FKcHyERYKyiEm4x425LXY5UZsLSbwPtftnNGdqpGPpP9TwJ6k3WfLGw7dRi8ix.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wqthb5pRQCesbcTuqXfTcNtjLsRRRTpEUfTaMAqm1h8jVmEgYikZjf2edLHrRcoDriQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23yd8DEejLwG8jbK6yiHPUqaQqC2rWNvVjANJcC5J5LQM3NKz9SHZZqCy9Lzg1YsnoR5W.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DXLG4DJojrUAscw229UnyJkGma6C1QoCQjngcVG2LFbkaTdN4oJw9WgLLxV3N2oWLc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23sdt4qbqaFxwbYhkYuviGR8kBeGLTYeaveqjXiwGSRUbxyV5J5rusMoXD1AGk2JhpDsi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wX5M8YHK92Kzmr8gAE1mZRePnsG96StjiPPnDYGcdq6BD3BkmMb7jLrCiPVrGRKsbBi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xL35bVpiQbPTwnuBMMPsEpSbApf598uVE9fMXq8SKj5Hzh2ik4CnHYWcRNBriXkk5gQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DQXTLyKebw5oUNSqsNPvoqPDXCgPKafnoB2zE7bBqyfCAKxKL44r4SarskWCmYY4Lc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242s64cMzwVBDgMuApdLgtJrj4G4Qt3dTjJuKWFb4MXCvwiXAorV25iTUMFjU4gPm1azQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23y92ccQqXL7ixb1AYUg8T6yHRAEiLptBYhuoahFeh8uU8FXt1WFhJBwLysktbFdC46Gc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242Nt1WKYcjivqc1FPyfqwQ6vkTs7sznxWKYagPhc7TQ4v8VSYNA46NEswjkZeiSxuRAC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xKxeFC2EKESp2cQ3MrPHcAHEaFtvf2mekStgrqqSxYS5rL7PnfmNwoWVQbdJwJS6zQt.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242hfEv5oigYcb19z6ZDEPANTmAn1rWub84KKSJqdbtenEWhPxK2H1tqwanWzTrXZC3LQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xerFt4yJKoK1hhVdzVEYpKMKbGUHaW9SR3g7os8UmqAZLsnhs5QgWGeD9NNk72FNGxC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/243Bpw3x8jfheRpNACEc9fjrrLvn2Qtw8KQwhwscRjLc8BNfhxktPjuLDvnjTv7wCeLVi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xAcRA5z5PG8aNLzq3jcDrSwP6eVYAagSSooGTzWQ4TZHPvNH8Ccc16zwtP6y3fkgX1e.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23zGkxUGqyXMTN7rVm2EPkLr6dsnk4T4nFyrEBejS9WB2VbKpJ3P356EcQjcrMF6gRTbz.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23x17QUuztsLf64Mav8m59nuRF4B9k3RAV6QGrtpvmc3hA9bxSJ2URkW7fuYSfaRLKAq2.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpKDUUZXfKhB9t5HqVEyqqd9ryYUkwTE2fgfZR6wAyzkPrjUY9rMpSP6zkrmXTUtBCQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wr1XodaTgJAVzDu9sEV7q5r6RV3QppV2Nvxty4vD6BwYdHQLKGhgsynnz4fFC2GYyZW.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wr1BUi29btm7eRvcRbqee2e52DCmH5x5HWLVrrQ7GqLc5UQMYawfsHTAsgCLghj5Kwa.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23z7SiUwzPi3WQ1nS8Lk4qBUqKtmgZRRTuQZP54mRiDpi8A22pk1ScoFgVa8CyhqQsAuS.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpJztdYA9RpUnMRWDyYsWyixmqFMRSpix52vvx1vuxJSZHJL45YWmb9rUsswymZaSFE.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xyhemVn25gUt2p6JCHQ3hBjJyaz7d8hvmNusti9GNbjj8jToVFL4FaouPhkVoRYNnng.gif','https://files.peakd.com/file/peakd-hive/pizzabot/Ep1ZrmXNXjF4ZEYpXjJAVNThmFrQT3m4Q6jfxreCg1w7z81af8DHHZzeKk9QKy1Got8.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wqwJUY56PuyQS3doAHbLfsjnNTcqLUry1cSmoSyGmRc49BswoxTGYhySmrXuevYWCJg.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23yTqi8V4mqNvq5nfFNt69AC2tMc5ou3FZ6r9AzfxuPEyQbrX8CBDEMXcjNNmTMTCMnXv.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DhzmX9cZCijjJpD1qwqvcRdJMHPsxvsfesBYkQUVpXpn5s3g9SewPCeiJ1ne4zUC7N.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpKbgbo6LSPutm7ntaeVDiVJfdaxiJGhs8N4sve1MNdENuRAKw37uJbutCNBqj2M7vU.gif','https://files.peakd.com/file/peakd-hive/pizzabot/EopwGAarumCksxjQEeMsTXTDeMw16kD35cciBsiJFWbbBV8nGVyGAXtn4tScHTWQmvC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wgeYo6ULhiwyKEtKNpNfyU3oEn9zWJpKbSU2Hj5u11rn2YQr2wNoUUVrv1bBvMHgifn.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xyfe5dT4xLHwJbamNCJUXpQuuV9kLucPMPXJsi74VoLq5bHBTrdkhVjyagno78r3F1n.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wMihvfhNfs4b1MKhb9bNdhEbeZoXTDkud331QCbL64zaxG6p9GuAbydjEUVczCDd49i.gif']
+PIZZA_GIFS = ['https://tenor.com/bOpfE.gif','https://tenor.com/bOphp.gif','https://tenor.com/bOpms.gif','https://tenor.com/bLZrj.gif']
+PIZZA_SUB_GIFS = ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4qKCGujxK4BvoMKN5RcN7sfaEJ5NKJtep8rt9afWsVtg3Kvjtq1pDjS.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23zGqBEBBrndd2a4j4sFd7pfokJbPP78MUeXbhTF7tpkm68TDPNKpyEQx6SyXfw2TvxCc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xouo4FKcHyERYKyiEm4x425LXY5UZsLSbwPtftnNGdqpGPpP9TwJ6k3WfLGw7dRi8ix.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wqthb5pRQCesbcTuqXfTcNtjLsRRRTpEUfTaMAqm1h8jVmEgYikZjf2edLHrRcoDriQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23yd8DEejLwG8jbK6yiHPUqaQqC2rWNvVjANJcC5J5LQM3NKz9SHZZqCy9Lzg1YsnoR5W.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DXLG4DJojrUAscw229UnyJkGma6C1QoCQjngcVG2LFbkaTdN4oJw9WgLLxV3N2oWLc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23sdt4qbqaFxwbYhkYuviGR8kBeGLTYeaveqjXiwGSRUbxyV5J5rusMoXD1AGk2JhpDsi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wX5M8YHK92Kzmr8gAE1mZRePnsG96StjiPPnDYGcdq6BD3BkmMb7jLrCiPVrGRKsbBi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xL35bVpiQbPTwnuBMMPsEpSbApf598uVE9fMXq8SKj5Hzh2ik4CnHYWcRNBriXkk5gQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DQXTLyKebw5oUNSqsNPvoqPDXCgPKafnoB2zE7bBqyfCAKxKL44r4SarskWCmYY4Lc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242s64cMzwVBDgMuApdLgtJrj4G4Qt3dTjJuKWFb4MXCvwiXAorV25iTUMFjU4gPm1azQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23y92ccQqXL7ixb1AYUg8T6yHRAEiLptBYhuoahFeh8uU8FXt1WFhJBwLysktbFdC46Gc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242Nt1WKYcjivqc1FPyfqwQ6vkTs7sznxWKYagPhc7TQ4v8VSYNA46NEswjkZeiSxuRAC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xKxeFC2EKESp2cQ3MrPHcAHEaFtvf2mekStgrqqSxYS5rL7PnfmNwoWVQbdJwJS6zQt.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242hfEv5oigYcb19z6ZDEPANTmAn1rWub84KKSJqdbtenEWhPxK2H1tqwanWzTrXZC3LQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xerFt4yJKoK1hhVdzVEYpKMKbGUHaW9SR3g7os8UmqAZLsnhs5QgWGeD9NNk72FNGxC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/243Bpw3x8jfheRpNACEc9fjrrLvn2Qtw8KQwhwscRjLc8BNfhxktPjuLDvnjTv7wCeLVi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xAcRA5z5PG8aNLzq3jcDrSwP6eVYAagSSooGTzWQ4TZHPvNH8Ccc16zwtP6y3fkgX1e.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23zGkxUGqyXMTN7rVm2EPkLr6dsnk4T4nFyrEBejS9WB2VbKpJ3P356EcQjcrMF6gRTbz.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23x17QUuztsLf64Mav8m59nuRF4B9k3RAV6QGrtpvmc3hA9bxSJ2URkW7fuYSfaRLKAq2.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpKDUUZXfKhB9t5HqVEyqqd9ryYUkwTE2fgfZR6wAyzkPrjUY9rMpSP6zkrmXTUtBCQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wr1XodaTgJAVzDu9sEV7q5r6RV3QppV2Nvxty4vD6BwYdHQLKGhgsynnz4fFC2GYyZW.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wr1BUi29btm7eRvcRbqee2e52DCmH5x5HWLVrrQ7GqLc5UQMYawfsHTAsgCLghj5Kwa.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23z7SiUwzPi3WQ1nS8Lk4qBUqKtmgZRRTuQZP54mRiDpi8A22pk1ScoFgVa8CyhqQsAuS.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpJztdYA9RpUnMRWDyYsWyixmqFMRSpix52vvx1vuxJSZHJL45YWmb9rUsswymZaSFE.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xyhemVn25gUt2p6JCHQ3hBjJyaz7d8hvmNusti9GNbjj8jToVFL4FaouPhkVoRYNnng.gif','https://files.peakd.com/file/peakd-hive/pizzabot/Ep1ZrmXNXjF4ZEYpXjJAVNThmFrQT3m4Q6jfxreCg1w7z81af8DHHZzeKk9QKy1Got8.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wqwJUY56PuyQS3doAHbLfsjnNTcqLUry1cSmoSyGmRc49BswoxTGYhySmrXuevYWCJg.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23yTqi8V4mqNvq5nfFNt69AC2tMc5ou3FZ6r9AzfxuPEyQbrX8CBDEMXcjNNmTMTCMnXv.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DhzmX9cZCijjJpD1qwqvcRdJMHPsxvsfesBYkQUVpXpn5s3g9SewPCeiJ1ne4zUC7N.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpKbgbo6LSPutm7ntaeVDiVJfdaxiJGhs8N4sve1MNdENuRAKw37uJbutCNBqj2M7vU.gif','https://files.peakd.com/file/peakd-hive/pizzabot/EopwGAarumCksxjQEeMsTXTDeMw16kD35cciBsiJFWbbBV8nGVyGAXtn4tScHTWQmvC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wgeYo6ULhiwyKEtKNpNfyU3oEn9zWJpKbSU2Hj5u11rn2YQr2wNoUUVrv1bBvMHgifn.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xyfe5dT4xLHwJbamNCJUXpQuuV9kLucPMPXJsi74VoLq5bHBTrdkhVjyagno78r3F1n.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wMihvfhNfs4b1MKhb9bNdhEbeZoXTDkud331QCbL64zaxG6p9GuAbydjEUVczCDd49i.gif']
 PINEAPPLE_GIFS = ['https://media.giphy.com/media/0gYYWq5dHfhnYVrYtI/giphy.gif', 'https://media.giphy.com/media/7gXkay4o8FnFzT7uJo/giphy.gif', 'https://media.giphy.com/media/pz4hZwrBZn4EGxpMlG/giphy.gif', 'https://media.giphy.com/media/ZDgaXZjeKWnzuf5RRF/giphy.gif', 'https://media.giphy.com/media/vxyDfIe3iRXhsJ7z5r/giphy.gif', 'https://media.giphy.com/media/Ganp5Ne5MdzkdupCRF/giphy.gif', 'https://media.giphy.com/media/tIxf5oMxG1PWUYJEcL/giphy.gif', 'https://media.giphy.com/media/JG2ziQmGrc0MrHzGuj/giphy.gif', 'https://media.giphy.com/media/uVW9moVaAR47Vgj7D0/giphy.gif', 'https://media.giphy.com/media/rHLj0lWywWuaeGiSTF/giphy.gif', 'https://media.giphy.com/media/XCvm5Oo6wEVJmxRx7V/giphy.gif', 'https://media.giphy.com/media/7b6sSJEEBqWatW2MYn/giphy.gif', 'https://media.giphy.com/media/18odCx2irVLDrvO3fY/giphy.gif', 'https://media.giphy.com/media/3g23LxFceQW8poMpTs/giphy.gif', 'https://media.giphy.com/media/N1ZxRLeX5wIz9Tvs8X/giphy.gif', 'https://media.giphy.com/media/ZwPHgEzoTcyKtaIlId/giphy.gif', 'https://media.giphy.com/media/9FmzQEdSbuSXcsPXCT/giphy.gif', 'https://media.giphy.com/media/WFdZOAE8OYcq5tSXee/giphy.gif', 'https://media.giphy.com/media/Bns85ZwsExoGgsKMmK/giphy.gif', 'https://media.giphy.com/media/Caoow9v9MRNIqmoFJJ/giphy.gif', 'https://media.giphy.com/media/3rTPQ1jH5osS4aBX8D/giphy.gif', 'https://media.giphy.com/media/FAqmU08XQKcGzzTpwO/giphy.gif', 'https://media.giphy.com/media/mQnBlO24UTPN723dpe/giphy.gif', 'https://media.giphy.com/media/RGV125iyT97ONLweyx/giphy.gif', 'https://media.giphy.com/media/vH5awikXqtANyuob7T/giphy.gif']
 BRO_GIFS = ['https://media.giphy.com/media/Q7dRGcu38WqGnb7nnI/giphy.gif', 'https://media.giphy.com/media/V9RSXFgeldCNKLCydK/giphy.gif', 'https://media.giphy.com/media/jSKXXzMxL55JUN93Q6/giphy.gif', 'https://media.giphy.com/media/XKXP9qdvV14N445Im4/giphy.gif', 'https://media.giphy.com/media/GaySGYuvjk2u2ql7XU/giphy.gif', 'https://media.giphy.com/media/tUgNHh1rupdbZ30mrP/giphy.gif', 'https://media.giphy.com/media/41bHp9qHeO9G2RKKFs/giphy.gif', 'https://media.giphy.com/media/PVRn0PcZ1las7eow4J/giphy.gif', 'https://media.giphy.com/media/7gZ7c3LJZ9Z8l85EtY/giphy.gif', 'https://media.giphy.com/media/v8jgENvvlegjuxLOmc/giphy.gif', 'https://media.giphy.com/media/tbYfDQ8fX8siY80sBN/giphy.gif', 'https://media.giphy.com/media/WFHauwzA2gcVhXxMuH/giphy.gif', 'https://media.giphy.com/media/65yRhgpIYVcB8SICtF/giphy.gif', 'https://media.giphy.com/media/mkN81kU4YqteLCqPvU/giphy.gif', 'https://media.giphy.com/media/o6Dfmyj2p4S5a3oxz6/giphy.gif', 'https://media.giphy.com/media/A66FeQBsflVqikTe3m/giphy.gif', 'https://media.giphy.com/media/EDCIaFhFaAYsdkbwgd/giphy.gif', 'https://media.giphy.com/media/rGh7YlCLOkqlyOFpq9/giphy.gif', 'https://media.giphy.com/media/v32eWRX8XE8Vh2l44h/giphy.gif', 'https://media.giphy.com/media/6nVXn29SXPMHiPKgXi/giphy.gif', 'https://media.giphy.com/media/w67kdyKjyNr2Xeb3fM/giphy.gif', 'https://media.giphy.com/media/piNBUyg9b7yAFSexql/giphy.gif', 'https://media.giphy.com/media/umiHQSmGsF5EiVSAv6/giphy.gif', 'https://media.giphy.com/media/CyKE41GQ2srFBIHTiL/giphy.gif', 'https://media.giphy.com/media/9fnjcqc49X3uqjlZra/giphy.gif']
 RISINGSTAR_GIFS = ['https://media.giphy.com/media/4fKFmbMTl2guk1n6y2/giphy.gif', 'https://media.giphy.com/media/T9QH5wAUPT8o2trbjD/giphy.gif', 'https://media.giphy.com/media/gL8iKEDRWzCdl6nk5G/giphy.gif', 'https://media.giphy.com/media/NchY6QQ2hzQisINQjA/giphy.gif', 'https://media.giphy.com/media/EkVBC57QI4U9IQfkY2/giphy.gif', 'https://media.giphy.com/media/IVYphXkTnL7EXn0gs3/giphy.gif', 'https://media.giphy.com/media/zj2H8HhLVtWnuGYqhx/giphy.gif', 'https://media.giphy.com/media/LDQqkkB1nhIr1kFsu7/giphy.gif', 'https://media.giphy.com/media/yHc7yfgyXRhLa5Q0qJ/giphy.gif', 'https://media.giphy.com/media/uYxnx1eiuhW97JvOAi/giphy.gif', 'https://media.giphy.com/media/jTTZ6zIsbcuRLisxLb/giphy.gif', 'https://media.giphy.com/media/Um2rquzMWZKQUbpT0I/giphy.gif', 'https://media.giphy.com/media/iH7FY0ukmmetUZHT0K/giphy.gif', 'https://media.giphy.com/media/rJ6tKAaV0IkvjH0ys4/giphy.gif', 'https://media.giphy.com/media/LUKMkHzmJkaCkpvHVg/giphy.gif', 'https://media.giphy.com/media/6YFeS3ejyheLd96ibx/giphy.gif', 'https://media.giphy.com/media/9zjksORdGKFecNYjUk/giphy.gif', 'https://media.giphy.com/media/Gk1Ch0WHuqknkBjLIn/giphy.gif', 'https://media.giphy.com/media/MjOvM7AdJDtKBKckJT/giphy.gif', 'https://media.giphy.com/media/i5XGW0zW6prU3L0WRM/giphy.gif', 'https://media.giphy.com/media/uYX7r0u449s49oWFLY/giphy.gif', 'https://media.giphy.com/media/QU0uxCUe6qVmwoLErs/giphy.gif', 'https://media.giphy.com/media/DSwdsnBw1qbLfL4NaB/giphy.gif', 'https://media.giphy.com/media/BY2W5iI5TrqVbC3eYo/giphy.gif', 'https://media.giphy.com/media/6kzDBcHoWzcwTbSSU8/giphy.gif']
@@ -231,9 +232,8 @@ async def update_bot_user_status(bot):
 
 custom_prefixes = read_config_file()
 default_prefix = '!'
-bot = commands.Bot(command_prefix=determine_prefix)
-#bot2 = discord.Client(intents=discord.Intents.default())
-#slash = SlashCommand(bot2)
+bot = commands.Bot(command_prefix=determine_prefix, intents=discord.Intents.default())
+slash = SlashCommand(bot)
 
 
 @bot.event
@@ -271,8 +271,6 @@ cog = PizzaCog(bot)
 async def prefix(ctx, arg=''):
     """<prefix> : Admin-only - print and change bot's command prefix."""
     # get current prefix
-
-    print(ctx)
 
     if arg == '':
         prefix = await determine_prefix(bot, ctx.message)
@@ -404,19 +402,13 @@ async def price(ctx, symbol=''):
     await ctx.send(embed=embed)
 
 
-@bot.command()
-@commands.guild_only()
-#@slash.slash(name="gif")
-#async def gif(ctx: SlashContext):
+@slash.slash(name="gif")
 async def gif(ctx, category=''):
     """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt."""
     gif_set = PIZZA_GIFS
 
-    #category=''
-
     if not category:
-        print(str(ctx))
-        guild = str(ctx.message.guild)
+        guild = str(ctx.author.guild.name)
         if guild == 'Hive Pizza':
             gif_set = PIZZA_GIFS
         elif guild == 'Rising Star Game':
@@ -462,8 +454,8 @@ async def gif(ctx, category=''):
 
     gif_url = random.choice(gif_set)
 
-    embed = discord.Embed()
-    embed.set_image(url=gif_url)
+    #embed = discord.Embed(title='.', color=0x43aa8b)
+    #embed.set_image(url=gif_url)
     #await ctx.send(embed=embed)
     await ctx.send(gif_url)
 
@@ -1126,6 +1118,38 @@ async def rsplayer(ctx, player):
     await ctx.send(embed=embed)
 
 
+## Hash Kings commands
+@slash.slash(name='hkplayer')
+async def hkplayer(ctx, player):
+    """Fetch HashKings player info."""
+
+    api = 'https://hashkings.xyz/userdata/%s' % player
+    profile = requests.get(api).json()
+
+    embed = discord.Embed(title='Hash Kings Profile for @%s' % player, description='', color=0xf3722c)
+
+    message = 'Hash Kings profile for %s\n' % player
+    for key in ['plotCount', 'seedCount', 'xp', 'lvl']:
+        prettyname = key
+        if prettyname == 'plotCount':
+            prettyname = 'Plot Count'
+        elif prettyname == 'seedCount':
+            prettyname = 'Seed Count'
+        elif prettyname == 'xp':
+            prettyname = 'XP'
+        elif prettyname == 'lvl':
+            prettyname = 'Level'
+
+        embed.add_field(name=prettyname, value=profile[key], inline=True)
+
+    embed.add_field(name='Buds', value=profile['tokens']['buds']['balance'], inline=True)
+    embed.add_field(name='Mota', value=profile['tokens']['mota']['balance'], inline=True)
+    embed.add_field(name='Mota (staked)', value=profile['tokens']['mota']['stake'], inline=True)
+    embed.add_field(name='HKWater', value=profile['tokens']['hkwater']['balance'], inline=True)
+
+    await ctx.send(embed=embed)
+
+
 @bot.command()
 async def apr(ctx, delegation_amount, pool_size=350):
     """<delegation amount>: Calculate approx. APR for HP delegation."""
@@ -1192,4 +1216,3 @@ async def on_command_error(ctx, error):
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot.run(TOKEN)
-#bot2.run(TOKEN)
