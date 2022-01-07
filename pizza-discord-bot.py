@@ -1205,7 +1205,27 @@ async def links(ctx):
 @slash.slash(name="rc")
 async def rc(ctx, wallet):
     """Print Hive resource credits info for wallet."""
-    await ctx.send('Coming soon...')
+    rc = beem.rc.RC(hive_instance=hive)
+    comment_cost = rc.comment()
+    vote_cost = rc.vote()
+    json_cost = rc.custom_json()
+    account_cost = rc.claim_account()
+
+    acc = beem.account.Account(wallet, blockchain_instance=hive)
+    mana = acc.get_rc_manabar()['current_mana']
+
+    possible_jsons = int(mana / json_cost)
+    possible_votes = int(mana / vote_cost)
+    possible_comments = int(mana / comment_cost)
+    possible_accounts = int(mana / account_cost)
+
+    current_pct = float(acc.get_rc_manabar()['current_pct'])
+    embed = discord.Embed(title='Hive Resource Credits for @%s' % wallet, description='RC manabar is at %0.3f%%' % current_pct, color=0xf3722c)
+    embed.add_field(name='Account Claims ', value='~ %d' % possible_accounts, inline=True)
+    embed.add_field(name='Comments/Posts', value='~ %d' % possible_comments, inline=True)
+    embed.add_field(name='Votes', value='~ %d' % possible_votes, inline=True)
+    embed.add_field(name='CustomJSONs', value='~ %d' % possible_jsons , inline=True)
+    await ctx.send(embed=embed)
 
 @bot.event
 async def on_command_error(ctx, error):
