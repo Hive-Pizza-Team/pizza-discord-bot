@@ -1197,6 +1197,7 @@ async def links(ctx):
     embed.add_field(name='Exode', value='https://hive.pizza/exode', inline=False)
     embed.add_field(name='Rising Star', value='https://hive.pizza/risingstar', inline=False)
     embed.add_field(name='NFTShowroom', value='https://hive.pizza/nftshowroom', inline=False)
+    embed.add_field(name='dCrops', value='https://hive.pizza/dcrops', inline=False)
     embed.add_field(name='top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
 
     await ctx.send(embed=embed)
