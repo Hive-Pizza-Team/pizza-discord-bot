@@ -240,6 +240,8 @@ slash = SlashCommand(bot)
 async def on_ready():
     """Event handler for bot comnnection."""
     print(f'{bot.user} has connected to Discord!')
+    print('Serving %d guilds and %d users.' % (len(bot.guilds),len(bot.users)))
+
     await update_bot_user_status(bot)
 
 
@@ -1228,6 +1230,14 @@ async def rc(ctx, wallet):
     embed.add_field(name='CustomJSONs', value='~ %d' % possible_jsons , inline=True)
     await ctx.send(embed=embed)
 
+
+@bot.command(name="status")
+async def status(ctx):
+    """Print bot's status information."""
+    message = 'Serving %d guilds and %d users.' % (len(bot.guilds),len(bot.users))
+    await ctx.send(message)
+
+
 @bot.event
 async def on_command_error(ctx, error):
     """Return a nice error message for unrecognized commands."""
@@ -1242,3 +1252,4 @@ async def on_command_error(ctx, error):
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot.run(TOKEN)
+
