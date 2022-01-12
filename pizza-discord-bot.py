@@ -1070,8 +1070,19 @@ async def sl(ctx, subcommand, arg):
         guild_members = get_sl_guild_member_list()
         embed = discord.Embed(title='Status for Splinter PIZZA Guilds', description='', color=0x336EFF)
 
-        guild_members = get_sl_guild_member_list()
-        embed.add_field(name='Total Members', value='%d' % len(guild_members), inline=False)
+        total_members = 0
+        for guild_id in GUILD_IDS:
+            api = 'https://api2.splinterlands.com/guilds/members?guild_id=' + guild_id
+            guild_members = requests.get(api).json()
+
+            api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
+            guild_details = requests.get(api).json()
+
+            member_list = [row['player'] for row in guild_members if row['status'] == 'active']
+            embed.add_field(name=guild_details['name'], value='%d' % len(member_list))
+            total_members += len(member_list)
+
+        embed.add_field(name='Total Guildies', value='%d' % total_members, inline=False)
         await ctx.send(embed=embed)
 
 # Exode related commands
