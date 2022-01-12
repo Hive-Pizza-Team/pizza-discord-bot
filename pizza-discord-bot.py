@@ -241,7 +241,12 @@ async def on_ready():
     """Event handler for bot comnnection."""
     print(f'{bot.user} has connected to Discord!')
     print('Serving %d guilds and %d users.' % (len(bot.guilds),len(bot.users)))
-
+    print('** Guilds')
+    for guild in bot.guilds:
+        print(guild)
+    print('** Users')
+    for user in bot.users:
+        print(user)
     await update_bot_user_status(bot)
 
 
@@ -1059,6 +1064,14 @@ async def sl(ctx, subcommand, arg):
                                     inline=False)
                     break
 
+        await ctx.send(embed=embed)
+
+    elif subcommand == 'guild' and arg == 'status':
+        guild_members = get_sl_guild_member_list()
+        embed = discord.Embed(title='Status for Splinter PIZZA Guilds', description='', color=0x336EFF)
+
+        guild_members = get_sl_guild_member_list()
+        embed.add_field(name='Total Members', value='%d' % len(guild_members), inline=False)
         await ctx.send(embed=embed)
 
 # Exode related commands
