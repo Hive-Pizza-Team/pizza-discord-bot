@@ -1219,12 +1219,13 @@ async def links(ctx):
     embed = discord.Embed(title='Hive.Pizza links', description='Please consider supporting Hive.Pizza by using these referral links.', color=0xf3722c)
     embed.add_field(name='Hive Signup (1)', value='https://hive.pizza/hiveonboard', inline=False)
     embed.add_field(name='Hive Signup (2)', value='https://hive.pizza/ecency', inline=False)
-    embed.add_field(name='Splinterlands', value='https://hive.pizza/splinterlands', inline=False)
-    embed.add_field(name='Exode', value='https://hive.pizza/exode', inline=False)
-    embed.add_field(name='Rising Star', value='https://hive.pizza/risingstar', inline=False)
-    embed.add_field(name='NFTShowroom', value='https://hive.pizza/nftshowroom', inline=False)
     embed.add_field(name='dCrops', value='https://hive.pizza/dcrops', inline=False)
-    embed.add_field(name='top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
+    embed.add_field(name='Exode', value='https://hive.pizza/exode', inline=False)
+    embed.add_field(name='NFTShowroom', value='https://hive.pizza/nftshowroom', inline=False)
+    embed.add_field(name='Rabona', value='https://hive.pizza/rabona', inline=False)
+    embed.add_field(name='Rising Star', value='https://hive.pizza/risingstar', inline=False)
+    embed.add_field(name='Splinterlands', value='https://hive.pizza/splinterlands', inline=False)
+    embed.add_field(name='Top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
 
     await ctx.send(embed=embed)
 
