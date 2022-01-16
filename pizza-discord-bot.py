@@ -24,6 +24,7 @@ import sys
 from datetime import datetime, timedelta
 import dateutil.parser
 from operator import itemgetter
+import time
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.hive.blog'])
@@ -93,7 +94,7 @@ async def determine_prefix(bot, message):
 
 def determine_native_token(ctx):
     """Determine which token symbol to use by default in the server."""
-    guild = str(ctx.message.guild)
+    guild = str(ctx.author.guild.name)
 
     if not guild:
         return DEFAULT_TOKEN_NAME
@@ -128,13 +129,16 @@ def get_market_history(symbol):
 
 def get_token_holders(symbol):
     """Get a list of wallets holding a Hive-Engine token."""
+    start_time = time.time()
     holder_count = 1000
     token_holders = []
+    token = Token(symbol, api=hiveengine_api)
     while holder_count == 1000:
-        response = Token(symbol, api=hiveengine_api).get_holder(offset=len(token_holders))
+        response = token.get_holder(offset=len(token_holders))
         holder_count = len(response)
         token_holders += response
-
+    end_time = time.time()
+    print('Time elapsed: %f' % (end_time - start_time))
     return token_holders
 
 
@@ -363,7 +367,13 @@ async def bals(ctx, wallet):
     """<wallet>: Print Hive-Engine wallet balances."""
     # hive engine token
     wallet = wallet.lower()
-    wallet_token_info = Wallet(wallet, blockchain_instance=hive, api=hiveengine_api)
+    wallet_token_info = None
+
+    try:
+        wallet_token_info = Wallet(wallet, blockchain_instance=hive, api=hiveengine_api)
+    except beem.exceptions.AccountDoesNotExistsException:
+        await ctx.send('Error: the wallet doesnt exist.')
+        return
 
     # sort by stake then balance
     wallet_token_info.sort(key=lambda elem: float(elem['stake']) + float(elem['balance']), reverse=True)
@@ -478,6 +488,8 @@ async def info(ctx):
 @bot.command()
 async def tokenomics(ctx, symbol=''):
     """<symbol> : Print Hive-Engine token distribution info."""
+    await ctx.send("... thinking ...")
+
     if not symbol:
         symbol = determine_native_token(ctx)
     symbol = symbol.upper()
@@ -533,6 +545,8 @@ async def tokenomics(ctx, symbol=''):
 @bot.command()
 async def top10(ctx, symbol=''):
     """<symbol> : Print Hive-Engine token rich list top 10."""
+    await ctx.send("... thinking ...")
+
     if not symbol:
         symbol = determine_native_token(ctx)
 
@@ -614,7 +628,6 @@ async def witness(ctx, name='pizza.witness'):
     name = name.lower()
     message_body = '```\n'
 
-    hive = beem.Hive()
     witness = Witness(name, blockchain_instance=hive)
 
     witness_json = witness.json()
