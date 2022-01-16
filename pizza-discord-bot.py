@@ -286,7 +286,7 @@ async def prefix(ctx, arg=''):
         prefix = await determine_prefix(bot, ctx.message)
         guild = ctx.message.guild
 
-        await ctx.send('Current prefix is: %s for guild: %s' % (prefix,guild))
+        await ctx.send('Current prefix is: %s for guild: %s' % (prefix, guild))
 
     else:
         guild = ctx.message.guild
@@ -295,7 +295,7 @@ async def prefix(ctx, arg=''):
             return
 
         custom_prefixes[str(guild.id)] = arg
-        await ctx.send('Changed prefix to: %s for guild: %s' % (arg,guild))
+        await ctx.send('Changed prefix to: %s for guild: %s' % (arg, guild))
         write_config_file(custom_prefixes)
 
 
@@ -1251,6 +1251,7 @@ async def links(ctx):
 
 
 @slash.slash(name="rc")
+@bot.command()
 async def rc(ctx, wallet):
     """Print Hive resource credits info for wallet."""
     rc = beem.rc.RC(hive_instance=hive)
