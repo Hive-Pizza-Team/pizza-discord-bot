@@ -64,6 +64,7 @@ ONEUP_GIFS = ['https://media.giphy.com/media/nNXcXGX65D5rXkpiJd/giphy.gif', 'htt
 
 
 def read_config_file():
+    """Read configuration data from disk."""
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, 'r') as configfile:
             configs = json.load(configfile)
@@ -75,12 +76,13 @@ def read_config_file():
 
 
 def write_config_file(custom_prefixes):
+    """Dump confguration data to disk."""
     with open(CONFIG_FILE, 'w') as configfile:
         configfile.write(json.dumps({'custom_prefixes': custom_prefixes}))
 
 
 async def determine_prefix(bot, message):
-
+    """Select command prefix to use."""
     guild = message.guild
     #Only allow custom prefixes in guild
     if guild:
@@ -90,6 +92,7 @@ async def determine_prefix(bot, message):
 
 
 def determine_native_token(ctx):
+    """Determine which token symbol to use by default in the server."""
     guild = str(ctx.message.guild)
 
     if not guild:
@@ -112,7 +115,7 @@ def determine_native_token(ctx):
 
 
 def get_market_history(symbol):
-
+    """Get market history for a Hive-Engine token."""
     order_count = 1000
     orders = []
     while order_count == 1000:
@@ -124,7 +127,7 @@ def get_market_history(symbol):
 
 
 def get_token_holders(symbol):
-
+    """Get a list of wallets holding a Hive-Engine token."""
     holder_count = 1000
     token_holders = []
     while holder_count == 1000:
@@ -136,6 +139,7 @@ def get_token_holders(symbol):
 
 
 def get_token_price_he_cg(coin):
+    """Get prices of token from Hive-Engine or CoinGecko."""
     coin = coin.lower()
 
     if coin == 'eth':
@@ -206,7 +210,7 @@ market price: $%.5f USD
 
 
 def get_coin_price(coin='hive'):
-    ''' Call into coingeck to get USD price of coins i.e. $HIVE '''
+    """Call into coingeck to get USD price of coins i.e. HIVE."""
     coingecko = CoinGeckoAPI()
     response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
 
@@ -241,12 +245,6 @@ async def on_ready():
     """Event handler for bot comnnection."""
     print(f'{bot.user} has connected to Discord!')
     print('Serving %d guilds and %d users.' % (len(bot.guilds),len(bot.users)))
-    print('** Guilds')
-    for guild in bot.guilds:
-        print(guild)
-    print('** Users')
-    for user in bot.users:
-        print(user)
     await update_bot_user_status(bot)
 
 
@@ -273,6 +271,7 @@ cog = PizzaCog(bot)
 # Bot commands
 
 
+@slash.slash(name="prefix")
 @bot.command()
 @commands.guild_only()
 async def prefix(ctx, arg=''):
@@ -311,6 +310,7 @@ def get_hive_power_delegations(wallet):
     return incoming_delegations_total
 
 
+@slash.slash(name="bal")
 @bot.command()
 async def bal(ctx, wallet, symbol=''):
     """<wallet> <symbol> : Print Hive-Engine wallet balances."""
@@ -357,6 +357,7 @@ async def bal(ctx, wallet, symbol=''):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="bals")
 @bot.command()
 async def bals(ctx, wallet):
     """<wallet>: Print Hive-Engine wallet balances."""
@@ -399,6 +400,7 @@ async def bals(ctx, wallet):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="price")
 @bot.command()
 async def price(ctx, symbol=''):
     """<symbol> : Print Hive-Engine / CoinGecko market price info."""
@@ -410,8 +412,9 @@ async def price(ctx, symbol=''):
 
 
 @slash.slash(name="gif")
+@bot.command()
 async def gif(ctx, category=''):
-    """ Drop a random GIF! Categories: pizza, bro, risingstar, pob, profound, battleaxe, englang, huzzah, beard, lego, blurt."""
+    """Drop a random GIF! Categories: pizza, risingstar, huzzah, beard."""
     gif_set = PIZZA_GIFS
 
     if not category:
@@ -460,23 +463,21 @@ async def gif(ctx, category=''):
         gif_set = PIZZA_GIFS
 
     gif_url = random.choice(gif_set)
-
-    #embed = discord.Embed(title='.', color=0x43aa8b)
-    #embed.set_image(url=gif_url)
-    #await ctx.send(embed=embed)
     await ctx.send(gif_url)
 
+
+@slash.slash(name="info")
 @bot.command()
 async def info(ctx):
-    """ Print Hive.Pizza project link """
+    """Print Hive.Pizza project link."""
     response = '''Learn more about $PIZZA @ https://hive.pizza'''
     await ctx.send(response)
 
 
+@slash.slash(name="tokenomics")
 @bot.command()
 async def tokenomics(ctx, symbol=''):
-    """<symbol> : Print Hive-Engine token distribution info"""
-
+    """<symbol> : Print Hive-Engine token distribution info."""
     if not symbol:
         symbol = determine_native_token(ctx)
     symbol = symbol.upper()
@@ -509,10 +510,8 @@ async def tokenomics(ctx, symbol=''):
     # count wallets with at least 10,000,000 tokens
     wallets_10000000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 10000000])
 
-        # count wallets with at least 100,000,000 tokens
+    # count wallets with at least 100,000,000 tokens
     wallets_100000000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 100000000])
-
-
 
     message = '''```
 %.4d wallets hold >            0 $%s
@@ -529,10 +528,11 @@ async def tokenomics(ctx, symbol=''):
     embed = discord.Embed(title='$%s Token Distribution' % symbol, description=message, color=0x43aa8b)
     await ctx.send(embed=embed)
 
+
+@slash.slash(name="top10")
 @bot.command()
 async def top10(ctx, symbol=''):
-    """<symbol> : Print Hive-Engine token rich list top 10"""
-
+    """<symbol> : Print Hive-Engine token rich list top 10."""
     if not symbol:
         symbol = determine_native_token(ctx)
 
@@ -570,13 +570,13 @@ async def top10(ctx, symbol=''):
         total_string += '%d. %s - %0.3f\n' % (count, account, total)
     embed.add_field(name='Top 10 $%s Total' % symbol, value=total_string, inline=True)
 
-
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="history")
 @bot.command()
 async def history(ctx, symbol=''):
-    """<symbol> : Print recent Hive-Engine token trade history"""
+    """<symbol> : Print recent Hive-Engine token trade history."""
     if symbol == '':
         symbol = determine_native_token(ctx)
 
@@ -588,15 +588,14 @@ async def history(ctx, symbol=''):
 
     message += '```'
 
-
     embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' % symbol, description=message, color=0x277da1)
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="blog")
 @bot.command()
 async def blog(ctx, name):
-    """<name> : Link to last post from blog"""
-
+    """<name> : Link to last post from blog."""
     from beem.discussions import Query, Discussions_by_blog
     q = Query(limit=10, tag=name)
     latest_blog = Discussions_by_blog(q)[0]
@@ -608,9 +607,10 @@ async def blog(ctx, name):
     await ctx.send(response)
 
 
+@slash.slash(name="witness")
 @bot.command()
 async def witness(ctx, name='pizza.witness'):
-    """<witness name>: Print Hive Witness Info"""
+    """<witness name>: Print Hive Witness Info."""
     name = name.lower()
     message_body = '```\n'
 
@@ -670,18 +670,17 @@ async def witness(ctx, name='pizza.witness'):
         embed.add_field(name='Rank', value='%d' % rank, inline=False)
         embed.add_field(name='Active Rank', value='%d' % active_rank, inline=False)
 
-
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="hewitness")
 @bot.command()
 async def hewitness(ctx, name='pizza-engine'):
-    """<witness name>: Print Hive-Engine Witness Info"""
-
+    """<witness name>: Print Hive-Engine Witness Info."""
     results = hiveengine_api.find('witnesses', 'witnesses', query={"account":{"$in":["%s" % name]}})
 
     embed = discord.Embed(title='Hive-Engine Witness info for @%s' % name, description='', color=0xf3722c)
-    
+
     if len(results) == 0:
         embed.add_field(name='Hive-Engine Witness %s' % name, value='Not Found')
     else:
@@ -690,14 +689,13 @@ async def hewitness(ctx, name='pizza-engine'):
             if key not in ['_id','signingKey','IP','RPCPort','P2PPort','approvalWeight']:
                 embed.add_field(name=key, value=result[key], inline=True)
 
-
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="pools")
 @bot.command()
 async def pools(ctx, wallet):
-    """<wallet>: Check Hive-Engine DIESEL Pool Balances for Wallet"""
-
+    """<wallet>: Check Hive-Engine DIESEL Pool Balances for Wallet."""
     results = hiveengine_api.find('marketpools', 'liquidityPositions', query={"account":"%s" % wallet})
     embed = discord.Embed(title='DIESEL Pool info for @%s' % wallet, description='', color=0xf3722c)
 
@@ -707,9 +705,10 @@ async def pools(ctx, wallet):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="pool")
 @bot.command()
 async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
-    """<pool>: Check Hive-Engine DIESEL Pool Info"""
+    """<pool>: Check Hive-Engine DIESEL Pool Info."""
     pool = pool.upper()
 
     results = hiveengine_api.find('marketpools', 'pools', query={"tokenPair":{"$in":["%s" % pool]}})
@@ -724,7 +723,6 @@ async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
             if key not in ['_id','precision','creator']:
                 embed.add_field(name=key, value=result[key], inline=True)
 
-
         results = hiveengine_api.find('marketpools', 'liquidityPositions', query={"tokenPair":{"$in":["%s" % pool]}})
         results = sorted(results, key= lambda a: float(a['shares']), reverse=True)[0:13]
         for result in results:
@@ -734,9 +732,10 @@ async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="poolrewards")
 @bot.command()
 async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
-    """<pool>: Check Hive-Engine DIESEL Pool Rewards Info"""
+    """<pool>: Check Hive-Engine DIESEL Pool Rewards Info."""
     pool = pool.upper()
 
     query = {
@@ -766,9 +765,10 @@ async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="buybook")
 @bot.command()
 async def buybook(ctx, symbol=''):
-    """<symbol>: Check Hive-Engine buy book for token"""
+    """<symbol>: Check Hive-Engine buy book for token."""
     if not symbol:
         symbol = determine_native_token(ctx)
 
@@ -784,10 +784,10 @@ async def buybook(ctx, symbol=''):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="sellbook")
 @bot.command()
 async def sellbook(ctx, symbol=''):
-    """<symbol>: Check Hive-Engine sell book for token"""
-
+    """<symbol>: Check Hive-Engine sell book for token."""
     if not symbol:
         symbol = determine_native_token(ctx)
 
@@ -803,9 +803,10 @@ async def sellbook(ctx, symbol=''):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="dluxnodes")
 @bot.command()
 async def dluxnodes(ctx):
-    """Check DLUX Nodes Status"""
+    """Check DLUX Nodes Status."""
     coinapi = 'http://dlux-token.herokuapp.com'
     runners = requests.get('%s/runners' % coinapi).json()['runners']
     queue = requests.get('%s/queue' % coinapi).json()['queue']
@@ -894,10 +895,14 @@ def get_sl_card_collection(player):
     return cards
 
 
+@slash.slash(name="sl")
 @bot.command()
 async def sl(ctx, subcommand, arg):
-    """player <player>: Check Splinterlands Player Stats.
-       guildteamwork: Only available in HivePizza discord."""
+    """
+    Player <player>: Check Splinterlands Player Stats.
+
+    guildteamwork: Only available in HivePizza discord.
+    """
     GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf',
                  '00fbd7938f9a652883e9b50f1a93c324b3646f0e',
                  'e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
@@ -1085,8 +1090,9 @@ async def sl(ctx, subcommand, arg):
         embed.add_field(name='Total Guildies', value='%d' % total_members, inline=False)
         await ctx.send(embed=embed)
 
-# Exode related commands
 
+# Exode related commands
+@slash.slash(name="exodecards")
 @bot.command()
 async def exodecards(ctx, player):
     """<player>: Get a player's Exode card collection info."""
@@ -1106,12 +1112,12 @@ async def exodecards(ctx, player):
     embed.add_field(name='Packs count', value=len(packs), inline=True)
     embed.add_field(name='Total market value', value='$%0.3f' % (sum(market_prices)+sum(pack_market_prices)), inline=True)
 
-
     await ctx.send(embed=embed)
 
 
 # Rising Star related commands
 
+@slash.slash(name="rsplayer")
 @bot.command()
 async def rsplayer(ctx, player):
     """<player>: Check Rising Star Player Stats."""
@@ -1144,11 +1150,11 @@ async def rsplayer(ctx, player):
     await ctx.send(embed=embed)
 
 
-## Hash Kings commands
+# Hash Kings commands
 @slash.slash(name='hkplayer')
+@bot.command()
 async def hkplayer(ctx, player):
-    """Fetch HashKings player info."""
-
+    """<player>: Fetch HashKings player info."""
     api = 'https://hashkings.xyz/userdata/%s' % player
     profile = requests.get(api).json()
 
@@ -1176,10 +1182,10 @@ async def hkplayer(ctx, player):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="apr")
 @bot.command()
 async def apr(ctx, delegation_amount, pool_size=350):
     """<delegation amount>: Calculate approx. APR for HP delegation."""
-
     reward_pool_size = float(pool_size)
 
     # get incoming delegation to hive.pizza
@@ -1213,6 +1219,7 @@ async def PIZZA(ctx):
     await ctx.send('Sorry, the !PIZZA tipping command only works in Hive comments. Use @tip.cc if you want to send a tip in Discord!')
 
 
+@slash.slash(name="links")
 @bot.command()
 async def links(ctx):
     """Use these links to support Hive.Pizza."""
@@ -1256,6 +1263,7 @@ async def rc(ctx, wallet):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="status")
 @bot.command(name="status")
 async def status(ctx):
     """Print bot's status information."""
@@ -1268,7 +1276,7 @@ async def on_command_error(ctx, error):
     """Return a nice error message for unrecognized commands."""
     if isinstance(error, commands.CommandNotFound):
         prefix = await determine_prefix(bot, ctx.message)
-        await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands' % prefix)
+        await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands. That command may be a slash command now.' % prefix)
     else:
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
@@ -1277,4 +1285,3 @@ async def on_command_error(ctx, error):
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 bot.run(TOKEN)
-
