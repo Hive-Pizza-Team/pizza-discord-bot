@@ -94,10 +94,11 @@ async def determine_prefix(bot, message):
 
 def determine_native_token(ctx):
     """Determine which token symbol to use by default in the server."""
-    guild = str(ctx.author.guild.name)
 
-    if not guild:
+    if not hasattr(ctx.author, 'guild'):
         return DEFAULT_TOKEN_NAME
+
+    guild = str(ctx.author.guild.name)
 
     if guild == 'Hive Pizza':
         return DEFAULT_TOKEN_NAME
