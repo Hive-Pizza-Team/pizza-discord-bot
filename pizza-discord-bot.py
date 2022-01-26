@@ -691,17 +691,25 @@ async def witness(ctx, name='pizza.witness'):
 @bot.command()
 async def hewitness(ctx, name='pizza-engine'):
     """<witness name>: Print Hive-Engine Witness Info."""
-    results = hiveengine_api.find('witnesses', 'witnesses', query={"account":{"$in":["%s" % name]}})
+    results = hiveengine_api.find('witnesses', 'witnesses', query={})#"account":{"$in":["%s" % name]}})
+
+    results = sorted(results, key= lambda a: float(a['approvalWeight']['$numberDecimal']), reverse=True)
 
     embed = discord.Embed(title='Hive-Engine Witness info for @%s' % name, description='', color=0xf3722c)
 
     if len(results) == 0:
         embed.add_field(name='Hive-Engine Witness %s' % name, value='Not Found')
     else:
-        result = results[0]
-        for key in result.keys():
-            if key not in ['_id','signingKey','IP','RPCPort','P2PPort','approvalWeight']:
-                embed.add_field(name=key, value=result[key], inline=True)
+        for result in results:# = results[0]
+            if result['account'] != name:
+                continue
+
+            embed.add_field(name='Rank', value=results.index(result) + 1, inline=True)
+            result['approvalWeight'] = result['approvalWeight']['$numberDecimal']
+
+            for key in result.keys():
+                if key not in ['_id', 'signingKey', 'IP', 'RPCPort', 'P2PPort']:
+                    embed.add_field(name=key, value=result[key], inline=True)
 
     await ctx.send(embed=embed)
 
@@ -1283,7 +1291,7 @@ async def rc(ctx, wallet):
 async def status(ctx):
     """Print bot's status information."""
 
-    accounts = ['hive.pizza', 'pizzabot', 'pizza.witness', 'pizza-engine', 'pizza-dlux', 'pizza-rewards', 'pizza.sps', 'pizza.spk']
+    accounts = ['pizza.witness', 'pizza-engine', 'hive.pizza', 'pizzabot', 'pizza-dlux', 'pizza-rewards', 'pizza.sps', 'pizza.spk']
 
     embed = discord.Embed(title='Pizza Systems Status', description='PizzaNet Systems are Operational. :green_circle:', color=0xE31337)
 
@@ -1293,7 +1301,30 @@ async def status(ctx):
         acc = beem.account.Account(account, blockchain_instance=hive)
         current_pct = float(acc.get_rc_manabar()['current_pct'])
 
-        embed.add_field(name=account, value=':battery: %d%%' % current_pct, inline=False)
+        extra_info = ''
+
+        if account == 'pizza.witness':
+            active_rank = 0
+            witnesses = WitnessesRankedByVote(limit=101, blockchain_instance=hive)
+            for w in witnesses:
+                if w.is_active:
+                    active_rank += 1
+                if w["owner"] == account:
+                    break
+
+            extra_info = ' | Active Rank %d' % active_rank
+
+        if account == 'pizza-engine':
+            # get HE witness rank
+            results = hiveengine_api.find('witnesses', 'witnesses', query={})
+            results = sorted(results, key= lambda a: float(a['approvalWeight']['$numberDecimal']), reverse=True)
+            for result in results:# = results[0]
+                if result['account'] != 'pizza-engine':
+                    continue
+                he_witness_rank = results.index(result) + 1
+                extra_info = ' | Rank %d' % he_witness_rank
+
+        embed.add_field(name=account, value=':battery: %d%%%s' % (current_pct, extra_info), inline=not extra_info)
 
     await ctx.send(embed=embed)
 
