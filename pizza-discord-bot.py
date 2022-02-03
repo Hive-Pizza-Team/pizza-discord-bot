@@ -189,9 +189,9 @@ def get_token_price_he_cg(coin):
         volume_str = '%s %s | %s HIVE\n' % (volume_data[0]['volumeToken'], volume_data[0]['symbol'], volume_data[0]['volumeHive'])
 
         embed = discord.Embed(title='Hive-Engine market info for $%s' % coin.upper(), last_usd='', color=0xf3722c)
-        embed.add_field(name='Last', value='%.5f HIVE | $%.5f USD' % (last_price, last_usd), inline=False)
-        embed.add_field(name='Ask', value='%.5f HIVE | $%.5f USD' % (lowest_asking_price, ask_usd), inline=False)
-        embed.add_field(name='Bid', value='%.5f HIVE | $%.5f USD' % (highest_bidding_price, bid_usd), inline=False)
+        embed.add_field(name='Last', value='%.5f HIVE | $%.5f' % (last_price, last_usd), inline=False)
+        embed.add_field(name='Ask', value='%.5f HIVE | $%.5f' % (lowest_asking_price, ask_usd), inline=False)
+        embed.add_field(name='Bid', value='%.5f HIVE | $%.5f' % (highest_bidding_price, bid_usd), inline=False)
         embed.add_field(name='Today Volume', value=volume_str, inline=False)
         return embed
 
@@ -205,9 +205,9 @@ def get_token_price_he_cg(coin):
             message = 'Failed to find coin or token called $%s' % coin
         else:
             message = '''```fix
-market price: $%.5f USD
+market price: $%.5f
 24 hour change: %.3f%%
-24 hour volume: $%s USD
+24 hour volume: $%s
 ```''' % (price, daily_change, "{:,.2f}".format(daily_volume))
 
         embed = discord.Embed(title='CoinGecko market info for $%s' % coin.upper(), description=message, color=0xf3722c)
@@ -215,7 +215,7 @@ market price: $%.5f USD
 
 
 def get_coin_price(coin='hive'):
-    """Call into coingeck to get USD price of coins i.e. HIVE."""
+    """Call into coingeck to get price of coins i.e. HIVE."""
     coingecko = CoinGeckoAPI()
     response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
 
@@ -236,7 +236,7 @@ async def update_bot_user_status(bot):
     last_price = float(get_market_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
     last_price_usd = round(get_coin_price()[0] * last_price, 3)
     if bot:
-        await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f USD' % last_price_usd))
+        await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f' % last_price_usd))
 
 
 custom_prefixes = read_config_file()
