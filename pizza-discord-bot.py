@@ -1291,7 +1291,9 @@ async def rc(ctx, wallet):
 async def status(ctx):
     """Print bot's status information."""
 
-    accounts = ['pizza.witness', 'pizza-engine', 'hive.pizza', 'pizzabot', 'pizza-dlux', 'pizza-rewards', 'pizza.sps', 'pizza.spk', 'badge-912244']
+    accounts = ['pizza.witness', 'pizza-engine', 'hive.pizza', 'pizzabot']
+    accounts += ['pizza-dlux', 'pizza-rewards', 'pizza.sps', 'pizza.spk']
+    accounts += ['hive.pizza.cine', 'hive.pizza.spt', 'badge-912244']
 
     embed = discord.Embed(title='Pizza Systems Status', description='PizzaNet Systems are Operational. :green_circle:', color=0xE31337)
 
