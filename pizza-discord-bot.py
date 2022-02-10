@@ -1332,18 +1332,18 @@ async def status(ctx):
 
 @slash.slash(name="search")
 @bot.command()
-async def search(ctx, searchQuery):
+async def search(ctx, searchQuery, sort='relevance'):
     """Search for Hive content."""
     HIVESEARCHER_URL = 'https://api.hivesearcher.com/search'
     HIVESEARCHER_API_KEY = os.getenv('HIVESEARCHER_API_KEY')
 
-    payload = '{"q": "%s", "sort": "newest"}' % searchQuery
+    payload = '{"q": "%s", "sort": "%s"}' % (searchQuery, sort)
     headers = {'Authorization': HIVESEARCHER_API_KEY, 'Content-Type': 'application/json'}
 
     json = requests.post(HIVESEARCHER_URL, data=payload, headers=headers).json()
     results = json['results']
 
-    embed = discord.Embed(title='Hive Content Search Results from HiveSearcher', description='Showing 10 recent results for %s\n' % searchQuery, color=0xE31337)
+    embed = discord.Embed(title='Hive Content Search Results from HiveSearcher', description='Showing 10 results for %s, sorted by %s\n' % (searchQuery,sort), color=0xE31337)
     for result in results[0:10]:
         if result['title']:
             message = 'by %s. <https://peakd.com/@%s/%s>\n' % (result['author'], result['author'], result['permlink'])
