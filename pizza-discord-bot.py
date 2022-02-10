@@ -1332,12 +1332,12 @@ async def status(ctx):
 
 @slash.slash(name="search")
 @bot.command()
-async def search(ctx, searchQuery, sort='relevance'):
+async def search(ctx, query, sort='relevance'):
     """Search for Hive content."""
     HIVESEARCHER_URL = 'https://api.hivesearcher.com/search'
     HIVESEARCHER_API_KEY = os.getenv('HIVESEARCHER_API_KEY')
 
-    payload = '{"q": "%s", "sort": "%s"}' % (searchQuery, sort)
+    payload = '{"q": "%s", "sort": "%s"}' % (query, sort)
     headers = {'Authorization': HIVESEARCHER_API_KEY, 'Content-Type': 'application/json'}
 
     json = requests.post(HIVESEARCHER_URL, data=payload, headers=headers).json()
