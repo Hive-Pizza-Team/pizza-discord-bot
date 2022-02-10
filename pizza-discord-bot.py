@@ -1343,7 +1343,7 @@ async def search(ctx, query, sort='relevance'):
     json = requests.post(HIVESEARCHER_URL, data=payload, headers=headers).json()
     results = json['results']
 
-    embed = discord.Embed(title='Hive Content Search Results from HiveSearcher', description='Showing 10 results for %s, sorted by %s\n' % (searchQuery,sort), color=0xE31337)
+    embed = discord.Embed(title='Hive Content Search Results from HiveSearcher', description='Showing 10 results for %s, sorted by %s\n' % (query,sort), color=0xE31337)
     for result in results[0:10]:
         if result['title']:
             message = 'by %s. <https://peakd.com/@%s/%s>\n' % (result['author'], result['author'], result['permlink'])
