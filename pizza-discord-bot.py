@@ -929,6 +929,8 @@ async def sl(ctx, subcommand, arg):
                  '00fbd7938f9a652883e9b50f1a93c324b3646f0e',
                  'e498ee4a940b47b396ca9b8470f9d8d8d9301f06']
 
+    await ctx.send("... thinking ...")
+
     if subcommand == 'player':
         player = arg
         api = 'https://api2.splinterlands.com/players/details?name=%s' % player
