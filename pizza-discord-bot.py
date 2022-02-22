@@ -829,11 +829,29 @@ async def sellbook(ctx, symbol=''):
 @bot.command()
 async def dluxnodes(ctx):
     """Check DLUX Nodes Status."""
-    coinapi = 'http://dlux-token.herokuapp.com'
+    coinapi = 'https://token.dlux.io'
     runners = requests.get('%s/runners' % coinapi).json()['runners']
     queue = requests.get('%s/queue' % coinapi).json()['queue']
 
-    embed = discord.Embed(title='DLUX Nodes in Consensus:', description='', color=0x336EFF)
+    embed = discord.Embed(title='DLUX Nodes in Consensus:', description='%d runners / %d in consensus' % (len(runners), len(queue)), color=0x336EFF)
+
+    for account in queue:
+        icon = ':eye:'
+        if account in runners.keys():
+            icon = ':closed_lock_with_key:'
+        embed.add_field(name=account, value=icon, inline=True)
+
+    await ctx.send(embed=embed)
+
+@slash.slash(name="spkccnodes")
+@bot.command()
+async def spkccnodes(ctx):
+    """Check SPKCC Nodes Status."""
+    coinapi = 'https://spktoken.dlux.io'
+    runners = requests.get('%s/runners' % coinapi).json()['runners']
+    queue = requests.get('%s/queue' % coinapi).json()['queue']
+
+    embed = discord.Embed(title='SPKCC Nodes in Consensus:', description='%d runners / %d in consensus' % (len(runners), len(queue)), color=0x336EFF)
 
     for account in queue:
         icon = ':eye:'
