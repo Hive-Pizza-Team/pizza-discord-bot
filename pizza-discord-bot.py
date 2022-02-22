@@ -112,6 +112,8 @@ def determine_native_token(ctx):
         return 'LIST'
     elif guild == 'HiveHustlers':
         return 'COM'
+    elif guild == 'NFT Studios & 1UP':
+        return 'ONEUP'
     else:
         return DEFAULT_TOKEN_NAME
 
