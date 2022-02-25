@@ -513,6 +513,12 @@ async def tokenomics(ctx, symbol=''):
     # count wallets with at least 1,000 tokens
     wallets_1000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 1000])
 
+    # count wallets with at least 3,000 tokens
+    wallets_3000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 3000])
+
+    # count wallets with at least 5,000 tokens
+    wallets_5000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 5000])
+
     # count wallets with at least 10,000 tokens
     wallets_10000plus = len([x for x in wallets if float(x['balance']) + float(x['stake']) >= 10000])
 
@@ -533,12 +539,14 @@ async def tokenomics(ctx, symbol=''):
 %.4d wallets hold >=          20 $%s
 %.4d wallets hold >=         200 $%s
 %.4d wallets hold >=       1,000 $%s
+%.4d wallets hold >=       3,000 $%s
+%.4d wallets hold >=       5,000 $%s
 %.4d wallets hold >=      10,000 $%s
 %.4d wallets hold >=     100,000 $%s
 %.4d wallets hold >=   1,000,000 $%s
 %.4d wallets hold >=  10,000,000 $%s
 %.4d wallets hold >= 100,000,000 $%s
-```''' % (total_wallets, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_10000plus, symbol, wallets_100000plus, symbol, wallets_1000000plus, symbol, wallets_10000000plus, symbol, wallets_100000000plus, symbol)
+```''' % (total_wallets, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_3000plus, symbol, wallets_5000plus, symbol, wallets_10000plus, symbol, wallets_100000plus, symbol, wallets_1000000plus, symbol, wallets_10000000plus, symbol, wallets_100000000plus, symbol)
 
     embed = discord.Embed(title='$%s Token Distribution' % symbol, description=message, color=0x43aa8b)
     await ctx.send(embed=embed)
