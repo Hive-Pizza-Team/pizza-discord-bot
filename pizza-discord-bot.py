@@ -947,7 +947,7 @@ def get_sl_card_collection(player):
 
 @slash.slash(name="sl")
 @bot.command()
-async def sl(ctx, subcommand, arg):
+async def sl(ctx, subcommand, parameter):
     """
     Player <player>: Check Splinterlands Player Stats.
 
@@ -960,7 +960,7 @@ async def sl(ctx, subcommand, arg):
     await ctx.send("... thinking ...")
 
     if subcommand == 'player':
-        player = arg
+        player = parameter
         api = 'https://api2.splinterlands.com/players/details?name=%s' % player
 
         profile = requests.get(api).json()
@@ -974,7 +974,7 @@ async def sl(ctx, subcommand, arg):
 
         await ctx.send(embed=embed)
 
-    elif subcommand == 'guild' and arg == 'teamwork':
+    elif subcommand == 'guild' and parameter == 'teamwork':
         if str(ctx.message.guild) != 'Hive Pizza':
             await ctx.send('Command only available in Hive Pizza discord')
             return
@@ -1034,7 +1034,7 @@ async def sl(ctx, subcommand, arg):
         embed.add_field(name='DEC donations', value=donations_string, inline=True)
         await ctx.send(embed=embed)
 
-    elif subcommand == 'brawl' and arg == 'timer':
+    elif subcommand == 'brawl' and parameter == 'timer':
         embed = discord.Embed(title='Brawl Timers for PIZZA Guilds', description='', color=0x336EFF)
         for guild_id in GUILD_IDS:
             # get brawl ID
@@ -1062,7 +1062,7 @@ async def sl(ctx, subcommand, arg):
 
         await ctx.send(embed=embed)
 
-    elif subcommand == 'brawl' and arg == 'status':
+    elif subcommand == 'brawl' and parameter == 'status':
         if str(ctx.message.guild) != 'Hive Pizza':
             await ctx.send('Command only available in Hive Pizza discord')
             return
@@ -1094,7 +1094,7 @@ async def sl(ctx, subcommand, arg):
                             inline=True)
         await ctx.send(embed=embed)
 
-    elif subcommand == 'guild' and arg == 'power':
+    elif subcommand == 'guild' and parameter == 'power':
         if str(ctx.message.guild) != 'Hive Pizza':
             await ctx.send('Command only available in Hive Pizza discord')
             return
@@ -1123,7 +1123,7 @@ async def sl(ctx, subcommand, arg):
 
         await ctx.send(embed=embed)
 
-    elif subcommand == 'guild' and arg == 'status':
+    elif subcommand == 'guild' and parameter == 'status':
         guild_members = get_sl_guild_member_list()
         embed = discord.Embed(title='Status for Splinter PIZZA Guilds', description='', color=0x336EFF)
 
