@@ -497,7 +497,11 @@ async def tokenomics(ctx, symbol=''):
         symbol = determine_native_token(ctx)
     symbol = symbol.upper()
 
-    wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+    try:
+        wallets = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+    except hiveengine.exceptions.TokenDoesNotExists:
+        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        return
 
     total_wallets = len([x for x in wallets if float(x['balance']) + float(x['stake']) > 0])
 
@@ -1248,7 +1252,11 @@ async def apr(ctx, delegation_amount, pool_size=350):
     delegation_out = get_hive_power_delegations(wallet)
     delegation_in = acc.get_token_power() + delegation_out - staked
 
-    shares = float(delegation_amount) / delegation_in
+    try:
+        shares = float(delegation_amount) / delegation_in
+    except ValueError:
+        await ctx.send('Error: invalid delegation amount')
+        return
 
     approx_payout = round(reward_pool_size * shares, 2)
 
