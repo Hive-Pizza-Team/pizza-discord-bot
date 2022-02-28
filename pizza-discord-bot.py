@@ -198,7 +198,7 @@ def get_token_price_he_cg(coin):
         return embed
 
     except hiveengine.exceptions.TokenDoesNotExists:
-        print('Token not found in HE, trying CoinGeckoAPI')
+        pass
 
     if not found_in_hiveengine:
         price, daily_change, daily_volume = get_coin_price(coin)
@@ -565,7 +565,11 @@ async def top10(ctx, symbol=''):
     if not symbol:
         symbol = determine_native_token(ctx)
 
-    accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+    try:
+        accounts = [x for x in get_token_holders(symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+    except hiveengine.exceptions.TokenDoesNotExists:
+        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        return
 
     # identify the top 10 token holders
     symbol = symbol.upper()
@@ -612,8 +616,12 @@ async def history(ctx, symbol=''):
     message = '''```fix
 '''
 
-    for tx in get_market_history(symbol)[::-1][0:10]:
-        message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
+    try:
+        for tx in get_market_history(symbol)[::-1][0:10]:
+            message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
+    except hiveengine.exceptions.TokenDoesNotExists:
+        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        return
 
     message += '```'
 
@@ -808,7 +816,12 @@ async def buybook(ctx, symbol=''):
     if not symbol:
         symbol = determine_native_token(ctx)
 
-    buy_book = market.get_buy_book(symbol=symbol, limit=1000)
+    try:
+        buy_book = market.get_buy_book(symbol=symbol, limit=1000)
+    except hiveengine.exceptions.TokenDoesNotExists:
+        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        return
+
     buy_book = sorted(buy_book, key= lambda a: float(a['price']), reverse=True)
     buy_book = buy_book[0:10]
 
@@ -827,7 +840,12 @@ async def sellbook(ctx, symbol=''):
     if not symbol:
         symbol = determine_native_token(ctx)
 
-    sell_book = market.get_sell_book(symbol=symbol, limit=1000)
+    try:
+        sell_book = market.get_sell_book(symbol=symbol, limit=1000)
+    except hiveengine.exceptions.TokenDoesNotExists:
+        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        return
+
     sell_book = sorted(sell_book, key= lambda a: float(a['price']), reverse=False)
     sell_book = sell_book[0:10]
 
@@ -1179,7 +1197,11 @@ async def rsplayer(ctx, player):
     """<player>: Check Rising Star Player Stats."""
     api = 'https://www.risingstargame.com/playerstats.asp?player=%s' % player
 
-    profile = requests.get(api).json()[0]
+    try:
+        profile = requests.get(api).json()[0]
+    except json.decoder.JSONDecodeError:
+        await ctx.send('Error: unable to fetch risingstar data.')
+        return
 
     embed = discord.Embed(title='Rising Star Profile for @%s' % player, description='', color=0xf3722c)
 
