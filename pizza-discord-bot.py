@@ -132,7 +132,6 @@ def get_market_history(symbol):
 
 def get_token_holders(symbol):
     """Get a list of wallets holding a Hive-Engine token."""
-    start_time = time.time()
     holder_count = 1000
     token_holders = []
     token = Token(symbol, api=hiveengine_api)
@@ -140,8 +139,7 @@ def get_token_holders(symbol):
         response = token.get_holder(offset=len(token_holders))
         holder_count = len(response)
         token_holders += response
-    end_time = time.time()
-    print('Time elapsed: %f' % (end_time - start_time))
+
     return token_holders
 
 
@@ -219,7 +217,11 @@ market price: $%.5f
 def get_coin_price(coin='hive'):
     """Call into coingeck to get price of coins i.e. HIVE."""
     coingecko = CoinGeckoAPI()
-    response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
+    try:
+        response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
+    except UnboundLocalError:
+        print('Error calling CoinGeckoAPI for %s price' % coin)
+        return -1
 
     if coin not in response.keys():
         print('Error calling CoinGeckoAPI for %s price' % coin)
