@@ -221,16 +221,16 @@ def get_coin_price(coin='hive'):
         response = coingecko.get_price(ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
     except UnboundLocalError:
         print('Error calling CoinGeckoAPI for %s price' % coin)
-        return -1
+        return None
 
     if coin not in response.keys():
         print('Error calling CoinGeckoAPI for %s price' % coin)
-        return -1
+        return None
 
     subresponse = response[coin]
     if 'usd' not in subresponse.keys():
         print('Error 2 calling CoinGeckoAPI for %s price' % coin)
-        return -1
+        return None
 
     return float(subresponse['usd']), float(subresponse['usd_24h_change']),  float(subresponse['usd_24h_vol'])
 
@@ -1235,6 +1235,8 @@ async def rsplayer(ctx, player):
 @bot.command()
 async def hkplayer(ctx, player):
     """<player>: Fetch HashKings player info."""
+    await ctx.send("... thinking ...")
+
     api = 'https://hashkings.xyz/userdata/%s' % player
     profile = requests.get(api).json()
 
