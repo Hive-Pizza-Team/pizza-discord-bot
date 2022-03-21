@@ -1104,6 +1104,8 @@ async def sl(ctx, subcommand, parameter):
             pizza_guild_index = list(map(itemgetter('id'), brawl_info['guilds'])).index(guild_id)
             pizza_guild = brawl_info['guilds'][pizza_guild_index]
 
+            if 'total_battles' not in pizza_guild.keys():
+                continue
             embed.add_field(name='%s - %s' % (guild_info['name'], '#%d' % (pizza_guild_index + 1)),
                             value='Remaining Battles: %d' % (pizza_guild['total_battles'] - pizza_guild['completed_battles']),
                             inline=False)
