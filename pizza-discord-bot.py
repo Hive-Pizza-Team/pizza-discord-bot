@@ -881,7 +881,7 @@ async def dluxnodes(ctx):
 @bot.command()
 async def spkccnodes(ctx):
     """Check SPKCC Nodes Status."""
-    coinapi = 'https://spktoken.dlux.io'
+    coinapi = 'https://spkinstant.hivehoneycomb.com'
     runners = requests.get('%s/runners' % coinapi).json()['runners']
     queue = requests.get('%s/queue' % coinapi).json()['queue']
 
