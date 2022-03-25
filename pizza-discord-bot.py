@@ -922,7 +922,9 @@ async def larynx(ctx, wallet):
     govLockedStr = ':classical_building: %0.3f %s' % (float(balances['gov']) / 1000, coin)
     #heldCollateralStr = `:chart_with_upwards_trend: ${parseFloat(result.heldCollateral/1000).toFixed(3).commafy()} ${coin.toUpperCase()}G held as collateral and earning :man_office_worker:`
 
-    canClaimStr = (balances['drop']['last_claim'] == '0') or (int(balances['drop']['last_claim']) < datetime.utcnow().month)
+    canClaimStr = float(balances['drop']['availible']['amount']) > 0
+    canClaimStr &= ((balances['drop']['last_claim'] == '0') or (int(balances['drop']['last_claim']) < datetime.utcnow().month))
+
 
     embed.add_field(name='Balance', value=balanceStr, inline=False)
     embed.add_field(name='Claim Amount', value=claimDropStr, inline=False)
