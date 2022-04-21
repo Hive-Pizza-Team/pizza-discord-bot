@@ -935,6 +935,38 @@ async def larynx(ctx, wallet):
     await ctx.send(embed=embed)
 
 
+@slash.slash(name="ragnarok")
+@bot.command()
+async def ragnarok(ctx, wallet):
+    """Check Duat Balances on RagnarokCC """
+    coinapi = 'https://inconceivable.hivehoneycomb.com'
+    coin = 'DUAT'
+    wallet = wallet.lower()
+    balances = requests.get('%s/@%s' % (coinapi, wallet)).json()
+
+    embed = discord.Embed(title='Ragnarok Balances for: @%s' % (wallet), description='', color=0x336EFF)
+
+    balanceStr = ':money_with_wings: %0.3f %s' % (float(balances['balance']) / 1000, coin)
+    claimDropStr = '%0.3f %s' % (float(balances['drop']['availible']['amount']) / 1000, coin)
+    #poweredUpStr = `:flashlight: ${parseFloat(result.poweredUp/1000).toFixed(3).commafy()} Powered ${coin.toUpperCase()}\n`
+    #upvotePowerStr = `\t:+1: ${parseFloat(100*result.up.power/result.up.max).toFixed(2)}% Vote Power\n`
+    #downvotePowerStr = `\t  :-1: ${parseFloat(100*result.down.power/result.down.max).toFixed(2)}% Vote Power\n`
+    govLockedStr = ':classical_building: %0.3f %s' % (float(balances['gov']) / 1000, coin)
+    #heldCollateralStr = `:chart_with_upwards_trend: ${parseFloat(result.heldCollateral/1000).toFixed(3).commafy()} ${coin.toUpperCase()}G held as collateral and earning :man_office_worker:`
+
+    canClaimStr = float(balances['drop']['availible']['amount']) > 0
+    canClaimStr &= ((balances['drop']['last_claim'] == '0') or (int(balances['drop']['last_claim']) < datetime.utcnow().month))
+
+
+    embed.add_field(name='Balance', value=balanceStr, inline=False)
+    embed.add_field(name='Claim Amount', value=claimDropStr, inline=False)
+    embed.add_field(name='Can Claim', value=canClaimStr, inline=False)
+
+    embed.add_field(name='Locked for Governance', value=govLockedStr, inline=False)
+
+    await ctx.send(embed=embed)
+
+
 @slash.slash(name="spkccnodes")
 @bot.command()
 async def spkccnodes(ctx):
