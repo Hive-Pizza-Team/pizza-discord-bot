@@ -935,9 +935,28 @@ async def larynx(ctx, wallet):
     await ctx.send(embed=embed)
 
 
-@slash.slash(name="ragnarok")
+@slash.slash(name="spkccnodes")
 @bot.command()
-async def ragnarok(ctx, wallet):
+async def spkccnodes(ctx):
+    """Check SPKCC Nodes Status."""
+    coinapi = 'https://spkinstant.hivehoneycomb.com'
+    runners = requests.get('%s/runners' % coinapi).json()['runners']
+    queue = requests.get('%s/queue' % coinapi).json()['queue']
+
+    embed = discord.Embed(title='SPKCC Nodes in Consensus:', description='%d runners / %d in consensus' % (len(runners), len(queue)), color=0x336EFF)
+
+    for account in queue:
+        icon = ':eye:'
+        if account in runners.keys():
+            icon = ':closed_lock_with_key:'
+        embed.add_field(name=account, value=icon, inline=True)
+
+    await ctx.send(embed=embed)
+
+
+@slash.slash(name="duat")
+@bot.command()
+async def duat(ctx, wallet):
     """Check Duat Balances on RagnarokCC """
     coinapi = 'https://inconceivable.hivehoneycomb.com'
     coin = 'DUAT'
@@ -965,15 +984,15 @@ async def ragnarok(ctx, wallet):
     await ctx.send(embed=embed)
 
 
-@slash.slash(name="spkccnodes")
+@slash.slash(name="duatnodes")
 @bot.command()
-async def spkccnodes(ctx):
-    """Check SPKCC Nodes Status."""
-    coinapi = 'https://spkinstant.hivehoneycomb.com'
+async def duatnodes(ctx):
+    """Check RagnarokCC Nodes Status."""
+    coinapi = 'https://inconceivable.hivehoneycomb.com'
     runners = requests.get('%s/runners' % coinapi).json()['runners']
     queue = requests.get('%s/queue' % coinapi).json()['queue']
 
-    embed = discord.Embed(title='SPKCC Nodes in Consensus:', description='%d runners / %d in consensus' % (len(runners), len(queue)), color=0x336EFF)
+    embed = discord.Embed(title='RagnarokCC Nodes in Consensus:', description='%d runners / %d in consensus' % (len(runners), len(queue)), color=0x336EFF)
 
     for account in queue:
         icon = ':eye:'
