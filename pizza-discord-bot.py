@@ -955,8 +955,6 @@ async def ragnarok(ctx, wallet):
     #heldCollateralStr = `:chart_with_upwards_trend: ${parseFloat(result.heldCollateral/1000).toFixed(3).commafy()} ${coin.toUpperCase()}G held as collateral and earning :man_office_worker:`
 
     canClaimStr = float(balances['drop']['availible']['amount']) > 0
-    canClaimStr &= ((balances['drop']['last_claim'] == '0') or (int(balances['drop']['last_claim']) < datetime.utcnow().month))
-
 
     embed.add_field(name='Balance', value=balanceStr, inline=False)
     embed.add_field(name='Claim Amount', value=claimDropStr, inline=False)
