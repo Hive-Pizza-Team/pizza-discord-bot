@@ -802,7 +802,7 @@ async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
         embed.add_field(name='Payouts', value=result['numTicks'], inline=True)
         embed.add_field(name='Payouts Remaining', value=result['numTicksLeft'], inline=True)
 
-        embed.add_field(name='Last Payout Time', value='%s' % datetime.datetime.fromtimestamp(result['lastTickTime'] / 1000))
+        embed.add_field(name='Last Payout Time', value='%s' % datetime.fromtimestamp(result['lastTickTime'] / 1000))
 
         tokens = result['tokenBalances']
         for token in tokens:
