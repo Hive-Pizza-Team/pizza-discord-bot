@@ -34,7 +34,7 @@ market = Market(api=hiveengine_api, blockchain_instance=hive)
 
 
 DEFAULT_TOKEN_NAME = 'PIZZA'
-DEFAULT_DIESEL_POOL = 'PIZZA:STARBITS'
+DEFAULT_DIESEL_POOL = 'PIZZA:ONEUP'
 DEFAULT_GIF_CATEGORY = 'PIZZA'
 ACCOUNT_FILTER_LIST = ['thebeardflex', 'pizzaexpress', 'datbeardguy',
                        'pizzabot', 'null', 'vftlab', 'pizza-rewards']
