@@ -1173,7 +1173,14 @@ async def sl(ctx, subcommand, parameter):
 
             # get brawl start time
             api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
-            brawl_start_time = requests.get(api).json()['start_date']
+
+            brawl_info = requests.get(api).json()
+            if 'start_date' not in brawl_info.keys():
+                await ctx.send('Error: brawl hasnt started yet')
+                return
+
+            brawl_start_time = brawl_info['start_date']
+
             combat_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
             combat_end_time = combat_start_time + timedelta(hours=48)
             now = datetime.utcnow()
