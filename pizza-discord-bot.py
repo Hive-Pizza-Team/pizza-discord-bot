@@ -1210,6 +1210,9 @@ async def sl(ctx, subcommand, parameter):
             api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
             brawl_info = requests.get(api).json()
 
+            if 'start_date' not in brawl_info.keys():
+                continue
+
             pizza_guild_index = list(map(itemgetter('id'), brawl_info['guilds'])).index(guild_id)
             pizza_guild = brawl_info['guilds'][pizza_guild_index]
 
