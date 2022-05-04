@@ -1176,8 +1176,7 @@ async def sl(ctx, subcommand, parameter):
 
             brawl_info = requests.get(api).json()
             if 'start_date' not in brawl_info.keys():
-                await ctx.send('Error: brawl hasnt started yet')
-                return
+                continue
 
             brawl_start_time = brawl_info['start_date']
 
