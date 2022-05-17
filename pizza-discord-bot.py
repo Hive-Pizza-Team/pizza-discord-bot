@@ -1347,16 +1347,16 @@ async def rsplayer(ctx, player):
 # Hash Kings commands
 @slash.slash(name='hkplayer')
 @bot.command()
-async def hkplayer(ctx, player):
+async def hkplayer(ctx, wallet):
     """<player>: Fetch HashKings player info."""
     await ctx.send("... thinking ...")
 
-    api = 'https://hashkings.xyz/userdata/%s' % player
+    api = 'https://hashkings.info/userdata/%s' % wallet
     profile = requests.get(api).json()
 
-    embed = discord.Embed(title='Hash Kings Profile for @%s' % player, description='', color=0xf3722c)
+    embed = discord.Embed(title='Hash Kings Profile for @%s' % wallet, description='', color=0xf3722c)
 
-    message = 'Hash Kings profile for %s\n' % player
+    message = 'Hash Kings profile for %s\n' % wallet
     for key in ['plotCount', 'seedCount', 'xp', 'lvl']:
         prettyname = key
         if prettyname == 'plotCount':
