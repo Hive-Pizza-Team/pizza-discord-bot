@@ -1232,6 +1232,48 @@ async def sl(ctx, subcommand, parameter):
                             inline=True)
         await ctx.send(embed=embed)
 
+    elif subcommand == 'brawl':
+        # assume parameter holds a player name
+
+        if str(ctx.message.guild) != 'Hive Pizza':
+            await ctx.send('Command only available in Hive Pizza discord')
+            return
+
+        embed = discord.Embed(title='Brawl Status for PIZZA Guilds member %s' % parameter, description='', color=0x336EFF)
+        for guild_id in GUILD_IDS:
+            # get brawl ID
+            api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
+            guild_info = requests.get(api).json()
+            brawl_id = guild_info['tournament_id']
+
+            # get brawl start time
+            api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
+            brawl_info = requests.get(api).json()
+
+            brawl_player_info = {}
+            for player_info in brawl_info['players']:
+                if player_info['player'] == parameter:
+                    brawl_player_info = player_info
+
+            if not brawl_player_info:
+                continue
+
+            print(brawl_player_info)
+
+            if 'start_date' not in brawl_info.keys():
+                continue
+
+            embed.add_field(name='Wins',
+                            value='%d' % brawl_player_info['wins'],
+                            inline=True)
+            embed.add_field(name='Losses',
+                            value='%d' % brawl_player_info['losses'],
+                            inline=True)
+            embed.add_field(name='Draws',
+                            value='%d' % brawl_player_info['draws'],
+                            inline=True)
+        await ctx.send(embed=embed)
+
     elif subcommand == 'guild' and parameter == 'power':
         if str(ctx.message.guild) != 'Hive Pizza':
             await ctx.send('Command only available in Hive Pizza discord')
