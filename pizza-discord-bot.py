@@ -1272,6 +1272,9 @@ async def sl(ctx, subcommand, parameter):
             embed.add_field(name='Draws',
                             value='%d' % brawl_player_info['draws'],
                             inline=True)
+            embed.add_field(name='Total Battles',
+                            value='%d' % brawl_player_info['total_battles'],
+                            inline=True)
         await ctx.send(embed=embed)
 
     elif subcommand == 'guild' and parameter == 'power':
