@@ -29,7 +29,11 @@ import time
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.hive.blog'])
 beem.instance.set_shared_blockchain_instance(hive)
-hiveengine_api = Api()
+
+HIVE_ENGINE_API_NODE = os.getenv('HIVE_ENGINE_API_NODE')
+HIVE_ENGINE_API_NODE_RPC = os.getenv('HIVE_ENGINE_API_NODE_RPC')
+hiveengine_api = Api(url=HIVE_ENGINE_API_NODE, rpcurl=HIVE_ENGINE_API_NODE_RPC)
+
 market = Market(api=hiveengine_api, blockchain_instance=hive)
 
 
