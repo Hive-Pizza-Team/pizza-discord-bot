@@ -1518,9 +1518,14 @@ async def rc(ctx, wallet):
 async def status(ctx):
     """Print bot's status information."""
 
-    accounts = ['pizza.witness', 'pizza-engine', 'hive.pizza', 'pizzabot']
-    accounts += ['pizza-dlux', 'pizza-rewards', 'pizza.sps', 'pizza.spk']
-    accounts += ['hive.pizza.cine', 'hive.pizza.spt', 'badge-912244']
+    accounts = ['pizza.witness', 'pizza-engine', 'pizza.spk', 'pizza.duat', ]
+    accounts += ['pizza-dlux', 'pizza-rewards', 'hive.pizza', 'pizzabot']
+    accounts += ['pizza.sps', 'hive.pizza.cine', 'hive.pizza.spt']
+    accounts += ['badge-912244']
+
+    dlux_api_url = 'http://spkcc.hive.pizza:3004/runners'
+    spkcc_api_url = 'http://spkcc.hive.pizza:3002/runners'
+    duat_api_url = 'http://spkcc.hive.pizza:3003/runners'
 
     embed = discord.Embed(title='Pizza Systems Status', description='PizzaNet Systems are Operational. :green_circle:', color=0xE31337)
 
@@ -1553,7 +1558,25 @@ async def status(ctx):
                 he_witness_rank = results.index(result) + 1
                 extra_info = ' | Rank %d' % he_witness_rank
 
-        embed.add_field(name=account, value=':battery: %d%%%s' % (current_pct, extra_info), inline=not extra_info)
+        if account == 'pizza.spk':
+            json = requests.get(spkcc_api_url).json()
+            extra_info = ' | :eye:'
+            if account in json['runners'].keys():
+                extra_info = ' | :closed_lock_with_key:'
+
+        if account == 'pizza.duat':
+            json = requests.get(duat_api_url).json()
+            extra_info = ' | :eye:'
+            if account in json['runners'].keys():
+                extra_info = ' | :closed_lock_with_key:'
+
+        if account == 'pizza-dlux':
+            json = requests.get(dlux_api_url).json()
+            extra_info = ' | :eye:'
+            if account in json['runners'].keys():
+                extra_info = ' | :closed_lock_with_key:'
+
+        embed.add_field(name=account, value=':battery: %d%%%s' % (current_pct, extra_info), inline=True)
 
     await ctx.send(embed=embed)
 
