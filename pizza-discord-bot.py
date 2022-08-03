@@ -68,10 +68,12 @@ DIBBLERS_GIFS = ['https://media.giphy.com/media/ETDRQrFfcPKo1gvkSx/giphy.gif', '
 ONEUP_GIFS = ['https://media.giphy.com/media/nNXcXGX65D5rXkpiJd/giphy.gif', 'https://media.giphy.com/media/492eHSGThgIDx0quLA/giphy.gif', 'https://media.giphy.com/media/vYHQeUQKiEKtjFmVVu/giphy.gif', 'https://media.giphy.com/media/r27ezJNGnlIN7eonmn/giphy.gif', 'https://media.giphy.com/media/p0DOA7vgjZIrofqP1K/giphy.gif', 'https://media.giphy.com/media/k9INvJjWU636EnqZv5/giphy.gif', 'https://media.giphy.com/media/bixPdyQVlFCOxWY5Gu/giphy.gif', 'https://media.giphy.com/media/9HhNfrAsBWoG0HpOSa/giphy.gif', 'https://media.giphy.com/media/7nRpNHtUBaw8Go5AwD/giphy.gif', 'https://media.giphy.com/media/zJcxfUcjEnHFeEJA3T/giphy.gif', 'https://media.giphy.com/media/PnFQRzb9JQUug3eqvE/giphy.gif', 'https://media.giphy.com/media/ikbRAXLsu6JfnRgSXX/giphy.gif', 'https://media.giphy.com/media/hwTPcbxWMtyc25CGyV/giphy.gif', 'https://media.giphy.com/media/KbdQyDNsPfSjG7kSVM/giphy.gif', 'https://media.giphy.com/media/dkluEGUKdIU1FX8Mlh/giphy.gif', 'https://media.giphy.com/media/0BZZjFyuoDIAR2sHvL/giphy.gif', 'https://media.giphy.com/media/4d2RQZH2tNni28rww9/giphy.gif', 'https://media.giphy.com/media/QXwknhHN7o04AeXcy9/giphy.gif', 'https://media.giphy.com/media/6UwssqVDmfSTAEYhjT/giphy.gif']
 
 
-GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf',
-             '00fbd7938f9a652883e9b50f1a93c324b3646f0e',
-             'e498ee4a940b47b396ca9b8470f9d8d8d9301f06',
-             'd0122470510c4987fd74c537552b2c4e8be10e48']
+GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf', # Pizza 1
+             '00fbd7938f9a652883e9b50f1a93c324b3646f0e', # Pizza 2
+             'e498ee4a940b47b396ca9b8470f9d8d8d9301f06', # Pizza 3
+             'd0122470510c4987fd74c537552b2c4e8be10e48', # Pizza 420
+             'e2bdb0b670c99f75ba7001dc667a7a01ea1e4758', # Helpie Caster
+             '9f485d64cb32dc536a1a8f1c4ba134a31587d93a'] # Pizza 5
 
 
 def read_config_file():
