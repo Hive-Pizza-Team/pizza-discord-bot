@@ -1525,9 +1525,9 @@ async def status(ctx):
     accounts += ['pizza.sps', 'hive.pizza.cine', 'hive.pizza.spt']
     accounts += ['badge-912244']
 
-    dlux_api_url = 'http://spkcc.hive.pizza:3004/runners'
-    spkcc_api_url = 'http://spkcc.hive.pizza:3002/runners'
-    duat_api_url = 'http://spkcc.hive.pizza:3003/runners'
+    dlux_api_url = 'https://dlux.hive.pizza/runners'
+    spkcc_api_url = 'https://spkcc.hive.pizza/runners'
+    duat_api_url = 'https://duat.hive.pizza/runners'
 
     embed = discord.Embed(title='Pizza Systems Status', description='PizzaNet Systems are Operational. :green_circle:', color=0xE31337)
 
