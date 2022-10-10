@@ -27,7 +27,7 @@ from operator import itemgetter
 import time
 
 # Hive-Engine defines
-hive = beem.Hive(node=['https://api.hive.blog'])
+hive = beem.Hive(node=['https://api.deathwing.me'])
 beem.instance.set_shared_blockchain_instance(hive)
 
 HIVE_ENGINE_API_NODE = os.getenv('HIVE_ENGINE_API_NODE')
