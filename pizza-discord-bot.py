@@ -30,6 +30,7 @@ import time
 hive = beem.Hive(node=['https://api.deathwing.me'])
 beem.instance.set_shared_blockchain_instance(hive)
 
+load_dotenv()
 HIVE_ENGINE_API_NODE = os.getenv('HIVE_ENGINE_API_NODE')
 HIVE_ENGINE_API_NODE_RPC = os.getenv('HIVE_ENGINE_API_NODE_RPC')
 hiveengine_api = Api(url=HIVE_ENGINE_API_NODE, rpcurl=HIVE_ENGINE_API_NODE_RPC)
