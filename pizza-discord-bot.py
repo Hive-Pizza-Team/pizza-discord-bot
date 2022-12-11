@@ -25,6 +25,7 @@ from datetime import datetime, timedelta
 import dateutil.parser
 from operator import itemgetter
 import time
+from pyChatGPT import ChatGPT
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.deathwing.me'])
@@ -37,6 +38,7 @@ hiveengine_api = Api(url=HIVE_ENGINE_API_NODE, rpcurl=HIVE_ENGINE_API_NODE_RPC)
 
 market = Market(api=hiveengine_api, blockchain_instance=hive)
 
+openai_api = ChatGPT(email=os.getenv('OPENAI_USER'), password=os.getenv('OPENAI_PASS'))
 
 DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:ONEUP'
@@ -1625,6 +1627,17 @@ async def search(ctx, query, sort='relevance'):
             embed.add_field(name='%d. %s' % (results.index(result), 'Comment'), value=message, inline=False)
 
     await ctx.send(embed=embed)
+
+
+@slash.slash(name="ai")
+@bot.command()
+async def ai(ctx, query):
+    """Ask the OpenAI questions."""
+    #api.refresh_auth()  # refresh the authorization token
+    #openai_api.reset_conversation()  # reset the conversation
+    resp = openai_api.send_message(query)
+    await ctx.send('ChatGPT: %s' % resp['message'])
+
 
 @bot.event
 async def on_command_error(ctx, error):

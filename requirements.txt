@@ -7,3 +7,4 @@ pycoingecko==1.4.1
 hiveengine==0.2.2
 beem==0.24.26
 python-dotenv==0.17.0
+pyChatGPT==0.1.2
