@@ -25,7 +25,6 @@ from datetime import datetime, timedelta
 import dateutil.parser
 from operator import itemgetter
 import time
-from pyChatGPT import ChatGPT
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.deathwing.me'])
@@ -37,8 +36,6 @@ HIVE_ENGINE_API_NODE_RPC = os.getenv('HIVE_ENGINE_API_NODE_RPC')
 hiveengine_api = Api(url=HIVE_ENGINE_API_NODE, rpcurl=HIVE_ENGINE_API_NODE_RPC)
 
 market = Market(api=hiveengine_api, blockchain_instance=hive)
-
-openai_api = ChatGPT(os.getenv('OPENAI_SESSION'))
 
 DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:ONEUP'
@@ -1503,6 +1500,7 @@ async def links(ctx):
     embed.add_field(name='Rabona', value='https://hive.pizza/rabona', inline=False)
     embed.add_field(name='Rising Star', value='https://hive.pizza/risingstar', inline=False)
     embed.add_field(name='Splinterlands', value='https://hive.pizza/splinterlands', inline=False)
+    embed.add_field(name='Terracore', value='https://www.terracoregame.com/?ref=hive.pizza', inline=False)
     embed.add_field(name='Top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
 
     await ctx.send(embed=embed)
@@ -1627,16 +1625,6 @@ async def search(ctx, query, sort='relevance'):
             embed.add_field(name='%d. %s' % (results.index(result), 'Comment'), value=message, inline=False)
 
     await ctx.send(embed=embed)
-
-
-@slash.slash(name="ai")
-@bot.command()
-async def ai(ctx, *query):
-    """Ask the OpenAI questions."""
-    #api.refresh_auth()  # refresh the authorization token
-    #openai_api.reset_conversation()  # reset the conversation
-    resp = openai_api.send_message(' '.join(query))
-    await ctx.send('ChatGPT: %s' % resp['message'])
 
 
 @bot.event
