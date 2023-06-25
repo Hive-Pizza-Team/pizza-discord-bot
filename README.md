@@ -1,5 +1,5 @@
 # pizza-discord-bot
-A Discord bot with Hive (https://hive.io) and Hive-Engine L2 token features. Implemented in python.
+A Discord bot with Hive (https://hive.io) and Hive-Engine (https://hive-engine.com) L2 token features. Implemented in python.
 
 ## Commands
 
