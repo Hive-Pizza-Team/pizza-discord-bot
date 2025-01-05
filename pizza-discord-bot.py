@@ -114,6 +114,8 @@ def determine_native_token(ctx):
 
     if guild == 'Hive Pizza':
         return DEFAULT_TOKEN_NAME
+    elif guild == 'Hive':
+        return 'HIVE'
     elif guild == 'Rising Star Game':
         return 'STARBITS'
     elif guild == 'The Man Cave':
@@ -435,6 +437,8 @@ async def price(ctx, symbol=''):
         symbol = determine_native_token(ctx)
 
     embed = get_token_price_he_cg(symbol)
+    # debugging
+    print(embed)
     await ctx.send(embed=embed)
 
 
@@ -1497,11 +1501,11 @@ async def links(ctx):
     embed.add_field(name='dCrops', value='https://hive.pizza/dcrops', inline=False)
     embed.add_field(name='Exode', value='https://hive.pizza/exode', inline=False)
     embed.add_field(name='NFTShowroom', value='https://hive.pizza/nftshowroom', inline=False)
-    embed.add_field(name='Rabona', value='https://hive.pizza/rabona', inline=False)
+    #embed.add_field(name='Rabona', value='https://hive.pizza/rabona', inline=False)
     embed.add_field(name='Rising Star', value='https://hive.pizza/risingstar', inline=False)
     embed.add_field(name='Splinterlands', value='https://hive.pizza/splinterlands', inline=False)
     embed.add_field(name='Terracore', value='https://hive.pizza/terracore', inline=False)
-    embed.add_field(name='Top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
+    #embed.add_field(name='Top.gg (Vote for our Discord server to become awesome)', value='https://hive.pizza/vote', inline=False)
 
     await ctx.send(embed=embed)
 
