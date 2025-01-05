@@ -174,6 +174,9 @@ def get_token_price_he_cg(coin):
 
     found_in_hiveengine = False
     try:
+        if coin == 'hive':
+            raise hiveengine.exceptions.TokenDoesNotExists('skip HE query to avoid empty response')
+
         Token(coin, api=hiveengine_api)
         found_in_hiveengine = True
         hive_usd = get_coin_price()[0]
@@ -437,8 +440,7 @@ async def price(ctx, symbol=''):
         symbol = determine_native_token(ctx)
 
     embed = get_token_price_he_cg(symbol)
-    # debugging
-    print(embed)
+
     await ctx.send(embed=embed)
 
 
