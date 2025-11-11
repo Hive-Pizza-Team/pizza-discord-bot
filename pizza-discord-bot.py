@@ -270,7 +270,7 @@ async def update_bot_user_status(bot):
     seconds = (seconds_remaining % 60)
 
     if bot:
-        await bot.change_presence(activity=discord.Game('HF28 ~ %.3fd %.3fh %.3fm %.3fs' % (days,hours,minutes,seconds)))
+        await bot.change_presence(activity=discord.Game('HF28 ~ %dd %dh %dm %ds' % (days,hours,minutes,seconds)))
         #await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f' % last_price_usd))
 
 
