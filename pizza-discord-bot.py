@@ -268,7 +268,6 @@ async def update_bot_user_status(bot):
     hours = seconds_remaining // 3600
     minutes = (seconds_remaining % 3600) // 60
     seconds = (seconds_remaining % 60)
-    print('HF28 ~ %dd %dh %dm %ds' % (days,hours,minutes,seconds))
 
     if bot:
         await bot.change_presence(activity=discord.Game('HF28 ~ %.3fd %.3fh %.3fm %.3fs' % (days,hours,minutes,seconds)))
