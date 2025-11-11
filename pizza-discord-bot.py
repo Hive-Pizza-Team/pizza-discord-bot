@@ -653,8 +653,8 @@ async def history(ctx, symbol=''):
 @bot.command()
 async def blog(ctx, name):
     """<name> : Link to last post from blog."""
-    from beem.discussions import Query, Discussions_by_blog
-    q = Query(limit=10, start_author=name)
+    from beem.discussions import Query, Discussions_by_author_before_date
+    q = Query(limit=10, author=name)
     latest_blog = Discussions_by_blog(q)[0]
 
     reply_identifier = '@%s/%s' % (latest_blog['author'], latest_blog['permlink'])
