@@ -1,30 +1,25 @@
 #!/usr/bin/env python3
-"""Discord bot for $PIZZA token community."""
-import os
-import discord
-from discord.ext import commands, tasks
-from discord_slash import SlashCommand, SlashContext
-#from discord_slash.utils.manage_components import create_button, create_actionrow
-#from discord_slash.model import ButtonStyle
-from dotenv import load_dotenv
-from hiveengine.market import Market
-from hiveengine.tokenobject import Token
-import random
-from pycoingecko import CoinGeckoAPI
-import hiveengine
-from hiveengine.wallet import Wallet
-import json
-from hiveengine.api import Api
+"""Discord bot for Hive Pizza community."""
 import beem
 from beem.witness import Witness, WitnessesRankedByVote
 import datetime
+from datetime import datetime
+import discord
+from discord.ext import commands, tasks
+from discord_slash import SlashCommand, SlashContext
+import hiveengine
+from hiveengine.api import Api
+from hiveengine.market import Market
+from hiveengine.tokenobject import Token
+from hiveengine.wallet import Wallet
+import json
+import os
+from dotenv import load_dotenv
+import random
+from pycoingecko import CoinGeckoAPI
 import requests
-import traceback
 import sys
-from datetime import datetime, timedelta
-import dateutil.parser
-from operator import itemgetter
-import time
+import traceback
 
 # Hive-Engine defines
 hive = beem.Hive(node=['https://api.deathwing.me'])
@@ -40,8 +35,7 @@ market = Market(api=hiveengine_api, blockchain_instance=hive)
 DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:ONEUP'
 DEFAULT_GIF_CATEGORY = 'PIZZA'
-ACCOUNT_FILTER_LIST = ['thebeardflex', 'pizzaexpress', 'datbeardguy',
-                       'pizzabot', 'null', 'vftlab', 'pizza-rewards']
+ACCOUNT_FILTER_LIST = []
 
 CONFIG_FILE = 'config.json'
 
@@ -277,8 +271,7 @@ async def update_bot_user_status(bot):
 custom_prefixes = read_config_file()
 default_prefix = '!'
 bot = commands.Bot(command_prefix=determine_prefix, intents=discord.Intents.default())
-slash = SlashCommand(bot)
-
+slash = SlashCommand(bot, sync_commands=True)
 
 @bot.event
 async def on_ready():
@@ -289,7 +282,7 @@ async def on_ready():
 
 
 class PizzaCog(commands.Cog):
-    """This is a cog to peridiocally update the TOKEN price in bot status."""
+    """This is a cog to peridiocally update the bot status."""
 
     def __init__(self, bot):
         """Constructor."""
@@ -309,7 +302,6 @@ class PizzaCog(commands.Cog):
 cog = PizzaCog(bot)
 
 # Bot commands
-
 
 @slash.slash(name="prefix")
 @bot.command()
@@ -661,22 +653,6 @@ async def history(ctx, symbol=''):
 
     embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' % symbol, description=message, color=0x277da1)
     await ctx.send(embed=embed)
-
-
-@slash.slash(name="blog")
-@bot.command()
-async def blog(ctx, name):
-    """<name> : Link to last post from blog."""
-    account = beem.account.Account(name)
-    latest_blog = account.get_blog(0,1)[0]
-
-    if not latest_blog:
-        response = 'Blog not found'
-    else:
-        reply_identifier = '@%s/%s' % (latest_blog['author'], latest_blog['permlink'])
-        response = 'Latest post from @%s: https://peakd.com/%s' % (name, reply_identifier)
-
-    await ctx.send(response)
 
 
 @slash.slash(name="witness")
@@ -1373,6 +1349,23 @@ async def status(ctx):
         embed.add_field(name=account, value=':battery: %d%%%s' % (current_pct, extra_info), inline=True)
 
     await ctx.send(embed=embed)
+
+# Hive Content Commands
+
+@slash.slash(name="blog")
+@bot.command()
+async def blog(ctx, name):
+    """<name> : Link to last post from blog."""
+    account = beem.account.Account(name)
+    latest_blog = account.get_blog(0,1)[0]
+
+    if not latest_blog:
+        response = 'Blog not found'
+    else:
+        reply_identifier = '@%s/%s' % (latest_blog['author'], latest_blog['permlink'])
+        response = 'Latest post from @%s: https://peakd.com/%s' % (name, reply_identifier)
+
+    await ctx.send(response)
 
 
 
