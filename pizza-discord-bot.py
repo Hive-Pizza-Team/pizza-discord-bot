@@ -653,13 +653,14 @@ async def history(ctx, symbol=''):
 @bot.command()
 async def blog(ctx, name):
     """<name> : Link to last post from blog."""
-    from beem.discussions import Query, Discussions_by_author_before_date
-    q = Query(limit=10, author=name)
-    latest_blog = Discussions_by_author_before_date(q)[0]
+    account = beem.account.Account(name)
+    latest_blog = account.get_blog(0,1)[0]
 
-    reply_identifier = '@%s/%s' % (latest_blog['author'], latest_blog['permlink'])
-
-    response = 'Latest post from @%s: https://peakd.com/%s' % (name, reply_identifier)
+    if not latest_blog:
+        response = 'Blog not found'
+    else:
+        reply_identifier = '@%s/%s' % (latest_blog['author'], latest_blog['permlink'])
+        response = 'Latest post from @%s: https://peakd.com/%s' % (name, reply_identifier)
 
     await ctx.send(response)
 
