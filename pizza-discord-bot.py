@@ -248,8 +248,8 @@ def get_coin_price(coin='hive'):
 
 async def update_bot_user_status(bot):
     """Update the bot's status."""
-    last_price = float(get_market_history(symbol="HIVE")[-1]['price'])
-    last_price_usd = round(get_coin_price()[0] * last_price, 3)
+    # last_price = float(get_market_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
+    last_price_usd = round(get_coin_price()[0], 3)
 
     # from datetime import datetime
     # date_obj = datetime.fromisoformat('2025-11-19T13:00:00+00:00')
