@@ -248,24 +248,22 @@ def get_coin_price(coin='hive'):
 
 async def update_bot_user_status(bot):
     """Update the bot's status."""
-    #last_price = float(get_market_history(symbol=DEFAULT_TOKEN_NAME)[-1]['price'])
-    #last_price_usd = round(get_coin_price()[0] * last_price, 3)
+    last_price = float(get_market_history(symbol="HIVE")[-1]['price'])
+    last_price_usd = round(get_coin_price()[0] * last_price, 3)
 
-    from datetime import datetime
-
-    date_obj = datetime.fromisoformat('2025-11-19T13:00:00+00:00')
-
-    now = datetime.now(date_obj.tzinfo)
-    delta = date_obj - now
-    days = delta.days
-    seconds_remaining = delta.seconds
-    hours = seconds_remaining // 3600
-    minutes = (seconds_remaining % 3600) // 60
-    seconds = (seconds_remaining % 60)
+    # from datetime import datetime
+    # date_obj = datetime.fromisoformat('2025-11-19T13:00:00+00:00')
+    # now = datetime.now(date_obj.tzinfo)
+    # delta = date_obj - now
+    # days = delta.days
+    # seconds_remaining = delta.seconds
+    # hours = seconds_remaining // 3600
+    # minutes = (seconds_remaining % 3600) // 60
+    # seconds = (seconds_remaining % 60)
 
     if bot:
-        await bot.change_presence(activity=discord.Game('HF28 ~ %dd %dh %dm %ds' % (days,hours,minutes,seconds)))
-        #await bot.change_presence(activity=discord.Game('PIZZA ~ $%.3f' % last_price_usd))
+        #await bot.change_presence(activity=discord.Game('HF28 ~ %dd %dh %dm %ds' % (days,hours,minutes,seconds)))
+        await bot.change_presence(activity=discord.Game('HIVE ~ $%.3f' % last_price_usd))
 
 
 custom_prefixes = read_config_file()
@@ -293,7 +291,7 @@ class PizzaCog(commands.Cog):
         """Stop the task loop on shutdown."""
         self.price_check.cancel()
 
-    @tasks.loop(seconds=16.0)
+    @tasks.loop(minutes=16.0)
     async def price_check(self):
         """Task to run every N execution."""
         if self.bot.user:
