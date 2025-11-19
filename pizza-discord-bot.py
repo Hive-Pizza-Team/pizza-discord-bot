@@ -269,7 +269,7 @@ async def update_bot_user_status(bot):
 custom_prefixes = read_config_file()
 default_prefix = '!'
 bot = commands.Bot(command_prefix=determine_prefix, intents=discord.Intents.default())
-slash = SlashCommand(bot, sync_commands=True)
+slash = SlashCommand(bot, sync_commands=False)
 
 @bot.event
 async def on_ready():
