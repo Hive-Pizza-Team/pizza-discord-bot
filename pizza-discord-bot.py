@@ -795,7 +795,7 @@ async def history(ctx, symbol=''):
 @bot.command()
 async def witness(ctx, witnessname='pizza.witness'):
     """<witness name>: Print Hive Witness Info."""
-    name = name.lower()
+    name = witnessname.lower()
     message_body = '```\n'
 
     witness = Witness(witnessname, blockchain_instance=hive)
