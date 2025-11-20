@@ -846,18 +846,18 @@ async def witness(ctx, witnessname='pizza.witness'):
 
     embed = discord.Embed(title='Hive Witness info for @%s' %
                           witnessname, description='', color=0xf3722c)
-    embed.add_field(witnessname='Running Version',
+    embed.add_field(name='Running Version',
                     value=witness_json['running_version'], inline=False)
-    embed.add_field(witnessname='Missed Blocks',
+    embed.add_field(name='Missed Blocks',
                     value=witness_json['total_missed'], inline=False)
 
     if est_time_to_next_block:
-        embed.add_field(witnessname='Estimate time to next block',
+        embed.add_field(name='Estimate time to next block',
                         value=est_time_to_next_block, inline=False)
 
     if found:
-        embed.add_field(witnessname='Rank', value='%d' % rank, inline=False)
-        embed.add_field(witnessname='Active Rank', value='%d' %
+        embed.add_field(name='Rank', value='%d' % rank, inline=False)
+        embed.add_field(name='Active Rank', value='%d' %
                         active_rank, inline=False)
 
     await ctx.send(embed=embed)
