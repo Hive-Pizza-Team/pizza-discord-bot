@@ -798,7 +798,7 @@ async def witness(ctx, witnessname='pizza.witness'):
     name = name.lower()
     message_body = '```\n'
 
-    witness = Witness(name, blockchain_instance=hive)
+    witness = Witness(witnessname, blockchain_instance=hive)
 
     witness_json = witness.json()
     witness_schedule = hive.get_witness_schedule()
