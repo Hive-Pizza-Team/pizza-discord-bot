@@ -4,4 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        platform: linux/arm64
     restart: always
