@@ -795,7 +795,7 @@ async def history(ctx, symbol=''):
 @bot.command()
 async def witness(ctx, witnessname='pizza.witness'):
     """<witness name>: Print Hive Witness Info."""
-    name = witnessname.lower()
+    witnessname = witnessname.lower()
     message_body = '```\n'
 
     witness = Witness(witnessname, blockchain_instance=hive)
@@ -845,19 +845,19 @@ async def witness(ctx, witnessname='pizza.witness'):
         est_time_to_next_block = time_diff_est
 
     embed = discord.Embed(title='Hive Witness info for @%s' %
-                          name, description='', color=0xf3722c)
-    embed.add_field(name='Running Version',
+                          witnessname, description='', color=0xf3722c)
+    embed.add_field(witnessname='Running Version',
                     value=witness_json['running_version'], inline=False)
-    embed.add_field(name='Missed Blocks',
+    embed.add_field(witnessname='Missed Blocks',
                     value=witness_json['total_missed'], inline=False)
 
     if est_time_to_next_block:
-        embed.add_field(name='Estimate time to next block',
+        embed.add_field(witnessname='Estimate time to next block',
                         value=est_time_to_next_block, inline=False)
 
     if found:
-        embed.add_field(name='Rank', value='%d' % rank, inline=False)
-        embed.add_field(name='Active Rank', value='%d' %
+        embed.add_field(witnessname='Rank', value='%d' % rank, inline=False)
+        embed.add_field(witnessname='Active Rank', value='%d' %
                         active_rank, inline=False)
 
     await ctx.send(embed=embed)
@@ -874,21 +874,20 @@ async def witness(ctx, witnessname='pizza.witness'):
 async def hewitness(ctx, witnessname='pizza-engine'):
     """<witness name>: Print Hive-Engine Witness Info."""
     results = hiveengine_api.find(
-        # "account":{"$in":["%s" % name]}})
         'witnesses', 'witnesses', query={})
 
     results = sorted(results, key=lambda a: float(
         a['approvalWeight']['$numberDecimal']), reverse=True)
 
     embed = discord.Embed(title='Hive-Engine Witness info for @%s' %
-                          name, description='', color=0xf3722c)
+                          witnessname, description='', color=0xf3722c)
 
     if len(results) == 0:
         embed.add_field(name='Hive-Engine Witness %s' %
-                        name, value='Not Found')
+                        witnessname, value='Not Found')
     else:
         for result in results:  # = results[0]
-            if result['account'] != name:
+            if result['account'] != witnessname:
                 continue
 
             embed.add_field(name='Rank', value=results.index(
