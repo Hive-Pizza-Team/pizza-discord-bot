@@ -21,6 +21,9 @@ import requests
 import sys
 import traceback
 
+from typing import Literal, Optional
+
+
 from utils import *
 from utils_hiveengine import *
 from utils_hive import *
@@ -59,7 +62,7 @@ async def update_bot_user_status(bot):
         await bot.change_presence(activity=discord.Game('HIVE ~ $%.3f' % last_price_usd))
 
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!!!!!!!!!!!!!!!!!!!!",
+bot = commands.Bot(command_prefix="!!!",
                    intents=intents)
 
 
@@ -207,7 +210,7 @@ async def price(ctx: discord.Interaction, symbol: str = ''):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="gif", description="Show a gif!")
+@bot.tree.command(name="gif", description="Show a gif!")
 @app_commands.describe(
     category="name of a gif category"
 )
@@ -302,14 +305,14 @@ async def gif(ctx: discord.Interaction, category: str = ''):
     await ctx.response.send_message(gif_url)
 
 
-@bot.command(name="info", description="Print Hive.Pizza project link.")
+@bot.tree.command(name="info", description="Print Hive.Pizza project link.")
 async def info(ctx: discord.Interaction):
     """Print Hive.Pizza project link."""
     response = '''Learn more about $PIZZA @ https://hive.pizza'''
     await ctx.response.send_message(response)
 
 
-@bot.command(name="tokenomics", description="Print Hive-Engine token distribution info.")
+@bot.tree.command(name="tokenomics", description="Print Hive-Engine token distribution info.")
 @app_commands.describe(
     symbol="Hive-Engine token symbol. i.e. PIZZA."
 )
@@ -394,7 +397,7 @@ async def tokenomics(ctx: discord.Interaction, symbol: str = ''):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="top10", description="Print Hive-Engine token rich list top 10.")
+@bot.tree.command(name="top10", description="Print Hive-Engine token rich list top 10.")
 @app_commands.describe(
     symbol="Hive-Engine token symbol. i.e. PIZZA."
 )
@@ -457,7 +460,7 @@ async def top10(ctx: discord.Interaction, symbol: str = ''):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="history", description="Print Hive-Engine market trade history.")
+@bot.tree.command(name="history", description="Print Hive-Engine market trade history.")
 @app_commands.describe(
     symbol="Hive-Engine token symbol. i.e. PIZZA."
 )
@@ -483,7 +486,7 @@ async def history(ctx: discord.Interaction, symbol: str = ''):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="witness", description="Print Hive Witness Info.")
+@bot.tree.command(name="witness", description="Print Hive Witness Info.")
 @app_commands.describe(
     witnessname="Name of Hive witness."
 )
@@ -557,7 +560,7 @@ async def witness(ctx: discord.Interaction, witnessname: str = 'pizza.witness'):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="hewitness", description="Print Hive-Engine Witness Info.")
+@bot.tree.command(name="hewitness", description="Print Hive-Engine Witness Info.")
 @app_commands.describe(
     witnessname="Name of Hive-Engine witness"
 )
@@ -591,7 +594,7 @@ async def hewitness(ctx: discord.Interaction, witnessname: str = 'pizza-engine')
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="pools", description="Check Hive-Engine DIESEL Pool Balances for Wallet.")
+@bot.tree.command(name="pools", description="Check Hive-Engine DIESEL Pool Balances for Wallet.")
 @app_commands.describe(
     wallet="Hive wallet name, i.e. hive.pizza."
 )
@@ -609,7 +612,7 @@ async def pools(ctx: discord.Interaction, wallet: str):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="pool", description="Check Hive-Engine DIESEL Pool Info.")
+@bot.tree.command(name="pool", description="Check Hive-Engine DIESEL Pool Info.")
 @app_commands.describe(
     pool="Pool symbol pair, i.e. SWAP.HIVE:PIZZA"
 )
@@ -643,7 +646,7 @@ async def pool(ctx: discord.Interaction, pool: str = DEFAULT_DIESEL_POOL):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="poolrewards", description="Check Hive-Engine DIESEL Pool Rewards Info.")
+@bot.tree.command(name="poolrewards", description="Check Hive-Engine DIESEL Pool Rewards Info.")
 @app_commands.describe(
     pool="Pool symbol pair, i.e. SWAP.HIVE:PIZZA"
 )
@@ -682,7 +685,7 @@ async def poolrewards(ctx: discord.Interaction, pool: str = DEFAULT_DIESEL_POOL)
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="buybook", description="Check Hive-Engine buy book for token.")
+@bot.tree.command(name="buybook", description="Check Hive-Engine buy book for token.")
 @app_commands.describe(
     symbol="Hive-Engine token symbol. i.e. PIZZA."
 )
@@ -710,7 +713,7 @@ async def buybook(ctx: discord.Interaction, symbol: str = ''):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="sellbook", description="Check Hive-Engine sell book for token.")
+@bot.tree.command(name="sellbook", description="Check Hive-Engine sell book for token.")
 @app_commands.describe(
     symbol="Hive-Engine token symbol. i.e. PIZZA."
 )
@@ -741,7 +744,7 @@ async def sellbook(ctx: discord.Interaction, symbol: str = ''):
 # Splinterlands related helper functions and commands
 
 
-@bot.command(name="slplayer", description="Fetch Splinterlands info for player.")
+@bot.tree.command(name="slplayer", description="Fetch Splinterlands info for player.")
 @app_commands.describe(
     player="Name of player, status, timer."
 )
@@ -765,7 +768,7 @@ async def sl(ctx: discord.Interaction, player: str):
 # Exode related commands
 
 
-@bot.command(name="exodecards", description="Get a player's Exode card collection info.")
+@bot.tree.command(name="exodecards", description="Get a player's Exode card collection info.")
 @app_commands.describe(
     player="Name of player, i.e. thebeardflex."
 )
@@ -794,7 +797,7 @@ async def exodecards(ctx: discord.Interaction, player: str):
 
 
 # Rising Star related commands
-@bot.command(name="rsplayer", description="Check Rising Star Player Stats.")
+@bot.tree.command(name="rsplayer", description="Check Rising Star Player Stats.")
 @app_commands.describe(
     player="Name of player, i.e. thebeardflex."
 )
@@ -834,7 +837,7 @@ async def rsplayer(ctx: discord.Interaction, player: str):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="links", description="Use these links to support Hive.Pizza.")
+@bot.tree.command(name="links", description="Use these links to support Hive.Pizza.")
 async def links(ctx: discord.Interaction):
     """Use these links to support Hive.Pizza."""
     embed = discord.Embed(title='Hive.Pizza links',
@@ -859,7 +862,7 @@ async def links(ctx: discord.Interaction):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="rc", description="Show Hive resource credits status for wallet.")
+@bot.tree.command(name="rc", description="Show Hive resource credits status for wallet.")
 @app_commands.describe(
     wallet="name of wallet"
 )
@@ -892,7 +895,7 @@ async def rc(ctx: commands.Context, wallet: str):
     await ctx.response.send_message(embed=embed)
 
 
-@bot.command(name="status", description="Print bot's status information.")
+@bot.tree.command(name="status", description="Print bot's status information.")
 async def status(ctx: discord.Interaction):
     """Print bot's status information."""
 
@@ -943,7 +946,7 @@ async def status(ctx: discord.Interaction):
 # Hive Content Commands
 
 
-@bot.command(name="blog", description="Link to latest post from blog.")
+@bot.tree.command(name="blog", description="Link to latest post from blog.")
 @app_commands.describe(
     name="Hive blog name, i.e. hive.pizza."
 )
@@ -963,7 +966,7 @@ async def blog(ctx: discord.Interaction, name: str):
     await ctx.response.send_message(response)
 
 
-@bot.command(name="search", description="Search for Hive content.")
+@bot.tree.command(name="search", description="Search for Hive content.")
 @app_commands.describe(
     query="Search query",
     sort="How to filter search results."
@@ -997,6 +1000,34 @@ async def search(ctx: discord.Interaction, query: str, sort: str = 'relevance'):
 
     await ctx.response.send_message(embed=embed)
 
+
+@bot.command()
+@commands.is_owner()
+async def sync(ctx: commands.Context, guilds: commands.Greedy[discord.Object], spec: Optional[Literal["~", "*", "^"]] = None) -> None:
+    if not guilds:
+        if spec == "~":
+            synced = await ctx.bot.tree.sync(guild=ctx.guild)
+        elif spec == "*":
+            ctx.bot.tree.copy_global_to(guild=ctx.guild)
+            synced = await ctx.bot.tree.sync(guild=ctx.guild)
+        elif spec == "^":
+            ctx.bot.tree.clear_commands(guild=ctx.guild)
+            await ctx.bot.tree.sync(guild=ctx.guild)
+            synced = []
+        else:
+            synced = await ctx.bot.tree.sync()
+        await ctx.send(f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}")
+        return
+
+    ret = 0
+    for guild in guilds:
+        try:
+            await ctx.bot.tree.sync(guild=guild)
+        except discord.HTTPException:
+            pass
+        else:
+            ret += 1
+    await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
 
 @bot.event
 async def on_command_error(ctx: discord.Interaction, error: Exception):

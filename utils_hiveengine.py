@@ -15,7 +15,7 @@ hiveengine_api = Api(url=HIVE_ENGINE_API_NODE, rpcurl=HIVE_ENGINE_API_NODE_RPC)
 market = Market(api=hiveengine_api, blockchain_instance=get_hive_instance())
 
 
-def get_market_history(symbol, market):
+def get_market_history(symbol):
     """Get market history for a Hive-Engine token."""
     order_count = 1000
     orders = []
