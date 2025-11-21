@@ -1,6 +1,6 @@
 discord-py-interactions==5.15.0
 discord-py-slash-command==3.0.3
-discord.py==1.7.1
+discord.py==2.6.4
 pycoingecko==1.4.1
 hiveengine==0.2.2
 beem==0.24.26

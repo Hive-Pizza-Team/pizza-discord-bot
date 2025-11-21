@@ -5,8 +5,8 @@ from beem.witness import Witness, WitnessesRankedByVote
 import datetime
 from datetime import datetime
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
-from discord_slash import SlashCommand, SlashContext
 import hiveengine
 from hiveengine.api import Api
 from hiveengine.market import Market
@@ -16,262 +16,27 @@ import json
 import os
 from dotenv import load_dotenv
 import random
-from pycoingecko import CoinGeckoAPI
+
 import requests
 import sys
 import traceback
 
+from utils import *
+from utils_hiveengine import *
+from utils_hive import *
+
 # Hive-Engine defines
-hive = beem.Hive(node=['https://api.deathwing.me', 'https://api.hive.blog'])
-beem.instance.set_shared_blockchain_instance(hive)
+hive = get_hive_instance()
 
 load_dotenv()
 HIVE_ENGINE_API_NODE = os.getenv('HIVE_ENGINE_API_NODE')
 HIVE_ENGINE_API_NODE_RPC = os.getenv('HIVE_ENGINE_API_NODE_RPC')
 hiveengine_api = Api(url=HIVE_ENGINE_API_NODE, rpcurl=HIVE_ENGINE_API_NODE_RPC)
-
 market = Market(api=hiveengine_api, blockchain_instance=hive)
 
 DEFAULT_TOKEN_NAME = 'PIZZA'
 DEFAULT_DIESEL_POOL = 'PIZZA:ONEUP'
 DEFAULT_GIF_CATEGORY = 'PIZZA'
-ACCOUNT_FILTER_LIST = []
-
-CONFIG_FILE = 'config.json'
-
-# Miscellaneous defines
-MARKET_HISTORY_URL = 'https://history.hive-engine.com/marketHistory?symbol=%s&volumetoken'
-
-PIZZA_GIFS = ['https://tenor.com/bOpfE.gif', 'https://tenor.com/bOphp.gif', 'https://tenor.com/bOpms.gif', 'https://tenor.com/bLZrj.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930920031561330688/hp_shuffle.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930606139941453864/Matrix_Morpheus_offeringPizza_logo.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930565316218601502/hp_therock.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430486294171668/hp_sono.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430485786656798/hp_snoop1.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430484717129768/hp_rocketlaunch.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430483957940254/hp_raindance.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430483492401152/hp_nom.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930276777920712714/slama.gif',
-              'https://media.giphy.com/media/IzfbNtUU4MMw1PL1qV/giphy-downsized-large.gif', 'https://media.giphy.com/media/EkOibKD5yUa0tgLCxN/giphy.gif', 'https://media.giphy.com/media/5yn8SyAzwUBEgdALRa/giphy-downsized-large.gif', 'https://media.giphy.com/media/TrsWfYuKTRd1jAJrcH/giphy.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929578506847932416/20220108_222854.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929574678475976725/final_61da51208515290112872774_913648.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929565611271520286/20220108_214058.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929563942097944576/final_61da4461b9c9760065a7e297_963344.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929558244890931220/When_you_rank_up_in_PIZZA.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929556529391206501/final_61da3f1d855e34006355ecd7_133726.gif']
-# PIZZA_GIFS += ['https://files.peakd.com/file/peakd-hive/pizzabot/24243uENGsh6uW4qKCGujxK4BvoMKN5RcN7sfaEJ5NKJtep8rt9afWsVtg3Kvjtq1pDjS.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23zGqBEBBrndd2a4j4sFd7pfokJbPP78MUeXbhTF7tpkm68TDPNKpyEQx6SyXfw2TvxCc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xouo4FKcHyERYKyiEm4x425LXY5UZsLSbwPtftnNGdqpGPpP9TwJ6k3WfLGw7dRi8ix.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wqthb5pRQCesbcTuqXfTcNtjLsRRRTpEUfTaMAqm1h8jVmEgYikZjf2edLHrRcoDriQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23yd8DEejLwG8jbK6yiHPUqaQqC2rWNvVjANJcC5J5LQM3NKz9SHZZqCy9Lzg1YsnoR5W.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DXLG4DJojrUAscw229UnyJkGma6C1QoCQjngcVG2LFbkaTdN4oJw9WgLLxV3N2oWLc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23sdt4qbqaFxwbYhkYuviGR8kBeGLTYeaveqjXiwGSRUbxyV5J5rusMoXD1AGk2JhpDsi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wX5M8YHK92Kzmr8gAE1mZRePnsG96StjiPPnDYGcdq6BD3BkmMb7jLrCiPVrGRKsbBi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xL35bVpiQbPTwnuBMMPsEpSbApf598uVE9fMXq8SKj5Hzh2ik4CnHYWcRNBriXkk5gQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DQXTLyKebw5oUNSqsNPvoqPDXCgPKafnoB2zE7bBqyfCAKxKL44r4SarskWCmYY4Lc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242s64cMzwVBDgMuApdLgtJrj4G4Qt3dTjJuKWFb4MXCvwiXAorV25iTUMFjU4gPm1azQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23y92ccQqXL7ixb1AYUg8T6yHRAEiLptBYhuoahFeh8uU8FXt1WFhJBwLysktbFdC46Gc.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242Nt1WKYcjivqc1FPyfqwQ6vkTs7sznxWKYagPhc7TQ4v8VSYNA46NEswjkZeiSxuRAC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xKxeFC2EKESp2cQ3MrPHcAHEaFtvf2mekStgrqqSxYS5rL7PnfmNwoWVQbdJwJS6zQt.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242hfEv5oigYcb19z6ZDEPANTmAn1rWub84KKSJqdbtenEWhPxK2H1tqwanWzTrXZC3LQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xerFt4yJKoK1hhVdzVEYpKMKbGUHaW9SR3g7os8UmqAZLsnhs5QgWGeD9NNk72FNGxC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/243Bpw3x8jfheRpNACEc9fjrrLvn2Qtw8KQwhwscRjLc8BNfhxktPjuLDvnjTv7wCeLVi.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xAcRA5z5PG8aNLzq3jcDrSwP6eVYAagSSooGTzWQ4TZHPvNH8Ccc16zwtP6y3fkgX1e.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23zGkxUGqyXMTN7rVm2EPkLr6dsnk4T4nFyrEBejS9WB2VbKpJ3P356EcQjcrMF6gRTbz.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23x17QUuztsLf64Mav8m59nuRF4B9k3RAV6QGrtpvmc3hA9bxSJ2URkW7fuYSfaRLKAq2.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wC5ZpMMfnFCsLS4MLF3N6XZ2aMQ1Fjnw6QGrZtpJqQmiH4xtsUEgjjCD5VU3ccjoRet.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpKDUUZXfKhB9t5HqVEyqqd9ryYUkwTE2fgfZR6wAyzkPrjUY9rMpSP6zkrmXTUtBCQ.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wr1XodaTgJAVzDu9sEV7q5r6RV3QppV2Nvxty4vD6BwYdHQLKGhgsynnz4fFC2GYyZW.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wr1BUi29btm7eRvcRbqee2e52DCmH5x5HWLVrrQ7GqLc5UQMYawfsHTAsgCLghj5Kwa.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23z7SiUwzPi3WQ1nS8Lk4qBUqKtmgZRRTuQZP54mRiDpi8A22pk1ScoFgVa8CyhqQsAuS.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpJztdYA9RpUnMRWDyYsWyixmqFMRSpix52vvx1vuxJSZHJL45YWmb9rUsswymZaSFE.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xyhemVn25gUt2p6JCHQ3hBjJyaz7d8hvmNusti9GNbjj8jToVFL4FaouPhkVoRYNnng.gif','https://files.peakd.com/file/peakd-hive/pizzabot/Ep1ZrmXNXjF4ZEYpXjJAVNThmFrQT3m4Q6jfxreCg1w7z81af8DHHZzeKk9QKy1Got8.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wqwJUY56PuyQS3doAHbLfsjnNTcqLUry1cSmoSyGmRc49BswoxTGYhySmrXuevYWCJg.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23yTqi8V4mqNvq5nfFNt69AC2tMc5ou3FZ6r9AzfxuPEyQbrX8CBDEMXcjNNmTMTCMnXv.gif','https://files.peakd.com/file/peakd-hive/pizzabot/242DhzmX9cZCijjJpD1qwqvcRdJMHPsxvsfesBYkQUVpXpn5s3g9SewPCeiJ1ne4zUC7N.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xpKbgbo6LSPutm7ntaeVDiVJfdaxiJGhs8N4sve1MNdENuRAKw37uJbutCNBqj2M7vU.gif','https://files.peakd.com/file/peakd-hive/pizzabot/EopwGAarumCksxjQEeMsTXTDeMw16kD35cciBsiJFWbbBV8nGVyGAXtn4tScHTWQmvC.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wgeYo6ULhiwyKEtKNpNfyU3oEn9zWJpKbSU2Hj5u11rn2YQr2wNoUUVrv1bBvMHgifn.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23xyfe5dT4xLHwJbamNCJUXpQuuV9kLucPMPXJsi74VoLq5bHBTrdkhVjyagno78r3F1n.gif','https://files.peakd.com/file/peakd-hive/pizzabot/23wMihvfhNfs4b1MKhb9bNdhEbeZoXTDkud331QCbL64zaxG6p9GuAbydjEUVczCDd49i.gif']
-PINEAPPLE_GIFS = ['https://media.giphy.com/media/0gYYWq5dHfhnYVrYtI/giphy.gif', 'https://media.giphy.com/media/7gXkay4o8FnFzT7uJo/giphy.gif', 'https://media.giphy.com/media/pz4hZwrBZn4EGxpMlG/giphy.gif', 'https://media.giphy.com/media/ZDgaXZjeKWnzuf5RRF/giphy.gif', 'https://media.giphy.com/media/vxyDfIe3iRXhsJ7z5r/giphy.gif', 'https://media.giphy.com/media/Ganp5Ne5MdzkdupCRF/giphy.gif', 'https://media.giphy.com/media/tIxf5oMxG1PWUYJEcL/giphy.gif', 'https://media.giphy.com/media/JG2ziQmGrc0MrHzGuj/giphy.gif', 'https://media.giphy.com/media/uVW9moVaAR47Vgj7D0/giphy.gif', 'https://media.giphy.com/media/rHLj0lWywWuaeGiSTF/giphy.gif', 'https://media.giphy.com/media/XCvm5Oo6wEVJmxRx7V/giphy.gif', 'https://media.giphy.com/media/7b6sSJEEBqWatW2MYn/giphy.gif',
-                  'https://media.giphy.com/media/18odCx2irVLDrvO3fY/giphy.gif', 'https://media.giphy.com/media/3g23LxFceQW8poMpTs/giphy.gif', 'https://media.giphy.com/media/N1ZxRLeX5wIz9Tvs8X/giphy.gif', 'https://media.giphy.com/media/ZwPHgEzoTcyKtaIlId/giphy.gif', 'https://media.giphy.com/media/9FmzQEdSbuSXcsPXCT/giphy.gif', 'https://media.giphy.com/media/WFdZOAE8OYcq5tSXee/giphy.gif', 'https://media.giphy.com/media/Bns85ZwsExoGgsKMmK/giphy.gif', 'https://media.giphy.com/media/Caoow9v9MRNIqmoFJJ/giphy.gif', 'https://media.giphy.com/media/3rTPQ1jH5osS4aBX8D/giphy.gif', 'https://media.giphy.com/media/FAqmU08XQKcGzzTpwO/giphy.gif', 'https://media.giphy.com/media/mQnBlO24UTPN723dpe/giphy.gif', 'https://media.giphy.com/media/RGV125iyT97ONLweyx/giphy.gif', 'https://media.giphy.com/media/vH5awikXqtANyuob7T/giphy.gif']
-BRO_GIFS = ['https://media.giphy.com/media/Q7dRGcu38WqGnb7nnI/giphy.gif', 'https://media.giphy.com/media/V9RSXFgeldCNKLCydK/giphy.gif', 'https://media.giphy.com/media/jSKXXzMxL55JUN93Q6/giphy.gif', 'https://media.giphy.com/media/XKXP9qdvV14N445Im4/giphy.gif', 'https://media.giphy.com/media/GaySGYuvjk2u2ql7XU/giphy.gif', 'https://media.giphy.com/media/tUgNHh1rupdbZ30mrP/giphy.gif', 'https://media.giphy.com/media/41bHp9qHeO9G2RKKFs/giphy.gif', 'https://media.giphy.com/media/PVRn0PcZ1las7eow4J/giphy.gif', 'https://media.giphy.com/media/7gZ7c3LJZ9Z8l85EtY/giphy.gif', 'https://media.giphy.com/media/v8jgENvvlegjuxLOmc/giphy.gif', 'https://media.giphy.com/media/tbYfDQ8fX8siY80sBN/giphy.gif', 'https://media.giphy.com/media/WFHauwzA2gcVhXxMuH/giphy.gif',
-            'https://media.giphy.com/media/65yRhgpIYVcB8SICtF/giphy.gif', 'https://media.giphy.com/media/mkN81kU4YqteLCqPvU/giphy.gif', 'https://media.giphy.com/media/o6Dfmyj2p4S5a3oxz6/giphy.gif', 'https://media.giphy.com/media/A66FeQBsflVqikTe3m/giphy.gif', 'https://media.giphy.com/media/EDCIaFhFaAYsdkbwgd/giphy.gif', 'https://media.giphy.com/media/rGh7YlCLOkqlyOFpq9/giphy.gif', 'https://media.giphy.com/media/v32eWRX8XE8Vh2l44h/giphy.gif', 'https://media.giphy.com/media/6nVXn29SXPMHiPKgXi/giphy.gif', 'https://media.giphy.com/media/w67kdyKjyNr2Xeb3fM/giphy.gif', 'https://media.giphy.com/media/piNBUyg9b7yAFSexql/giphy.gif', 'https://media.giphy.com/media/umiHQSmGsF5EiVSAv6/giphy.gif', 'https://media.giphy.com/media/CyKE41GQ2srFBIHTiL/giphy.gif', 'https://media.giphy.com/media/9fnjcqc49X3uqjlZra/giphy.gif']
-RISINGSTAR_GIFS = ['https://media.giphy.com/media/4fKFmbMTl2guk1n6y2/giphy.gif', 'https://media.giphy.com/media/T9QH5wAUPT8o2trbjD/giphy.gif', 'https://media.giphy.com/media/gL8iKEDRWzCdl6nk5G/giphy.gif', 'https://media.giphy.com/media/NchY6QQ2hzQisINQjA/giphy.gif', 'https://media.giphy.com/media/EkVBC57QI4U9IQfkY2/giphy.gif', 'https://media.giphy.com/media/IVYphXkTnL7EXn0gs3/giphy.gif', 'https://media.giphy.com/media/zj2H8HhLVtWnuGYqhx/giphy.gif', 'https://media.giphy.com/media/LDQqkkB1nhIr1kFsu7/giphy.gif', 'https://media.giphy.com/media/yHc7yfgyXRhLa5Q0qJ/giphy.gif', 'https://media.giphy.com/media/uYxnx1eiuhW97JvOAi/giphy.gif', 'https://media.giphy.com/media/jTTZ6zIsbcuRLisxLb/giphy.gif', 'https://media.giphy.com/media/Um2rquzMWZKQUbpT0I/giphy.gif',
-                   'https://media.giphy.com/media/iH7FY0ukmmetUZHT0K/giphy.gif', 'https://media.giphy.com/media/rJ6tKAaV0IkvjH0ys4/giphy.gif', 'https://media.giphy.com/media/LUKMkHzmJkaCkpvHVg/giphy.gif', 'https://media.giphy.com/media/6YFeS3ejyheLd96ibx/giphy.gif', 'https://media.giphy.com/media/9zjksORdGKFecNYjUk/giphy.gif', 'https://media.giphy.com/media/Gk1Ch0WHuqknkBjLIn/giphy.gif', 'https://media.giphy.com/media/MjOvM7AdJDtKBKckJT/giphy.gif', 'https://media.giphy.com/media/i5XGW0zW6prU3L0WRM/giphy.gif', 'https://media.giphy.com/media/uYX7r0u449s49oWFLY/giphy.gif', 'https://media.giphy.com/media/QU0uxCUe6qVmwoLErs/giphy.gif', 'https://media.giphy.com/media/DSwdsnBw1qbLfL4NaB/giphy.gif', 'https://media.giphy.com/media/BY2W5iI5TrqVbC3eYo/giphy.gif', 'https://media.giphy.com/media/6kzDBcHoWzcwTbSSU8/giphy.gif']
-POB_GIFS = ['https://media.giphy.com/media/btd5gT1uEKVUrMTM5F/giphy.gif', 'https://media.giphy.com/media/EPNH2hv2BTNm0c0i40/giphy.gif', 'https://media.giphy.com/media/t05mKJb8YiLlgckcC3/giphy.gif', 'https://media.giphy.com/media/q8K77RTBUmaSaWFgrE/giphy.gif', 'https://media.giphy.com/media/L6jEwgKyftQmSTJevb/giphy.gif', 'https://media.giphy.com/media/IioSnIxFIFed93The1/giphy.gif', 'https://media.giphy.com/media/VdQgGCxoc4gF3L4zY3/giphy.gif', 'https://media.giphy.com/media/Dou0bMmL4pxFem0zH0/giphy.gif',
-            'https://media.giphy.com/media/PmtcPpxG7o5PqM7YX4/giphy.gif', 'https://media.giphy.com/media/7Vqr9VKanN29Q1rbgr/giphy.gif', 'https://media.giphy.com/media/KZXlJ4K6Lr9INnvkUQ/giphy.gif', 'https://media.giphy.com/media/DGto0zMPaXIRkkHtMn/giphy.gif', 'https://media.giphy.com/media/9RulVBzWtHwz8AYmHw/giphy.gif', 'https://media.giphy.com/media/HHzLyXlf1HDhB2FAK6/giphy.gif', 'https://media.giphy.com/media/HD1cOJ7vltQtPoOyJM/giphy.gif', 'https://media.giphy.com/media/wiGC2mE3nM3hD8kinf/giphy.gif', 'https://media.giphy.com/media/BqoMcPD1vfDc55bUtK/giphy.gif']
-PROFOUND_GIFS = ['https://media.giphy.com/media/SQ5M4nABcnPsRv4Sux/giphy.gif', 'https://media.giphy.com/media/6ar045QB2RuxeZfb6U/giphy.gif', 'https://media.giphy.com/media/L6xgc2dWJHb3eks3xa/giphy.gif', 'https://media.giphy.com/media/f2edaKKz4SWW6b60v2/giphy.gif', 'https://media.giphy.com/media/LNSWLRhRnjGX0d4Xqc/giphy.gif', 'https://media.giphy.com/media/QUpkbYcHGqxsKuGv5D/giphy.gif', 'https://media.giphy.com/media/XJmwDVhGnkjrmonuny/giphy.gif', 'https://media.giphy.com/media/NGNW6ZR2bV3C66LvnM/giphy.gif', 'https://media.giphy.com/media/zutsNVWa5PnmWLLORT/giphy.gif', 'https://media.giphy.com/media/2P4Ov6WtnxU4iFPx0C/giphy.gif', 'https://media.giphy.com/media/i6Qepo5EKDuruePSvV/giphy.gif', 'https://media.giphy.com/media/nDMbce12xS59Fh0oN2/giphy.gif',
-                 'https://media.giphy.com/media/8G6N3UPP2FNLh3zJB9/giphy.gif', 'https://media.giphy.com/media/bIAm0uWiz2jZANh9at/giphy.gif', 'https://media.giphy.com/media/EYkkdDgnir7EcV61CJ/giphy.gif', 'https://media.giphy.com/media/nFkyu4FFGIlFZrt5n8/giphy.gif', 'https://media.giphy.com/media/0UkEoh2xT59QDTTF70/giphy.gif', 'https://media.giphy.com/media/7jGdJCHDBffOOSyxlf/giphy.gif', 'https://media.giphy.com/media/f64GgzL3cnF3WhuPjb/giphy.gif', 'https://media.giphy.com/media/RzUct7rduOf4976qjP/giphy.gif', 'https://media.giphy.com/media/yvQiEvCmDsjQe0BFJi/giphy.gif', 'https://media.giphy.com/media/3Nmzke5aDoj23Cu1AL/giphy.gif', 'https://media.giphy.com/media/dln8uROMLJylGIaHnZ/giphy.gif', 'https://media.giphy.com/media/19HdKao5FdOXwLowu5/giphy.gif', 'https://media.giphy.com/media/bNk3MLtmKaSSgGvqUe/giphy.gif']
-BATTLEAXE_GIFS = ['https://media.giphy.com/media/8Oup5mUGVs2dZWNhCw/giphy.gif', 'https://media.giphy.com/media/twrPnIhjarlfVqhTvt/giphy.gif', 'https://media.giphy.com/media/aGaoKokoF4F7rFhb3a/giphy.gif', 'https://media.giphy.com/media/oDtC2KVOy9HNcG4y8s/giphy.gif', 'https://media.giphy.com/media/7U115amErU5M7Zuk6k/giphy.gif', 'https://media.giphy.com/media/aW2x62TDaNcwzLFT3L/giphy.gif',
-                  'https://media.giphy.com/media/CRg4wEkzJRQ8ljNbUK/giphy.gif', 'https://media.giphy.com/media/AobPC1jh48luCFEREk/giphy.gif', 'https://media.giphy.com/media/p8hrL9PQq6S3JS6Z9w/giphy.gif', 'https://media.giphy.com/media/AJ82ifdfuN7D9OVDOv/giphy.gif', 'https://media.giphy.com/media/HbiFp4eWszvZdt2nr0/giphy.gif', 'https://media.giphy.com/media/jWAgAxHUxkeXxD4l4H/giphy.gif', 'https://media.giphy.com/media/33QVGxmaiL87VpNQJg/giphy.gif']
-ENGLAND_GIFS = ['https://media.giphy.com/media/u9a7I1NjCRwDJvgQBe/giphy.gif', 'https://media.giphy.com/media/QCAwYlATLHAJZYyjId/giphy.gif', 'https://media.giphy.com/media/f71WnctzJj20XpXwrq/giphy.gif', 'https://media.giphy.com/media/5X7JrKbLgyYAIGcJrv/giphy.gif', 'https://media.giphy.com/media/hA88d22fB2ik0OoYsk/giphy.gif',
-                'https://media.giphy.com/media/VdcUMBoJBIxWNCjZFH/giphy.gif', 'https://media.giphy.com/media/VGXIQEXKWRNtmwR3ar/giphy.gif', 'https://media.giphy.com/media/H6b0VeNQLKaeziLOZ5/giphy.gif', 'https://media.giphy.com/media/5qwy92o8UyRm1p1KFe/giphy.gif', 'https://media.giphy.com/media/QhcLXkIxm8I0cgANr0/giphy.gif']
-HUZZAH_GIFS = ['https://media.giphy.com/media/NK7s1mf7kyqvdhpPda/giphy.gif', 'https://media.giphy.com/media/cutDOWJ6TFOcPGNzbh/giphy.gif', 'https://media.giphy.com/media/qnGXaSWrBAu2z81Izt/giphy.gif', 'https://media.giphy.com/media/UGo7mKoHRPf1QB4TjE/giphy.gif', 'https://media.giphy.com/media/BbqkuiiJRbXGrbB3ia/giphy.gif', 'https://media.giphy.com/media/PxpcFRl7xzgaBsKauK/giphy.gif', 'https://media.giphy.com/media/WTYXq0mkUdzKBsoMhO/giphy.gif', 'https://media.giphy.com/media/GjQvNDr1Q5BaKQLxjY/giphy.gif',
-               'https://media.giphy.com/media/NeCZITVgP6C7xSCGql/giphy.gif', 'https://media.giphy.com/media/eEcRLf42mV9NalRqoU/giphy.gif', 'https://media.giphy.com/media/YpJyG2HsU5wZfZ6il0/giphy.gif', 'https://media.giphy.com/media/Gz8XfN6Uf7p4ISuhyk/giphy.gif', 'https://media.giphy.com/media/anBYsqSFAVKK7nbVFT/giphy.gif', 'https://media.giphy.com/media/XOnavX6DuHgVAxcszH/giphy.gif', 'https://media.giphy.com/media/JHbGALEbQFGMpAje0F/giphy.gif', 'https://media.giphy.com/media/pUxGNcUp2UipqVUxcZ/giphy.gif', 'https://media.giphy.com/media/x7ILoVXOJ2VM8UBBR5/giphy.gif']
-BEARD_GIFS = ['https://media.giphy.com/media/GDGgyNaADzlfgFxsQ8/giphy.gif', 'https://media.giphy.com/media/vGNnl2zd7bWGhtux3l/giphy.gif', 'https://media.giphy.com/media/7eTqcO2RRq74IHHwub/giphy.gif', 'https://media.giphy.com/media/K40oW5YgCjBD4GnTAX/giphy.gif', 'https://media.giphy.com/media/hpQ8rTRaN84jTaKQIV/giphy.gif', 'https://media.giphy.com/media/y6uXquI7zySNQaguo7/giphy.gif', 'https://media.giphy.com/media/kW7SpyVapoeolLhHaV/giphy.gif', 'https://media.giphy.com/media/rLnsxjSUvArSrOfRDO/giphy.gif', 'https://media.giphy.com/media/iSsOEvgcXsBgJ0Tvt6/giphy.gif', 'https://media.giphy.com/media/UCLddjtFovvUzAsOYM/giphy.gif',
-              'https://media.giphy.com/media/j54tWqI1SyLlbkFB8v/giphy.gif', 'https://media.giphy.com/media/lWNCmxhRAtgDGDG80t/giphy.gif', 'https://media.giphy.com/media/hiZyT60Y6DcpNIu2IG/giphy.gif', 'https://media.giphy.com/media/YGxkIWgTeoMO2a8gVL/giphy.gif', 'https://media.giphy.com/media/UdvdbCu1efca3ZjbYZ/giphy.gif', 'https://media.giphy.com/media/J1bWno6ecjcenHEYoh/giphy.gif', 'https://media.giphy.com/media/tjFdjyJvH7jhW1b3Fr/giphy.gif', 'https://media.giphy.com/media/DsXgYmws370VALFG24/giphy.gif', 'https://media.giphy.com/media/R6sF4SGktcZkirUeMP/giphy.gif', 'https://media.giphy.com/media/LRZOlgqsKZuufctGJQ/giphy.gif']
-LEGO_GIFS = ['https://media.giphy.com/media/G4kwvrvmlt8ciKjXP9/giphy.gif', 'https://media.giphy.com/media/h0tq5gDYnlOIJqvIfF/giphy.gif', 'https://media.giphy.com/media/mxjWb3yvsHUL4GMTst/giphy.gif', 'https://media.giphy.com/media/ImgQcjJ03oLToYZJWn/giphy.gif', 'https://media.giphy.com/media/EU1IkLvFtXXvx5qAVw/giphy.gif', 'https://media.giphy.com/media/uxMzxj8lK1FjruVaYo/giphy.gif', 'https://media.giphy.com/media/zgsuashHk2AH3kT0rj/giphy.gif', 'https://media.giphy.com/media/Pf9LofhYG1LTOHlziK/giphy.gif', 'https://media.giphy.com/media/FYCT2NgFyiZFzOHg8Y/giphy.gif', 'https://media.giphy.com/media/Z6RiM5gsJhlM91gybi/giphy.gif',
-             'https://media.giphy.com/media/Wj01dlce8lonswtCT3/giphy.gif', 'https://media.giphy.com/media/pbXQYjv9PaPUqil4MW/giphy.gif', 'https://media.giphy.com/media/B4wi6kDqDlZrv8NxTU/giphy.gif', 'https://media.giphy.com/media/El1P68jATWuZY6EYlQ/giphy.gif', 'https://media.giphy.com/media/DbYb1CUpnPNuZJVaNN/giphy.gif', 'https://media.giphy.com/media/dPpWDZk0XVRToXdZLy/giphy.gif', 'https://media.giphy.com/media/7FYC9A7LuEYf9e30na/giphy.gif', 'https://media.giphy.com/media/FhRwcmMEH9PkgjpllS/giphy.gif', 'https://media.giphy.com/media/H6rOWKlATmWnybS9mq/giphy.gif', 'https://media.giphy.com/media/NVktVqdCuzQ8dIVaVa/giphy.gif', 'https://media.giphy.com/media/CkOlg6FupoHZww9tIk/giphy.gif']
-BLURT_GIFS = ['https://media.giphy.com/media/NDiXQBhcBe3i9pdsiw/giphy.gif', 'https://media.giphy.com/media/Sda1O3NXrO3s5pKtHw/giphy.gif', 'https://media.giphy.com/media/rWRW4322Cfru0Z5eEf/giphy.gif', 'https://media.giphy.com/media/geqRxwm5vx1QB0DWCR/giphy.gif', 'https://media.giphy.com/media/jytuKu4PXw6KYmcdc8/giphy.gif', 'https://media.giphy.com/media/RQ5qYz9BGWJbPXO8H4/giphy.gif', 'https://media.giphy.com/media/RV4cxcOAG45gX7KOix/giphy.gif', 'https://media.giphy.com/media/YM5Gw9xULBqF2qumB3/giphy.gif', 'https://media.giphy.com/media/QzIeA2TVcgCUIw2E8w/giphy.gif', 'https://media.giphy.com/media/p76jXuNFEVMOk59IAo/giphy.gif',
-              'https://media.giphy.com/media/fwZoVhxb3sVxoYDbep/giphy.gif', 'https://media.giphy.com/media/So8RwXWYlRKIZDlBqC/giphy.gif', 'https://media.giphy.com/media/d8PqnnR3AD7yCyfuhA/giphy.gif', 'https://media.giphy.com/media/rhyFAc2RcmEtxGiARK/giphy.gif', 'https://media.giphy.com/media/JB7YYqDDQxzdJtwF9Q/giphy.gif', 'https://media.giphy.com/media/BOUIxbEFm4CWtW72EK/giphy.gif', 'https://media.giphy.com/media/Pt9Qe5vR0dCRDQh7H4/giphy.gif', 'https://media.giphy.com/media/ffdprDwi9tVotD7m38/giphy.gif', 'https://media.giphy.com/media/3kGxK0wO8M8BlIDCBZ/giphy.gif', 'https://media.giphy.com/media/Q41Dxo5RGLtfDCXSmV/giphy.gif', 'https://media.giphy.com/media/FsfS2UQOZKjSa8w10I/giphy.gif']
-FOXON_GIFS = ['https://media.giphy.com/media/DhKudYKoGOyJFHKA1r/giphy.gif', 'https://media.giphy.com/media/9ZNogzYmzRLHYXDtcR/giphy.gif',
-              'https://media.giphy.com/media/t3q7z5EcDmmPMwBd0i/giphy.gif', 'https://media.giphy.com/media/8imbHuhI8ZhMUQ8p0r/giphy.gif', 'https://media.giphy.com/media/BlMaitisfAtUEzKQLS/giphy.gif']
-STICKUP_GIFS = ['https://media.giphy.com/media/XjjTY8qh3fZoQq5Tdu/giphy.gif', 'https://media.giphy.com/media/RrY68snArrNqERTCgc/giphy.gif', 'https://media.giphy.com/media/GNo3xnUtqNi5OIMhsu/giphy.gif', 'https://media.giphy.com/media/E5mi11dBhuiW4fOC2c/giphy.gif', 'https://media.giphy.com/media/Mm1wJNenpnBj76BlJJ/giphy.gif', 'https://media.giphy.com/media/utx5mlMfovTsUs5F69/giphy.gif', 'https://media.giphy.com/media/VchyhdU86WbsUjVNP7/giphy.gif', 'https://media.giphy.com/media/Fd6NEw3kR6ZaMnn5sX/giphy.gif', 'https://media.giphy.com/media/JFOdcPiOiaOwXhIz4q/giphy.gif', 'https://media.giphy.com/media/DqB8cqbWW0g6GfSBwu/giphy.gif', 'https://media.giphy.com/media/79K306oJupprCsf8DU/giphy.gif', 'https://media.giphy.com/media/lEqhVHS94PIlzoZCxP/giphy.gif',
-                'https://media.giphy.com/media/fLHHHzwYx61oHKBFT9/giphy.gif', 'https://media.giphy.com/media/npsHLArWNwR9kBp9Hz/giphy.gif', 'https://media.giphy.com/media/1s8xWlUv6pwE1LacIN/giphy.gif', 'https://media.giphy.com/media/qx8ydGluxIZctEpN7x/giphy.gif', 'https://media.giphy.com/media/LTTnOl7BDBQfeyGB0B/giphy.gif', 'https://media.giphy.com/media/2pcDVqocJ7uaZHYiFI/giphy.gif', 'https://media.giphy.com/media/p8BTBEsZrtG59Dni6t/giphy.gif', 'https://media.giphy.com/media/eVBNtrAXJu3mZ7bXGF/giphy.gif', 'https://media.giphy.com/media/FSIP4YFjm2fmaiRLk9/giphy.gif', 'https://media.giphy.com/media/MywBmUQxpNEJrNEwhz/giphy.gif', 'https://media.giphy.com/media/uVjVmXIPgwIoHYHsto/giphy.gif', 'https://media.giphy.com/media/1AhvGqvRafICfhu62z/giphy.gif', 'https://media.giphy.com/media/NGadEwb2motzfaoBV7/giphy.gif']
-CINE_GIFS = ['https://media.giphy.com/media/FIyurUoMubWnaeXDbc/giphy.gif', 'https://media.giphy.com/media/6w4JmLoxAU0PCXe2xm/giphy.gif', 'https://media.giphy.com/media/CsklEOU26Chulc5Udg/giphy.gif', 'https://media.giphy.com/media/iIwLGWvsdrKInCU6pY/giphy.gif', 'https://media.giphy.com/media/YLMY3IFdMmqquCnbDw/giphy.gif', 'https://media.giphy.com/media/EIPgvGf26GHXqS34ms/giphy.gif', 'https://media.giphy.com/media/PMrgmU0eMbUbhwArsE/giphy.gif', 'https://media.giphy.com/media/l3LTdvgaMsg6hIbNQQ/giphy.gif', 'https://media.giphy.com/media/N7lrDrPZ2d6Ad1oHsV/giphy.gif', 'https://media.giphy.com/media/ersmVWkUPttGKVSstD/giphy.gif', 'https://media.giphy.com/media/wZJxb1ZGXlD6cdbNen/giphy.gif', 'https://media.giphy.com/media/qqmOLhVRrDgBS0M2rT/giphy.gif',
-             'https://media.giphy.com/media/3kgq6266FccZ2Jd2R6/giphy.gif', 'https://media.giphy.com/media/8jMIg3s65D4FpFmWZu/giphy.gif', 'https://media.giphy.com/media/7Idr5i34o3t8edcRCO/giphy.gif', 'https://media.giphy.com/media/ttWgnjl1WOIinoukq6/giphy.gif', 'https://media.giphy.com/media/hUBWNDBoBQTAXvsCQ6/giphy.gif', 'https://media.giphy.com/media/9GRzz5tUZiaJzy6rWO/giphy.gif', 'https://media.giphy.com/media/lQn6yyxsJgwhmQ0vdf/giphy.gif', 'https://media.giphy.com/media/O8qK5rGtDRDqHNC8Ec/giphy.gif', 'https://media.giphy.com/media/FHhOi6Moto68gNyafW/giphy.gif', 'https://media.giphy.com/media/Qf0udrUFdPRcgyTpp0/giphy.gif', 'https://media.giphy.com/media/RTxUucAqSFMT8xtK0Q/giphy.gif', 'https://media.giphy.com/media/FQL3zfy80vCe7OFnE2/giphy.gif', 'https://media.giphy.com/media/MuRcAxHKqeiTzEuHpC/giphy.gif']
-DIBBLERS_GIFS = ['https://media.giphy.com/media/ETDRQrFfcPKo1gvkSx/giphy.gif', 'https://media.giphy.com/media/pwTCAu1w6izTIZsqVD/giphy.gif', 'https://media.giphy.com/media/PlpMSapjUC96ywP4HI/giphy.gif',
-                 'https://media.giphy.com/media/wMPFGSSEB170mttNAJ/giphy.gif', 'https://media.giphy.com/media/3armSt6Qqwul8HwmIJ/giphy.gif', 'https://media.giphy.com/media/Ww3o6lZgrjldYKoHYb/giphy.gif']
-ONEUP_GIFS = ['https://media.giphy.com/media/nNXcXGX65D5rXkpiJd/giphy.gif', 'https://media.giphy.com/media/492eHSGThgIDx0quLA/giphy.gif', 'https://media.giphy.com/media/vYHQeUQKiEKtjFmVVu/giphy.gif', 'https://media.giphy.com/media/r27ezJNGnlIN7eonmn/giphy.gif', 'https://media.giphy.com/media/p0DOA7vgjZIrofqP1K/giphy.gif', 'https://media.giphy.com/media/k9INvJjWU636EnqZv5/giphy.gif', 'https://media.giphy.com/media/bixPdyQVlFCOxWY5Gu/giphy.gif', 'https://media.giphy.com/media/9HhNfrAsBWoG0HpOSa/giphy.gif', 'https://media.giphy.com/media/7nRpNHtUBaw8Go5AwD/giphy.gif',
-              'https://media.giphy.com/media/zJcxfUcjEnHFeEJA3T/giphy.gif', 'https://media.giphy.com/media/PnFQRzb9JQUug3eqvE/giphy.gif', 'https://media.giphy.com/media/ikbRAXLsu6JfnRgSXX/giphy.gif', 'https://media.giphy.com/media/hwTPcbxWMtyc25CGyV/giphy.gif', 'https://media.giphy.com/media/KbdQyDNsPfSjG7kSVM/giphy.gif', 'https://media.giphy.com/media/dkluEGUKdIU1FX8Mlh/giphy.gif', 'https://media.giphy.com/media/0BZZjFyuoDIAR2sHvL/giphy.gif', 'https://media.giphy.com/media/4d2RQZH2tNni28rww9/giphy.gif', 'https://media.giphy.com/media/QXwknhHN7o04AeXcy9/giphy.gif', 'https://media.giphy.com/media/6UwssqVDmfSTAEYhjT/giphy.gif']
-
-
-GUILD_IDS = ['d258d4e976c88fe47ca89f987f52efaf305b2ccf',  # Pizza 1
-             '00fbd7938f9a652883e9b50f1a93c324b3646f0e',  # Pizza 2
-             'e498ee4a940b47b396ca9b8470f9d8d8d9301f06',  # Pizza 3
-             'd0122470510c4987fd74c537552b2c4e8be10e48',  # Pizza 420
-             'e2bdb0b670c99f75ba7001dc667a7a01ea1e4758',  # Helpie Caster
-             '9f485d64cb32dc536a1a8f1c4ba134a31587d93a']  # Pizza 5
-
-
-def read_config_file():
-    """Read configuration data from disk."""
-    if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, 'r') as configfile:
-            configs = json.load(configfile)
-            custom_prefixes = configs['custom_prefixes']
-
-            return custom_prefixes
-    else:
-        return {}
-
-
-def write_config_file(custom_prefixes):
-    """Dump confguration data to disk."""
-    with open(CONFIG_FILE, 'w') as configfile:
-        configfile.write(json.dumps({'custom_prefixes': custom_prefixes}))
-
-
-async def determine_prefix(bot, message):
-    """Select command prefix to use."""
-    guild = message.guild
-    # Only allow custom prefixes in guild
-    if guild:
-        return custom_prefixes.get(str(guild.id), default_prefix)
-    else:
-        return default_prefix
-
-
-def determine_native_token(ctx):
-    """Determine which token symbol to use by default in the server."""
-
-    if not hasattr(ctx.author, 'guild'):
-        return DEFAULT_TOKEN_NAME
-
-    guild = str(ctx.author.guild.name)
-
-    if guild == 'Hive Pizza':
-        return DEFAULT_TOKEN_NAME
-    elif guild == 'Hive':
-        return 'HIVE'
-    elif guild == 'Rising Star Game':
-        return 'STARBITS'
-    elif guild == 'The Man Cave':
-        return 'BRO'
-    elif guild == 'CTP Talk':
-        return 'CTP'
-    elif guild == 'HiveLIST':
-        return 'LIST'
-    elif guild == 'HiveHustlers':
-        return 'COM'
-    elif guild == 'NFT Studios & 1UP':
-        return 'ONEUP'
-    else:
-        return DEFAULT_TOKEN_NAME
-
-
-def get_market_history(symbol):
-    """Get market history for a Hive-Engine token."""
-    order_count = 1000
-    orders = []
-    while order_count == 1000:
-        response = market.get_trades_history(
-            symbol, limit=1000, offset=len(orders))
-        order_count = len(response)
-        orders += response
-
-    return orders
-
-
-def get_token_holders(symbol):
-    """Get a list of wallets holding a Hive-Engine token."""
-    holder_count = 1000
-    token_holders = []
-    token = Token(symbol, api=hiveengine_api)
-    while holder_count == 1000:
-        response = token.get_holder(offset=len(token_holders))
-        holder_count = len(response)
-        token_holders += response
-
-    return token_holders
-
-
-def get_token_price_he_cg(coin):
-    """Get prices of token from Hive-Engine or CoinGecko."""
-    coin = coin.lower()
-
-    if coin == 'eth':
-        coin = 'ethereum'
-    elif coin == 'btc':
-        coin = 'bitcoin'
-    elif coin == 'cro':
-        coin = 'crypto-com-chain'
-    elif coin == 'polygon' or coin == 'matic':
-        coin = 'matic-network'
-    elif coin == 'hbd':
-        coin = 'hive_dollar'
-
-    found_in_hiveengine = False
-    try:
-        if coin == 'hive':
-            raise hiveengine.exceptions.TokenDoesNotExists(
-                'skip HE query to avoid empty response')
-
-        Token(coin, api=hiveengine_api)
-        found_in_hiveengine = True
-        hive_usd = get_coin_price()[0]
-
-        last_price = 0.0
-        lowest_asking_price = 0.0
-        highest_bidding_price = 0.0
-
-        trade_history = get_market_history(symbol=coin)
-        if trade_history:
-            last_price = float(trade_history[-1]['price'])
-        last_usd = last_price * hive_usd
-
-        sell_book = market.get_sell_book(symbol=coin, limit=1000)
-        sell_book = sorted(sell_book, key=lambda a: float(
-            a['price']), reverse=False)
-        if sell_book:
-            lowest_asking_price = float(sell_book[0]['price'])
-        ask_usd = lowest_asking_price * hive_usd
-
-        buy_book = market.get_buy_book(symbol=coin, limit=1000)
-        buy_book = sorted(buy_book, key=lambda a: float(
-            a['price']), reverse=True)
-        if buy_book:
-            highest_bidding_price = float(buy_book[0]['price'])
-        bid_usd = highest_bidding_price * hive_usd
-
-        volume_data = requests.get(MARKET_HISTORY_URL % coin.upper()).json()
-        volume_str = '%s %s | %s HIVE\n' % (
-            volume_data[0]['volumeToken'], volume_data[0]['symbol'], volume_data[0]['volumeHive'])
-
-        embed = discord.Embed(title='Hive-Engine market info for $%s' %
-                              coin.upper(), last_usd='', color=0xf3722c)
-        embed.add_field(name='Last', value='%.5f HIVE | $%.5f' %
-                        (last_price, last_usd), inline=False)
-        embed.add_field(name='Ask', value='%.5f HIVE | $%.5f' %
-                        (lowest_asking_price, ask_usd), inline=False)
-        embed.add_field(name='Bid', value='%.5f HIVE | $%.5f' %
-                        (highest_bidding_price, bid_usd), inline=False)
-        embed.add_field(name='Today Volume', value=volume_str, inline=False)
-        return embed
-
-    except hiveengine.exceptions.TokenDoesNotExists:
-        pass
-
-    if not found_in_hiveengine:
-        price, daily_change, daily_volume = get_coin_price(coin)
-
-        if int(price) == -1:
-            message = 'Failed to find coin or token called $%s' % coin
-        else:
-            message = '''```fix
-market price: $%.5f
-24 hour change: %.3f%%
-24 hour volume: $%s
-```''' % (price, daily_change, "{:,.2f}".format(daily_volume))
-
-        embed = discord.Embed(title='CoinGecko market info for $%s' %
-                              coin.upper(), description=message, color=0xf3722c)
-        return embed
-
-
-def get_coin_price(coin='hive'):
-    """Call into coingeck to get price of coins i.e. HIVE."""
-    coingecko = CoinGeckoAPI()
-    try:
-        response = coingecko.get_price(
-            ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
-    except UnboundLocalError:
-        print('Error calling CoinGeckoAPI for %s price' % coin)
-        return (-1, -1, -1)
-
-    if coin not in response.keys():
-        print('Error calling CoinGeckoAPI for %s price' % coin)
-        return (-1, -1, -1)
-
-    subresponse = response[coin]
-    if 'usd' not in subresponse.keys():
-        print('Error 2 calling CoinGeckoAPI for %s price' % coin)
-        return (-1, -1, -1)
-
-    return float(subresponse['usd']), float(subresponse['usd_24h_change']), float(subresponse['usd_24h_vol'])
 
 
 async def update_bot_user_status(bot):
@@ -293,20 +58,9 @@ async def update_bot_user_status(bot):
         # await bot.change_presence(activity=discord.Game('HF28 ~ %dd %dh %dm %ds' % (days,hours,minutes,seconds)))
         await bot.change_presence(activity=discord.Game('HIVE ~ $%.3f' % last_price_usd))
 
-
-custom_prefixes = read_config_file()
-default_prefix = '!'
-bot = commands.Bot(command_prefix=determine_prefix,
-                   intents=discord.Intents.default())
-slash = SlashCommand(bot, sync_commands=True)
-
-
-@bot.event
-async def on_ready():
-    """Event handler for bot comnnection."""
-    print(f'{bot.user} has connected to Discord!')
-    print('Serving %d Discord guilds.' % len(bot.guilds))
-    await update_bot_user_status(bot)
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="!!!!!!!!!!!!!!!!!!!!",
+                   intents=intents)
 
 
 class PizzaCog(commands.Cog):
@@ -328,74 +82,16 @@ class PizzaCog(commands.Cog):
             await update_bot_user_status(self.bot)
 
 
-cog = PizzaCog(bot)
-
 # Bot commands
-
-
-@slash.slash(name="prefix", description="Admin-only - print and change bot's command prefix.",
-             options=[{
-                 "type": 3,
-                 "name": "newprefix",
-                 "description": "new prefix to set",
-                 "required": "false"
-             }])
-@bot.command()
-@commands.guild_only()
-async def prefix(ctx, arg=''):
-    """<prefix> : Admin-only - print and change bot's command prefix."""
-    # get current prefix
-
-    if arg == '':
-        prefix = await determine_prefix(bot, ctx.message)
-        guild = ctx.message.guild
-
-        await ctx.send('Current prefix is: %s for guild: %s' % (prefix, guild))
-
-    else:
-        guild = ctx.message.guild
-        if not ctx.message.author.guild_permissions.administrator:
-            await ctx.send('You must be an admin to change my command prefix for guild: %s' % (guild))
-            return
-
-        custom_prefixes[str(guild.id)] = arg
-        await ctx.send('Changed prefix to: %s for guild: %s' % (arg, guild))
-        write_config_file(custom_prefixes)
-
-
-def get_hive_power_delegations(wallet):
-    """Get a total of incoming HP delegation to wallet."""
-    acc = beem.account.Account(wallet, blockchain_instance=hive)
-
-    incoming_delegations_total = 0
-
-    delegations = acc.get_vesting_delegations()
-
-    for delegation in delegations:
-        hive_power = hive.vests_to_token_power(
-            delegation['vesting_shares']['amount']) / 10 ** delegation['vesting_shares']['precision']
-        incoming_delegations_total += hive_power
-
-    return incoming_delegations_total
-
-
-@slash.slash(name="bal", description="Print Hive-Engine wallet balances.",
-             options=[{
-                 "type": 3,
-                 "name": "wallet",
-                 "description": "Hive wallet name, i.e. hive.pizza.",
-                 "required": "true"
-             }, {
-                 "type": 3,
-                 "name": "symbol",
-                 "description": "Hive-Engine token symbol, i.e. PIZZA.",
-                 "required": "false"
-             }])
-@bot.command()
-async def bal(ctx, wallet, symbol=''):
+@bot.tree.command(name="bal", description="Print Hive-Engine wallet balances.")
+@app_commands.describe(
+    wallet='Hive wallet name, i.e. hive.pizza.',
+    symbol='Hive-Engine token symbol, i.e. PIZZA.',
+)
+async def bal(ctx: discord.Interaction, wallet: str, symbol: str = ''):
     """<wallet> <symbol> : Print Hive-Engine wallet balances."""
     if not symbol:
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
 
     symbol = symbol.upper()
     wallet = wallet.lower()
@@ -438,17 +134,14 @@ async def bal(ctx, wallet, symbol=''):
     total = balance + staked + delegation_in - delegation_out
     embed.add_field(name='Total', value='%0.3f' % (total), inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="bals", description="Print Hive-Engine wallet balances.", options=[{
-    "type": 3,
-    "name": "wallet",
-    "description": "Hive wallet name, i.e. hive.pizza.",
-    "required": "true"
-}])
-@bot.command()
-async def bals(ctx, wallet):
+@bot.tree.command(name="bals", description="Print Hive-Engine wallet balances.")
+@app_commands.describe(
+    wallet='Hive wallet name, i.e. hive.pizza.'
+)
+async def bals(ctx: discord.Interaction, wallet: str):
     """<wallet>: Print Hive-Engine wallet balances."""
     # hive engine token
     wallet = wallet.lower()
@@ -458,7 +151,7 @@ async def bals(ctx, wallet):
         wallet_token_info = Wallet(
             wallet, blockchain_instance=hive, api=hiveengine_api)
     except beem.exceptions.AccountDoesNotExistsException:
-        await ctx.send('Error: the wallet doesnt exist.')
+        await ctx.response.send_message('Error: the wallet doesnt exist.')
         return
 
     # sort by stake then balance
@@ -497,53 +190,71 @@ async def bals(ctx, wallet):
 
     embed = discord.Embed(title='First 10 balances for @%s' %
                           wallet, description=message_body, color=0x90be6d)
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="price", description="Print Hive-Engine / CoinGecko market price info.",
-             options=[{
-                 "type": 3,
-                 "name": "symbol",
-                 "description": "Hive-Engine token symbol. i.e. PIZZA.",
-                 "required": "false"
-             }])
-@bot.command()
-async def price(ctx, symbol=''):
+@bot.tree.command(name="price", description="Print Hive-Engine / CoinGecko market price info.")
+@app_commands.describe(
+    symbol='Hive-Engine token symbol, i.e. PIZZA.',
+)
+async def price(ctx: discord.Interaction, symbol: str = ''):
     """<symbol> : Print Hive-Engine / CoinGecko market price info."""
     if not symbol:
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
 
     embed = get_token_price_he_cg(symbol)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="gif", description="Show a gif!",
-             options=[{
-                 "type": 3,
-                 "name": "category",
-                 "description": "name of a gif category",
-                 "required": "false",
-                 "choices": [
-                     {"name": "pizza", "value": "pizza"},
-                     {"name": "pineapple", "value": "pineapple"},
-                     {"name": "beard", "value": "beard"},
-                     {"name": "huzzah", "value": "huzzah"},
-                     {"name": "bro", "value": "bro"},
-                     {"name": "risingstar", "value": "risingstar"},
-                     {"name": "stickup", "value": "stickup"},
-                     {"name": "oneup", "value": "oneup"},
-                     {"name": "dibblers", "value": "dibblers"}
-                 ]
-             }])
-# TODO : add all text command gif options to the slash command definition
-@bot.command()
-async def gif(ctx, category=''):
+@bot.command(name="gif", description="Show a gif!")
+@app_commands.describe(
+    category="name of a gif category"
+)
+async def gif(ctx: discord.Interaction, category: str = ''):
     """Drop a random GIF! Or choose a category of gifs."""
+
+    # TODO : add all text command gif options to the slash command definition
+
+    PIZZA_GIFS = ['https://tenor.com/bOpfE.gif', 'https://tenor.com/bOphp.gif', 'https://tenor.com/bOpms.gif', 'https://tenor.com/bLZrj.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930920031561330688/hp_shuffle.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930606139941453864/Matrix_Morpheus_offeringPizza_logo.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930565316218601502/hp_therock.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430486294171668/hp_sono.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430485786656798/hp_snoop1.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430484717129768/hp_rocketlaunch.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430483957940254/hp_raindance.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930430483492401152/hp_nom.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/930276777920712714/slama.gif',
+                  'https://media.giphy.com/media/IzfbNtUU4MMw1PL1qV/giphy-downsized-large.gif', 'https://media.giphy.com/media/EkOibKD5yUa0tgLCxN/giphy.gif', 'https://media.giphy.com/media/5yn8SyAzwUBEgdALRa/giphy-downsized-large.gif', 'https://media.giphy.com/media/TrsWfYuKTRd1jAJrcH/giphy.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929578506847932416/20220108_222854.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929574678475976725/final_61da51208515290112872774_913648.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929565611271520286/20220108_214058.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929563942097944576/final_61da4461b9c9760065a7e297_963344.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929558244890931220/When_you_rank_up_in_PIZZA.gif', 'https://cdn.discordapp.com/attachments/929541976553037824/929556529391206501/final_61da3f1d855e34006355ecd7_133726.gif']
+    PINEAPPLE_GIFS = ['https://media.giphy.com/media/0gYYWq5dHfhnYVrYtI/giphy.gif', 'https://media.giphy.com/media/7gXkay4o8FnFzT7uJo/giphy.gif', 'https://media.giphy.com/media/pz4hZwrBZn4EGxpMlG/giphy.gif', 'https://media.giphy.com/media/ZDgaXZjeKWnzuf5RRF/giphy.gif', 'https://media.giphy.com/media/vxyDfIe3iRXhsJ7z5r/giphy.gif', 'https://media.giphy.com/media/Ganp5Ne5MdzkdupCRF/giphy.gif', 'https://media.giphy.com/media/tIxf5oMxG1PWUYJEcL/giphy.gif', 'https://media.giphy.com/media/JG2ziQmGrc0MrHzGuj/giphy.gif', 'https://media.giphy.com/media/uVW9moVaAR47Vgj7D0/giphy.gif', 'https://media.giphy.com/media/rHLj0lWywWuaeGiSTF/giphy.gif', 'https://media.giphy.com/media/XCvm5Oo6wEVJmxRx7V/giphy.gif', 'https://media.giphy.com/media/7b6sSJEEBqWatW2MYn/giphy.gif',
+                      'https://media.giphy.com/media/18odCx2irVLDrvO3fY/giphy.gif', 'https://media.giphy.com/media/3g23LxFceQW8poMpTs/giphy.gif', 'https://media.giphy.com/media/N1ZxRLeX5wIz9Tvs8X/giphy.gif', 'https://media.giphy.com/media/ZwPHgEzoTcyKtaIlId/giphy.gif', 'https://media.giphy.com/media/9FmzQEdSbuSXcsPXCT/giphy.gif', 'https://media.giphy.com/media/WFdZOAE8OYcq5tSXee/giphy.gif', 'https://media.giphy.com/media/Bns85ZwsExoGgsKMmK/giphy.gif', 'https://media.giphy.com/media/Caoow9v9MRNIqmoFJJ/giphy.gif', 'https://media.giphy.com/media/3rTPQ1jH5osS4aBX8D/giphy.gif', 'https://media.giphy.com/media/FAqmU08XQKcGzzTpwO/giphy.gif', 'https://media.giphy.com/media/mQnBlO24UTPN723dpe/giphy.gif', 'https://media.giphy.com/media/RGV125iyT97ONLweyx/giphy.gif', 'https://media.giphy.com/media/vH5awikXqtANyuob7T/giphy.gif']
+    BRO_GIFS = ['https://media.giphy.com/media/Q7dRGcu38WqGnb7nnI/giphy.gif', 'https://media.giphy.com/media/V9RSXFgeldCNKLCydK/giphy.gif', 'https://media.giphy.com/media/jSKXXzMxL55JUN93Q6/giphy.gif', 'https://media.giphy.com/media/XKXP9qdvV14N445Im4/giphy.gif', 'https://media.giphy.com/media/GaySGYuvjk2u2ql7XU/giphy.gif', 'https://media.giphy.com/media/tUgNHh1rupdbZ30mrP/giphy.gif', 'https://media.giphy.com/media/41bHp9qHeO9G2RKKFs/giphy.gif', 'https://media.giphy.com/media/PVRn0PcZ1las7eow4J/giphy.gif', 'https://media.giphy.com/media/7gZ7c3LJZ9Z8l85EtY/giphy.gif', 'https://media.giphy.com/media/v8jgENvvlegjuxLOmc/giphy.gif', 'https://media.giphy.com/media/tbYfDQ8fX8siY80sBN/giphy.gif', 'https://media.giphy.com/media/WFHauwzA2gcVhXxMuH/giphy.gif',
+                'https://media.giphy.com/media/65yRhgpIYVcB8SICtF/giphy.gif', 'https://media.giphy.com/media/mkN81kU4YqteLCqPvU/giphy.gif', 'https://media.giphy.com/media/o6Dfmyj2p4S5a3oxz6/giphy.gif', 'https://media.giphy.com/media/A66FeQBsflVqikTe3m/giphy.gif', 'https://media.giphy.com/media/EDCIaFhFaAYsdkbwgd/giphy.gif', 'https://media.giphy.com/media/rGh7YlCLOkqlyOFpq9/giphy.gif', 'https://media.giphy.com/media/v32eWRX8XE8Vh2l44h/giphy.gif', 'https://media.giphy.com/media/6nVXn29SXPMHiPKgXi/giphy.gif', 'https://media.giphy.com/media/w67kdyKjyNr2Xeb3fM/giphy.gif', 'https://media.giphy.com/media/piNBUyg9b7yAFSexql/giphy.gif', 'https://media.giphy.com/media/umiHQSmGsF5EiVSAv6/giphy.gif', 'https://media.giphy.com/media/CyKE41GQ2srFBIHTiL/giphy.gif', 'https://media.giphy.com/media/9fnjcqc49X3uqjlZra/giphy.gif']
+    RISINGSTAR_GIFS = ['https://media.giphy.com/media/4fKFmbMTl2guk1n6y2/giphy.gif', 'https://media.giphy.com/media/T9QH5wAUPT8o2trbjD/giphy.gif', 'https://media.giphy.com/media/gL8iKEDRWzCdl6nk5G/giphy.gif', 'https://media.giphy.com/media/NchY6QQ2hzQisINQjA/giphy.gif', 'https://media.giphy.com/media/EkVBC57QI4U9IQfkY2/giphy.gif', 'https://media.giphy.com/media/IVYphXkTnL7EXn0gs3/giphy.gif', 'https://media.giphy.com/media/zj2H8HhLVtWnuGYqhx/giphy.gif', 'https://media.giphy.com/media/LDQqkkB1nhIr1kFsu7/giphy.gif', 'https://media.giphy.com/media/yHc7yfgyXRhLa5Q0qJ/giphy.gif', 'https://media.giphy.com/media/uYxnx1eiuhW97JvOAi/giphy.gif', 'https://media.giphy.com/media/jTTZ6zIsbcuRLisxLb/giphy.gif', 'https://media.giphy.com/media/Um2rquzMWZKQUbpT0I/giphy.gif',
+                       'https://media.giphy.com/media/iH7FY0ukmmetUZHT0K/giphy.gif', 'https://media.giphy.com/media/rJ6tKAaV0IkvjH0ys4/giphy.gif', 'https://media.giphy.com/media/LUKMkHzmJkaCkpvHVg/giphy.gif', 'https://media.giphy.com/media/6YFeS3ejyheLd96ibx/giphy.gif', 'https://media.giphy.com/media/9zjksORdGKFecNYjUk/giphy.gif', 'https://media.giphy.com/media/Gk1Ch0WHuqknkBjLIn/giphy.gif', 'https://media.giphy.com/media/MjOvM7AdJDtKBKckJT/giphy.gif', 'https://media.giphy.com/media/i5XGW0zW6prU3L0WRM/giphy.gif', 'https://media.giphy.com/media/uYX7r0u449s49oWFLY/giphy.gif', 'https://media.giphy.com/media/QU0uxCUe6qVmwoLErs/giphy.gif', 'https://media.giphy.com/media/DSwdsnBw1qbLfL4NaB/giphy.gif', 'https://media.giphy.com/media/BY2W5iI5TrqVbC3eYo/giphy.gif', 'https://media.giphy.com/media/6kzDBcHoWzcwTbSSU8/giphy.gif']
+    POB_GIFS = ['https://media.giphy.com/media/btd5gT1uEKVUrMTM5F/giphy.gif', 'https://media.giphy.com/media/EPNH2hv2BTNm0c0i40/giphy.gif', 'https://media.giphy.com/media/t05mKJb8YiLlgckcC3/giphy.gif', 'https://media.giphy.com/media/q8K77RTBUmaSaWFgrE/giphy.gif', 'https://media.giphy.com/media/L6jEwgKyftQmSTJevb/giphy.gif', 'https://media.giphy.com/media/IioSnIxFIFed93The1/giphy.gif', 'https://media.giphy.com/media/VdQgGCxoc4gF3L4zY3/giphy.gif', 'https://media.giphy.com/media/Dou0bMmL4pxFem0zH0/giphy.gif',
+                'https://media.giphy.com/media/PmtcPpxG7o5PqM7YX4/giphy.gif', 'https://media.giphy.com/media/7Vqr9VKanN29Q1rbgr/giphy.gif', 'https://media.giphy.com/media/KZXlJ4K6Lr9INnvkUQ/giphy.gif', 'https://media.giphy.com/media/DGto0zMPaXIRkkHtMn/giphy.gif', 'https://media.giphy.com/media/9RulVBzWtHwz8AYmHw/giphy.gif', 'https://media.giphy.com/media/HHzLyXlf1HDhB2FAK6/giphy.gif', 'https://media.giphy.com/media/HD1cOJ7vltQtPoOyJM/giphy.gif', 'https://media.giphy.com/media/wiGC2mE3nM3hD8kinf/giphy.gif', 'https://media.giphy.com/media/BqoMcPD1vfDc55bUtK/giphy.gif']
+    PROFOUND_GIFS = ['https://media.giphy.com/media/SQ5M4nABcnPsRv4Sux/giphy.gif', 'https://media.giphy.com/media/6ar045QB2RuxeZfb6U/giphy.gif', 'https://media.giphy.com/media/L6xgc2dWJHb3eks3xa/giphy.gif', 'https://media.giphy.com/media/f2edaKKz4SWW6b60v2/giphy.gif', 'https://media.giphy.com/media/LNSWLRhRnjGX0d4Xqc/giphy.gif', 'https://media.giphy.com/media/QUpkbYcHGqxsKuGv5D/giphy.gif', 'https://media.giphy.com/media/XJmwDVhGnkjrmonuny/giphy.gif', 'https://media.giphy.com/media/NGNW6ZR2bV3C66LvnM/giphy.gif', 'https://media.giphy.com/media/zutsNVWa5PnmWLLORT/giphy.gif', 'https://media.giphy.com/media/2P4Ov6WtnxU4iFPx0C/giphy.gif', 'https://media.giphy.com/media/i6Qepo5EKDuruePSvV/giphy.gif', 'https://media.giphy.com/media/nDMbce12xS59Fh0oN2/giphy.gif',
+                     'https://media.giphy.com/media/8G6N3UPP2FNLh3zJB9/giphy.gif', 'https://media.giphy.com/media/bIAm0uWiz2jZANh9at/giphy.gif', 'https://media.giphy.com/media/EYkkdDgnir7EcV61CJ/giphy.gif', 'https://media.giphy.com/media/nFkyu4FFGIlFZrt5n8/giphy.gif', 'https://media.giphy.com/media/0UkEoh2xT59QDTTF70/giphy.gif', 'https://media.giphy.com/media/7jGdJCHDBffOOSyxlf/giphy.gif', 'https://media.giphy.com/media/f64GgzL3cnF3WhuPjb/giphy.gif', 'https://media.giphy.com/media/RzUct7rduOf4976qjP/giphy.gif', 'https://media.giphy.com/media/yvQiEvCmDsjQe0BFJi/giphy.gif', 'https://media.giphy.com/media/3Nmzke5aDoj23Cu1AL/giphy.gif', 'https://media.giphy.com/media/dln8uROMLJylGIaHnZ/giphy.gif', 'https://media.giphy.com/media/19HdKao5FdOXwLowu5/giphy.gif', 'https://media.giphy.com/media/bNk3MLtmKaSSgGvqUe/giphy.gif']
+    BATTLEAXE_GIFS = ['https://media.giphy.com/media/8Oup5mUGVs2dZWNhCw/giphy.gif', 'https://media.giphy.com/media/twrPnIhjarlfVqhTvt/giphy.gif', 'https://media.giphy.com/media/aGaoKokoF4F7rFhb3a/giphy.gif', 'https://media.giphy.com/media/oDtC2KVOy9HNcG4y8s/giphy.gif', 'https://media.giphy.com/media/7U115amErU5M7Zuk6k/giphy.gif', 'https://media.giphy.com/media/aW2x62TDaNcwzLFT3L/giphy.gif',
+                      'https://media.giphy.com/media/CRg4wEkzJRQ8ljNbUK/giphy.gif', 'https://media.giphy.com/media/AobPC1jh48luCFEREk/giphy.gif', 'https://media.giphy.com/media/p8hrL9PQq6S3JS6Z9w/giphy.gif', 'https://media.giphy.com/media/AJ82ifdfuN7D9OVDOv/giphy.gif', 'https://media.giphy.com/media/HbiFp4eWszvZdt2nr0/giphy.gif', 'https://media.giphy.com/media/jWAgAxHUxkeXxD4l4H/giphy.gif', 'https://media.giphy.com/media/33QVGxmaiL87VpNQJg/giphy.gif']
+    ENGLAND_GIFS = ['https://media.giphy.com/media/u9a7I1NjCRwDJvgQBe/giphy.gif', 'https://media.giphy.com/media/QCAwYlATLHAJZYyjId/giphy.gif', 'https://media.giphy.com/media/f71WnctzJj20XpXwrq/giphy.gif', 'https://media.giphy.com/media/5X7JrKbLgyYAIGcJrv/giphy.gif', 'https://media.giphy.com/media/hA88d22fB2ik0OoYsk/giphy.gif',
+                    'https://media.giphy.com/media/VdcUMBoJBIxWNCjZFH/giphy.gif', 'https://media.giphy.com/media/VGXIQEXKWRNtmwR3ar/giphy.gif', 'https://media.giphy.com/media/H6b0VeNQLKaeziLOZ5/giphy.gif', 'https://media.giphy.com/media/5qwy92o8UyRm1p1KFe/giphy.gif', 'https://media.giphy.com/media/QhcLXkIxm8I0cgANr0/giphy.gif']
+    HUZZAH_GIFS = ['https://media.giphy.com/media/NK7s1mf7kyqvdhpPda/giphy.gif', 'https://media.giphy.com/media/cutDOWJ6TFOcPGNzbh/giphy.gif', 'https://media.giphy.com/media/qnGXaSWrBAu2z81Izt/giphy.gif', 'https://media.giphy.com/media/UGo7mKoHRPf1QB4TjE/giphy.gif', 'https://media.giphy.com/media/BbqkuiiJRbXGrbB3ia/giphy.gif', 'https://media.giphy.com/media/PxpcFRl7xzgaBsKauK/giphy.gif', 'https://media.giphy.com/media/WTYXq0mkUdzKBsoMhO/giphy.gif', 'https://media.giphy.com/media/GjQvNDr1Q5BaKQLxjY/giphy.gif',
+                   'https://media.giphy.com/media/NeCZITVgP6C7xSCGql/giphy.gif', 'https://media.giphy.com/media/eEcRLf42mV9NalRqoU/giphy.gif', 'https://media.giphy.com/media/YpJyG2HsU5wZfZ6il0/giphy.gif', 'https://media.giphy.com/media/Gz8XfN6Uf7p4ISuhyk/giphy.gif', 'https://media.giphy.com/media/anBYsqSFAVKK7nbVFT/giphy.gif', 'https://media.giphy.com/media/XOnavX6DuHgVAxcszH/giphy.gif', 'https://media.giphy.com/media/JHbGALEbQFGMpAje0F/giphy.gif', 'https://media.giphy.com/media/pUxGNcUp2UipqVUxcZ/giphy.gif', 'https://media.giphy.com/media/x7ILoVXOJ2VM8UBBR5/giphy.gif']
+    BEARD_GIFS = ['https://media.giphy.com/media/GDGgyNaADzlfgFxsQ8/giphy.gif', 'https://media.giphy.com/media/vGNnl2zd7bWGhtux3l/giphy.gif', 'https://media.giphy.com/media/7eTqcO2RRq74IHHwub/giphy.gif', 'https://media.giphy.com/media/K40oW5YgCjBD4GnTAX/giphy.gif', 'https://media.giphy.com/media/hpQ8rTRaN84jTaKQIV/giphy.gif', 'https://media.giphy.com/media/y6uXquI7zySNQaguo7/giphy.gif', 'https://media.giphy.com/media/kW7SpyVapoeolLhHaV/giphy.gif', 'https://media.giphy.com/media/rLnsxjSUvArSrOfRDO/giphy.gif', 'https://media.giphy.com/media/iSsOEvgcXsBgJ0Tvt6/giphy.gif', 'https://media.giphy.com/media/UCLddjtFovvUzAsOYM/giphy.gif',
+                  'https://media.giphy.com/media/j54tWqI1SyLlbkFB8v/giphy.gif', 'https://media.giphy.com/media/lWNCmxhRAtgDGDG80t/giphy.gif', 'https://media.giphy.com/media/hiZyT60Y6DcpNIu2IG/giphy.gif', 'https://media.giphy.com/media/YGxkIWgTeoMO2a8gVL/giphy.gif', 'https://media.giphy.com/media/UdvdbCu1efca3ZjbYZ/giphy.gif', 'https://media.giphy.com/media/J1bWno6ecjcenHEYoh/giphy.gif', 'https://media.giphy.com/media/tjFdjyJvH7jhW1b3Fr/giphy.gif', 'https://media.giphy.com/media/DsXgYmws370VALFG24/giphy.gif', 'https://media.giphy.com/media/R6sF4SGktcZkirUeMP/giphy.gif', 'https://media.giphy.com/media/LRZOlgqsKZuufctGJQ/giphy.gif']
+    LEGO_GIFS = ['https://media.giphy.com/media/G4kwvrvmlt8ciKjXP9/giphy.gif', 'https://media.giphy.com/media/h0tq5gDYnlOIJqvIfF/giphy.gif', 'https://media.giphy.com/media/mxjWb3yvsHUL4GMTst/giphy.gif', 'https://media.giphy.com/media/ImgQcjJ03oLToYZJWn/giphy.gif', 'https://media.giphy.com/media/EU1IkLvFtXXvx5qAVw/giphy.gif', 'https://media.giphy.com/media/uxMzxj8lK1FjruVaYo/giphy.gif', 'https://media.giphy.com/media/zgsuashHk2AH3kT0rj/giphy.gif', 'https://media.giphy.com/media/Pf9LofhYG1LTOHlziK/giphy.gif', 'https://media.giphy.com/media/FYCT2NgFyiZFzOHg8Y/giphy.gif', 'https://media.giphy.com/media/Z6RiM5gsJhlM91gybi/giphy.gif',
+                 'https://media.giphy.com/media/Wj01dlce8lonswtCT3/giphy.gif', 'https://media.giphy.com/media/pbXQYjv9PaPUqil4MW/giphy.gif', 'https://media.giphy.com/media/B4wi6kDqDlZrv8NxTU/giphy.gif', 'https://media.giphy.com/media/El1P68jATWuZY6EYlQ/giphy.gif', 'https://media.giphy.com/media/DbYb1CUpnPNuZJVaNN/giphy.gif', 'https://media.giphy.com/media/dPpWDZk0XVRToXdZLy/giphy.gif', 'https://media.giphy.com/media/7FYC9A7LuEYf9e30na/giphy.gif', 'https://media.giphy.com/media/FhRwcmMEH9PkgjpllS/giphy.gif', 'https://media.giphy.com/media/H6rOWKlATmWnybS9mq/giphy.gif', 'https://media.giphy.com/media/NVktVqdCuzQ8dIVaVa/giphy.gif', 'https://media.giphy.com/media/CkOlg6FupoHZww9tIk/giphy.gif']
+    BLURT_GIFS = ['https://media.giphy.com/media/NDiXQBhcBe3i9pdsiw/giphy.gif', 'https://media.giphy.com/media/Sda1O3NXrO3s5pKtHw/giphy.gif', 'https://media.giphy.com/media/rWRW4322Cfru0Z5eEf/giphy.gif', 'https://media.giphy.com/media/geqRxwm5vx1QB0DWCR/giphy.gif', 'https://media.giphy.com/media/jytuKu4PXw6KYmcdc8/giphy.gif', 'https://media.giphy.com/media/RQ5qYz9BGWJbPXO8H4/giphy.gif', 'https://media.giphy.com/media/RV4cxcOAG45gX7KOix/giphy.gif', 'https://media.giphy.com/media/YM5Gw9xULBqF2qumB3/giphy.gif', 'https://media.giphy.com/media/QzIeA2TVcgCUIw2E8w/giphy.gif', 'https://media.giphy.com/media/p76jXuNFEVMOk59IAo/giphy.gif',
+                  'https://media.giphy.com/media/fwZoVhxb3sVxoYDbep/giphy.gif', 'https://media.giphy.com/media/So8RwXWYlRKIZDlBqC/giphy.gif', 'https://media.giphy.com/media/d8PqnnR3AD7yCyfuhA/giphy.gif', 'https://media.giphy.com/media/rhyFAc2RcmEtxGiARK/giphy.gif', 'https://media.giphy.com/media/JB7YYqDDQxzdJtwF9Q/giphy.gif', 'https://media.giphy.com/media/BOUIxbEFm4CWtW72EK/giphy.gif', 'https://media.giphy.com/media/Pt9Qe5vR0dCRDQh7H4/giphy.gif', 'https://media.giphy.com/media/ffdprDwi9tVotD7m38/giphy.gif', 'https://media.giphy.com/media/3kGxK0wO8M8BlIDCBZ/giphy.gif', 'https://media.giphy.com/media/Q41Dxo5RGLtfDCXSmV/giphy.gif', 'https://media.giphy.com/media/FsfS2UQOZKjSa8w10I/giphy.gif']
+    FOXON_GIFS = ['https://media.giphy.com/media/DhKudYKoGOyJFHKA1r/giphy.gif', 'https://media.giphy.com/media/9ZNogzYmzRLHYXDtcR/giphy.gif',
+                  'https://media.giphy.com/media/t3q7z5EcDmmPMwBd0i/giphy.gif', 'https://media.giphy.com/media/8imbHuhI8ZhMUQ8p0r/giphy.gif', 'https://media.giphy.com/media/BlMaitisfAtUEzKQLS/giphy.gif']
+    STICKUP_GIFS = ['https://media.giphy.com/media/XjjTY8qh3fZoQq5Tdu/giphy.gif', 'https://media.giphy.com/media/RrY68snArrNqERTCgc/giphy.gif', 'https://media.giphy.com/media/GNo3xnUtqNi5OIMhsu/giphy.gif', 'https://media.giphy.com/media/E5mi11dBhuiW4fOC2c/giphy.gif', 'https://media.giphy.com/media/Mm1wJNenpnBj76BlJJ/giphy.gif', 'https://media.giphy.com/media/utx5mlMfovTsUs5F69/giphy.gif', 'https://media.giphy.com/media/VchyhdU86WbsUjVNP7/giphy.gif', 'https://media.giphy.com/media/Fd6NEw3kR6ZaMnn5sX/giphy.gif', 'https://media.giphy.com/media/JFOdcPiOiaOwXhIz4q/giphy.gif', 'https://media.giphy.com/media/DqB8cqbWW0g6GfSBwu/giphy.gif', 'https://media.giphy.com/media/79K306oJupprCsf8DU/giphy.gif', 'https://media.giphy.com/media/lEqhVHS94PIlzoZCxP/giphy.gif',
+                    'https://media.giphy.com/media/fLHHHzwYx61oHKBFT9/giphy.gif', 'https://media.giphy.com/media/npsHLArWNwR9kBp9Hz/giphy.gif', 'https://media.giphy.com/media/1s8xWlUv6pwE1LacIN/giphy.gif', 'https://media.giphy.com/media/qx8ydGluxIZctEpN7x/giphy.gif', 'https://media.giphy.com/media/LTTnOl7BDBQfeyGB0B/giphy.gif', 'https://media.giphy.com/media/2pcDVqocJ7uaZHYiFI/giphy.gif', 'https://media.giphy.com/media/p8BTBEsZrtG59Dni6t/giphy.gif', 'https://media.giphy.com/media/eVBNtrAXJu3mZ7bXGF/giphy.gif', 'https://media.giphy.com/media/FSIP4YFjm2fmaiRLk9/giphy.gif', 'https://media.giphy.com/media/MywBmUQxpNEJrNEwhz/giphy.gif', 'https://media.giphy.com/media/uVjVmXIPgwIoHYHsto/giphy.gif', 'https://media.giphy.com/media/1AhvGqvRafICfhu62z/giphy.gif', 'https://media.giphy.com/media/NGadEwb2motzfaoBV7/giphy.gif']
+    CINE_GIFS = ['https://media.giphy.com/media/FIyurUoMubWnaeXDbc/giphy.gif', 'https://media.giphy.com/media/6w4JmLoxAU0PCXe2xm/giphy.gif', 'https://media.giphy.com/media/CsklEOU26Chulc5Udg/giphy.gif', 'https://media.giphy.com/media/iIwLGWvsdrKInCU6pY/giphy.gif', 'https://media.giphy.com/media/YLMY3IFdMmqquCnbDw/giphy.gif', 'https://media.giphy.com/media/EIPgvGf26GHXqS34ms/giphy.gif', 'https://media.giphy.com/media/PMrgmU0eMbUbhwArsE/giphy.gif', 'https://media.giphy.com/media/l3LTdvgaMsg6hIbNQQ/giphy.gif', 'https://media.giphy.com/media/N7lrDrPZ2d6Ad1oHsV/giphy.gif', 'https://media.giphy.com/media/ersmVWkUPttGKVSstD/giphy.gif', 'https://media.giphy.com/media/wZJxb1ZGXlD6cdbNen/giphy.gif', 'https://media.giphy.com/media/qqmOLhVRrDgBS0M2rT/giphy.gif',
+                 'https://media.giphy.com/media/3kgq6266FccZ2Jd2R6/giphy.gif', 'https://media.giphy.com/media/8jMIg3s65D4FpFmWZu/giphy.gif', 'https://media.giphy.com/media/7Idr5i34o3t8edcRCO/giphy.gif', 'https://media.giphy.com/media/ttWgnjl1WOIinoukq6/giphy.gif', 'https://media.giphy.com/media/hUBWNDBoBQTAXvsCQ6/giphy.gif', 'https://media.giphy.com/media/9GRzz5tUZiaJzy6rWO/giphy.gif', 'https://media.giphy.com/media/lQn6yyxsJgwhmQ0vdf/giphy.gif', 'https://media.giphy.com/media/O8qK5rGtDRDqHNC8Ec/giphy.gif', 'https://media.giphy.com/media/FHhOi6Moto68gNyafW/giphy.gif', 'https://media.giphy.com/media/Qf0udrUFdPRcgyTpp0/giphy.gif', 'https://media.giphy.com/media/RTxUucAqSFMT8xtK0Q/giphy.gif', 'https://media.giphy.com/media/FQL3zfy80vCe7OFnE2/giphy.gif', 'https://media.giphy.com/media/MuRcAxHKqeiTzEuHpC/giphy.gif']
+    DIBBLERS_GIFS = ['https://media.giphy.com/media/ETDRQrFfcPKo1gvkSx/giphy.gif', 'https://media.giphy.com/media/pwTCAu1w6izTIZsqVD/giphy.gif', 'https://media.giphy.com/media/PlpMSapjUC96ywP4HI/giphy.gif',
+                     'https://media.giphy.com/media/wMPFGSSEB170mttNAJ/giphy.gif', 'https://media.giphy.com/media/3armSt6Qqwul8HwmIJ/giphy.gif', 'https://media.giphy.com/media/Ww3o6lZgrjldYKoHYb/giphy.gif']
+    ONEUP_GIFS = ['https://media.giphy.com/media/nNXcXGX65D5rXkpiJd/giphy.gif', 'https://media.giphy.com/media/492eHSGThgIDx0quLA/giphy.gif', 'https://media.giphy.com/media/vYHQeUQKiEKtjFmVVu/giphy.gif', 'https://media.giphy.com/media/r27ezJNGnlIN7eonmn/giphy.gif', 'https://media.giphy.com/media/p0DOA7vgjZIrofqP1K/giphy.gif', 'https://media.giphy.com/media/k9INvJjWU636EnqZv5/giphy.gif', 'https://media.giphy.com/media/bixPdyQVlFCOxWY5Gu/giphy.gif', 'https://media.giphy.com/media/9HhNfrAsBWoG0HpOSa/giphy.gif', 'https://media.giphy.com/media/7nRpNHtUBaw8Go5AwD/giphy.gif',
+                  'https://media.giphy.com/media/zJcxfUcjEnHFeEJA3T/giphy.gif', 'https://media.giphy.com/media/PnFQRzb9JQUug3eqvE/giphy.gif', 'https://media.giphy.com/media/ikbRAXLsu6JfnRgSXX/giphy.gif', 'https://media.giphy.com/media/hwTPcbxWMtyc25CGyV/giphy.gif', 'https://media.giphy.com/media/KbdQyDNsPfSjG7kSVM/giphy.gif', 'https://media.giphy.com/media/dkluEGUKdIU1FX8Mlh/giphy.gif', 'https://media.giphy.com/media/0BZZjFyuoDIAR2sHvL/giphy.gif', 'https://media.giphy.com/media/4d2RQZH2tNni28rww9/giphy.gif', 'https://media.giphy.com/media/QXwknhHN7o04AeXcy9/giphy.gif', 'https://media.giphy.com/media/6UwssqVDmfSTAEYhjT/giphy.gif']
+
     gif_set = PIZZA_GIFS
 
     if not category:
-        guild = str(ctx.author.guild.name)
+        guild = str(ctx.guild.name)
         if guild == 'Hive Pizza':
             gif_set = PIZZA_GIFS
         elif guild == 'Rising Star Game':
@@ -588,38 +299,33 @@ async def gif(ctx, category=''):
         gif_set = PIZZA_GIFS
 
     gif_url = random.choice(gif_set)
-    await ctx.send(gif_url)
+    await ctx.response.send_message(gif_url)
 
 
-@slash.slash(name="info", description="Print Hive.Pizza project link.")
-@bot.command()
-async def info(ctx):
+@bot.command(name="info", description="Print Hive.Pizza project link.")
+async def info(ctx: discord.Interaction):
     """Print Hive.Pizza project link."""
     response = '''Learn more about $PIZZA @ https://hive.pizza'''
-    await ctx.send(response)
+    await ctx.response.send_message(response)
 
 
-@slash.slash(name="tokenomics", description="Print Hive-Engine token distribution info.",
-             options=[{
-                 "type": 3,
-                 "name": "symbol",
-                 "description": "Hive-Engine token symbol. i.e. PIZZA.",
-                 "required": "false"
-             }])
-@bot.command()
-async def tokenomics(ctx, symbol=''):
+@bot.command(name="tokenomics", description="Print Hive-Engine token distribution info.")
+@app_commands.describe(
+    symbol="Hive-Engine token symbol. i.e. PIZZA."
+)
+async def tokenomics(ctx: discord.Interaction, symbol: str = ''):
     """<symbol> : Print Hive-Engine token distribution info."""
-    await ctx.send("... thinking ...")
+    await ctx.response.send_message("... thinking ...")
 
     if not symbol:
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
     symbol = symbol.upper()
 
     try:
-        wallets = [x for x in get_token_holders(
-            symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+        wallets = get_token_holders(
+            symbol)
     except hiveengine.exceptions.TokenDoesNotExists:
-        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        await ctx.response.send_message('Error: the Hive-Engine token symbol does not exist.')
         return
 
     total_wallets = len([x for x in wallets if float(
@@ -685,28 +391,25 @@ async def tokenomics(ctx, symbol=''):
 
     embed = discord.Embed(title='$%s Token Distribution' %
                           symbol, description=message, color=0x43aa8b)
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="top10", description="Print Hive-Engine token rich list top 10.", options=[{
-    "type": 3,
-    "name": "symbol",
-    "description": "Hive-Engine token symbol. i.e. PIZZA.",
-    "required": "false"
-}])
-@bot.command()
-async def top10(ctx, symbol=''):
+@bot.command(name="top10", description="Print Hive-Engine token rich list top 10.")
+@app_commands.describe(
+    symbol="Hive-Engine token symbol. i.e. PIZZA."
+)
+async def top10(ctx: discord.Interaction, symbol: str = ''):
     """<symbol> : Print Hive-Engine token rich list top 10."""
-    await ctx.send("... thinking ...")
+    await ctx.response.send_message("... thinking ...")
 
     if not symbol:
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
 
     try:
-        accounts = [x for x in get_token_holders(
-            symbol) if x['account'] not in ACCOUNT_FILTER_LIST]
+        accounts = get_token_holders(
+            symbol)
     except hiveengine.exceptions.TokenDoesNotExists:
-        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        await ctx.response.send_message('Error: the Hive-Engine token symbol does not exist.')
         return
 
     # identify the top 10 token holders
@@ -751,49 +454,40 @@ async def top10(ctx, symbol=''):
     embed.add_field(name='Top 10 $%s Total' %
                     symbol, value=total_string, inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="history", description="Print Hive-Engine market trade history.",
-             options=[{
-                 "type": 3,
-                 "name": "symbol",
-                 "description": "Hive-Engine token symbol. i.e. PIZZA.",
-                 "required": "false"
-             }])
-@bot.command()
-async def history(ctx, symbol=''):
+@bot.command(name="history", description="Print Hive-Engine market trade history.")
+@app_commands.describe(
+    symbol="Hive-Engine token symbol. i.e. PIZZA."
+)
+async def history(ctx: discord.Interaction, symbol: str = ''):
     """<symbol> : Print recent Hive-Engine token trade history."""
     if symbol == '':
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
 
     message = '''```fix
 '''
-
     try:
         for tx in get_market_history(symbol)[::-1][0:10]:
             message += '%0.4f @ %0.4f HIVE: %s -> %s\n' % (
                 float(tx['quantity']), float(tx['price']), tx['seller'], tx['buyer'])
     except hiveengine.exceptions.TokenDoesNotExists:
-        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        await ctx.response.send_message('Error: the Hive-Engine token symbol does not exist.')
         return
 
     message += '```'
 
     embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' %
                           symbol, description=message, color=0x277da1)
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="witness", description="Print Hive Witness Info.",
-             options=[{
-                 "type": 3,
-                 "name": "witnessname",
-                 "description": "name of witness",
-                 "required": "false"
-             }])
-@bot.command()
-async def witness(ctx, witnessname='pizza.witness'):
+@bot.command(name="witness", description="Print Hive Witness Info.")
+@app_commands.describe(
+    witnessname="Name of Hive witness."
+)
+async def witness(ctx: discord.Interaction, witnessname: str = 'pizza.witness'):
     """<witness name>: Print Hive Witness Info."""
     witnessname = witnessname.lower()
     message_body = '```\n'
@@ -860,18 +554,14 @@ async def witness(ctx, witnessname='pizza.witness'):
         embed.add_field(name='Active Rank', value='%d' %
                         active_rank, inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="hewitness", description="Print Hive-Engine Witness Info.",
-             options=[{
-                 "type": 3,
-                 "name": "witnessname",
-                 "description": "name of witness",
-                 "required": "false"
-             }])
-@bot.command()
-async def hewitness(ctx, witnessname='pizza-engine'):
+@bot.command(name="hewitness", description="Print Hive-Engine Witness Info.")
+@app_commands.describe(
+    witnessname="Name of Hive-Engine witness"
+)
+async def hewitness(ctx: discord.Interaction, witnessname: str = 'pizza-engine'):
     """<witness name>: Print Hive-Engine Witness Info."""
     results = hiveengine_api.find(
         'witnesses', 'witnesses', query={})
@@ -898,18 +588,14 @@ async def hewitness(ctx, witnessname='pizza-engine'):
                 if key not in ['_id', 'signingKey', 'IP', 'RPCPort', 'P2PPort']:
                     embed.add_field(name=key, value=result[key], inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="pools", description="Check Hive-Engine DIESEL Pool Balances for Wallet.",
-             options=[{
-                 "type": 3,
-                 "name": "wallet",
-                 "description": "Hive wallet name, i.e. hive.pizza.",
-                 "required": "true"
-             }])
-@bot.command()
-async def pools(ctx, wallet):
+@bot.command(name="pools", description="Check Hive-Engine DIESEL Pool Balances for Wallet.")
+@app_commands.describe(
+    wallet="Hive wallet name, i.e. hive.pizza."
+)
+async def pools(ctx: discord.Interaction, wallet: str):
     """<wallet>: Check Hive-Engine DIESEL Pool Balances for Wallet."""
     results = hiveengine_api.find('marketpools', 'liquidityPositions', query={
                                   "account": "%s" % wallet})
@@ -920,18 +606,14 @@ async def pools(ctx, wallet):
         embed.add_field(name=result['tokenPair'], value='%0.3f shares' % float(
             result['shares']), inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="pool", description="Check Hive-Engine DIESEL Pool Info.",
-             options=[{
-                 "type": 3,
-                 "name": "pool",
-                 "description": "Pool symbol pair, i.e. SWAP.HIVE:PIZZA",
-                 "required": "false"
-             }])
-@bot.command()
-async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
+@bot.command(name="pool", description="Check Hive-Engine DIESEL Pool Info.")
+@app_commands.describe(
+    pool="Pool symbol pair, i.e. SWAP.HIVE:PIZZA"
+)
+async def pool(ctx: discord.Interaction, pool: str = DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Info."""
     pool = pool.upper()
 
@@ -958,18 +640,14 @@ async def pool(ctx, pool=DEFAULT_DIESEL_POOL):
                 result['shares']), inline=True)
         embed.add_field(name='LP: ...', value='... shares', inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="poolrewards", description="Check Hive-Engine DIESEL Pool Rewards Info.",
-             options=[{
-                 "type": 3,
-                 "name": "pool",
-                 "description": "Pool symbol pair, i.e. SWAP.HIVE:PIZZA",
-                 "required": "false"
-             }])
-@bot.command()
-async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
+@bot.command(name="poolrewards", description="Check Hive-Engine DIESEL Pool Rewards Info.")
+@app_commands.describe(
+    pool="Pool symbol pair, i.e. SWAP.HIVE:PIZZA"
+)
+async def poolrewards(ctx: discord.Interaction, pool: str = DEFAULT_DIESEL_POOL):
     """<pool>: Check Hive-Engine DIESEL Pool Rewards Info."""
     pool = pool.upper()
 
@@ -1001,26 +679,22 @@ async def poolrewards(ctx, pool=DEFAULT_DIESEL_POOL):
             embed.add_field(name=token['symbol'], value='%0.3f' % float(
                 token['quantity']), inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="buybook", description="Check Hive-Engine buy book for token.",
-             options=[{
-                 "type": 3,
-                 "name": "symbol",
-                 "description": "Hive-Engine token symbol. i.e. PIZZA.",
-                 "required": "false"
-             }])
-@bot.command()
-async def buybook(ctx, symbol=''):
+@bot.command(name="buybook", description="Check Hive-Engine buy book for token.")
+@app_commands.describe(
+    symbol="Hive-Engine token symbol. i.e. PIZZA."
+)
+async def buybook(ctx: discord.Interaction, symbol: str = ''):
     """<symbol>: Check Hive-Engine buy book for token."""
     if not symbol:
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
 
     try:
         buy_book = market.get_buy_book(symbol=symbol, limit=1000)
     except hiveengine.exceptions.TokenDoesNotExists:
-        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        await ctx.response.send_message('Error: the Hive-Engine token symbol does not exist.')
         return
 
     buy_book = sorted(buy_book, key=lambda a: float(a['price']), reverse=True)
@@ -1033,26 +707,22 @@ async def buybook(ctx, symbol=''):
         embed.add_field(value=row['account'], name='%0.3f @ %0.3f HIVE' %
                         (float(row['quantity']), float(row['price'])), inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="sellbook", description="Check Hive-Engine sell book for token.",
-             options=[{
-                 "type": 3,
-                 "name": "symbol",
-                 "description": "Hive-Engine token symbol. i.e. PIZZA.",
-                 "required": "false"
-             }])
-@bot.command()
-async def sellbook(ctx, symbol=''):
+@bot.command(name="sellbook", description="Check Hive-Engine sell book for token.")
+@app_commands.describe(
+    symbol="Hive-Engine token symbol. i.e. PIZZA."
+)
+async def sellbook(ctx: discord.Interaction, symbol: str = ''):
     """<symbol>: Check Hive-Engine sell book for token."""
     if not symbol:
-        symbol = determine_native_token(ctx)
+        symbol = determine_native_token(ctx, DEFAULT_TOKEN_NAME)
 
     try:
         sell_book = market.get_sell_book(symbol=symbol, limit=1000)
     except hiveengine.exceptions.TokenDoesNotExists:
-        await ctx.send('Error: the Hive-Engine token symbol does not exist.')
+        await ctx.response.send_message('Error: the Hive-Engine token symbol does not exist.')
         return
 
     sell_book = sorted(sell_book, key=lambda a: float(
@@ -1066,367 +736,40 @@ async def sellbook(ctx, symbol=''):
         embed.add_field(value=row['account'], name='%0.3f @ %0.3f HIVE' %
                         (float(row['quantity']), float(row['price'])), inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 # Splinterlands related helper functions and commands
 
 
-def get_sl_guild_member_list():
-    """Get a list of Splinterlands guild members."""
-    __url__ = 'https://api2.splinterlands.com/'
+@bot.command(name="slplayer", description="Fetch Splinterlands info for player.")
+@app_commands.describe(
+    player="Name of player, status, timer."
+)
+async def sl(ctx: discord.Interaction, player: str):
+    await ctx.response.send_message("... thinking ...")
 
-    member_list = []
+    api = 'https://api2.splinterlands.com/players/details?name=%s' % player
 
-    for guild_id in GUILD_IDS:
+    profile = requests.get(api).json()
 
-        response = None
-        cnt2 = 0
-        while str(response) != '<Response [200]>' and cnt2 < 10:
-            query = __url__ + "guilds/members?guild_id=" + guild_id
+    embed = discord.Embed(title='Splinterlands profile for %s:' %
+                          player, description='', color=0x336EFF)
 
-            try:
-                response = requests.get(query)
-            except:
-                response = 'ERROR'
+    for k in profile.keys():
+        if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
+            prettyname = k.replace('_', ' ').title()
+            embed.add_field(name=prettyname, value=profile[k], inline=True)
 
-            if str(response) != '<Response [200]>':
-                sleep(1)
-            cnt2 += 1
-
-        member_list += [row['player']
-                        for row in response.json() if row['status'] == 'active']
-
-    return member_list
-
-
-def get_sl_guild_donations():
-    """Get a list of DEC guild donations."""
-    __url__ = 'https://api2.splinterlands.com/'
-
-    contributions = {}
-
-    for guild_id in GUILD_IDS:
-
-        response = None
-        cnt2 = 0
-        while str(response) != '<Response [200]>' and cnt2 < 10:
-            query = __url__ + "guilds/members?guild_id=" + guild_id
-
-            try:
-                response = requests.get(query)
-            except:
-                response = 'ERROR'
-
-            if str(response) != '<Response [200]>':
-                sleep(1)
-            cnt2 += 1
-
-        guild_info = response.json()
-
-        for row in guild_info:
-            if row['status'] != 'active':
-                continue
-            contributions[row['player']] = json.loads(row['data'])[
-                'contributions']
-
-    return contributions
-
-
-def get_sl_card_collection(player):
-    """Git a list of cards in a players Splinterlands collection."""
-    cards = requests.get(
-        'https://api2.splinterlands.com/cards/collection/%s' % player).json()['cards']
-    return cards
-
-
-# @slash.slash(name="sl","description": "Fetch Splinterlands info for player or PIZZA guilds.",
-#   "options": [{
-#     "type": 3,
-#     "name": "subcommand",
-#     "description": "player, guild, brawl",
-#     "required": true
-#   },{
-#     "type": 3,
-#     "name": "arg",
-#     "description": "Name of player, status, timer.",
-#     "required": true
-#   }])
-# @bot.command()
-# async def sl(ctx, subcommand, parameter):
-#     """
-#     Player <player>: Check Splinterlands Player Stats.
-
-#     guildteamwork: Only available in HivePizza discord.
-#     """
-#     await ctx.send("... thinking ...")
-
-#     if subcommand == 'player':
-#         player = parameter
-#         api = 'https://api2.splinterlands.com/players/details?name=%s' % player
-
-#         profile = requests.get(api).json()
-
-#         embed = discord.Embed(title='Splinterlands profile for %s:' % player, description='', color=0x336EFF)
-
-#         for k in profile.keys():
-#             if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
-#                 prettyname = k.replace('_',' ').title()
-#                 embed.add_field(name=prettyname, value=profile[k], inline=True)
-
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'guild' and parameter == 'teamwork':
-#         if str(ctx.message.guild) != 'Hive Pizza':
-#             await ctx.send('Command only available in Hive Pizza discord')
-#             return
-
-#         delegations = {}
-
-#         guild_member_list = get_sl_guild_member_list()
-#         guild_member_list_ext = [('cryptoniusrex', 'cryptoniusraptor')]
-
-#         delegations_string = ''
-#         for member in guild_member_list:
-#             delegations[member] = 0
-
-#             for card in get_sl_card_collection(member):
-#                 if card['player'] == member and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
-#                     delegations[member] += 1
-
-#         for ext_name, int_name in guild_member_list_ext:
-#             for card in get_sl_card_collection(ext_name):
-#                 if card['player'] == ext_name and 'delegated_to' in card.keys() and card['delegated_to'] in guild_member_list:
-#                     if card['delegated_to'] != int_name:
-#                         delegations[int_name] += 1
-
-#         list_delegations = list(delegations.items())
-#         list_delegations.sort(key=lambda tup: tup[1], reverse=True)
-#         for delegation in list_delegations:
-#             if delegation[1] > 0:
-#                 delegations_string += '%s - %d cards\n' % (delegation[0],delegation[1])
-
-#         # Fetch DEC donations info
-#         donations = get_sl_guild_donations()
-
-#         donations_string = ''
-
-#         list_donations = []
-#         for member in donations.keys():
-#             if donations[member]:
-#                 cur_donation = donations[member]
-#                 total_dec_donated = 0
-#                 for key in ['barracks','arena','guild_shop']:
-#                     if key in donations[member].keys() and 'DEC' in donations[member][key].keys():
-#                         total_dec_donated += donations[member][key]['DEC']
-
-#                 for key in ['guild_hall']:
-#                     if key in donations[member].keys():
-#                         total_dec_donated += donations[member][key]
-
-#                 list_donations.append((member,total_dec_donated))
-
-#         list_donations.sort(key=lambda tup: tup[1], reverse=True)
-#         for donation in list_donations:
-#             if donation[1] > 0:
-#                 donations_string += '%s - %d DEC\n' % (donation[0], donation[1])
-
-#         embed = discord.Embed(title='Teamwork Leaderboard for PIZZA Guilds', description='', color=0x336EFF)
-#         embed.add_field(name='Card delegations to Guildmates', value=delegations_string, inline=True)
-#         embed.add_field(name='DEC donations', value=donations_string, inline=True)
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'brawl' and parameter == 'timer':
-#         embed = discord.Embed(title='Brawl Timers for PIZZA Guilds', description='', color=0x336EFF)
-#         for guild_id in GUILD_IDS:
-#             # get brawl ID
-#             api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
-#             guild_info = requests.get(api).json()
-#             guild_name = guild_info['name']
-#             brawl_id = guild_info['tournament_id']
-#             tournament_status = guild_info['tournament_status']
-
-#             # get brawl start time
-#             api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
-
-#             brawl_info = requests.get(api).json()
-#             if 'start_date' not in brawl_info.keys():
-#                 continue
-
-#             brawl_start_time = brawl_info['start_date']
-
-#             combat_start_time = dateutil.parser.isoparse(brawl_start_time).replace(tzinfo=None)
-#             combat_end_time = combat_start_time + timedelta(hours=48)
-#             now = datetime.utcnow()
-
-#             if now < combat_start_time:
-#                 time_remaining = combat_start_time - now
-#                 embed.add_field(name=guild_name, value='Combat starts in: %s' % time_remaining, inline=False)
-#             elif tournament_status == 2:
-#                 embed.add_field(name=guild_name, value='Waiting for next brawl', inline=False)
-#             else:
-#                 time_remaining = combat_end_time - now
-#                 embed.add_field(name=guild_name, value='Combat ends in: %s' % time_remaining, inline=False)
-
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'brawl' and parameter == 'status':
-#         if str(ctx.message.guild) != 'Hive Pizza':
-#             await ctx.send('Command only available in Hive Pizza discord')
-#             return
-#         embed = discord.Embed(title='Brawl Status for PIZZA Guilds', description='', color=0x336EFF)
-#         for guild_id in GUILD_IDS:
-#             # get brawl ID
-#             api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
-#             guild_info = requests.get(api).json()
-#             brawl_id = guild_info['tournament_id']
-
-#             # get brawl start time
-#             api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
-#             brawl_info = requests.get(api).json()
-
-#             if 'start_date' not in brawl_info.keys():
-#                 continue
-
-#             pizza_guild_index = list(map(itemgetter('id'), brawl_info['guilds'])).index(guild_id)
-#             pizza_guild = brawl_info['guilds'][pizza_guild_index]
-
-#             if 'total_battles' not in pizza_guild.keys():
-#                 continue
-#             embed.add_field(name='%s - %s' % (guild_info['name'], '#%d' % (pizza_guild_index + 1)),
-#                             value='Remaining Battles: %d' % (pizza_guild['total_battles'] - pizza_guild['completed_battles']),
-#                             inline=False)
-#             embed.add_field(name='Wins',
-#                             value='%d' % pizza_guild['wins'],
-#                             inline=True)
-#             embed.add_field(name='Losses',
-#                             value='%d' % pizza_guild['losses'],
-#                             inline=True)
-#             embed.add_field(name='Draws',
-#                             value='%d' % pizza_guild['draws'],
-#                             inline=True)
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'brawl':
-#         # assume parameter holds a player name
-
-#         if str(ctx.message.guild) != 'Hive Pizza':
-#             await ctx.send('Command only available in Hive Pizza discord')
-#             return
-
-#         embed = discord.Embed(title='Brawl Status for PIZZA Guilds member %s' % parameter, description='', color=0x336EFF)
-#         for guild_id in GUILD_IDS:
-#             # get brawl ID
-#             api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
-#             guild_info = requests.get(api).json()
-#             brawl_id = guild_info['tournament_id']
-
-#             # get brawl start time
-#             api = 'https://api2.splinterlands.com/tournaments/find_brawl?id=%s&guild_id=%s' % (brawl_id, guild_id)
-#             brawl_info = requests.get(api).json()
-
-#             brawl_player_info = {}
-#             for player_info in brawl_info['players']:
-#                 if player_info['player'] == parameter:
-#                     brawl_player_info = player_info
-
-#             if not brawl_player_info:
-#                 continue
-
-#             print(brawl_player_info)
-
-#             if 'start_date' not in brawl_info.keys():
-#                 continue
-
-#             embed.add_field(name='Wins',
-#                             value='%d' % brawl_player_info['wins'],
-#                             inline=True)
-#             embed.add_field(name='Losses',
-#                             value='%d' % brawl_player_info['losses'],
-#                             inline=True)
-#             embed.add_field(name='Draws',
-#                             value='%d' % brawl_player_info['draws'],
-#                             inline=True)
-#             embed.add_field(name='Total Battles',
-#                             value='%d' % brawl_player_info['total_battles'],
-#                             inline=True)
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'guild' and parameter == 'power':
-#         if str(ctx.message.guild) != 'Hive Pizza':
-#             await ctx.send('Command only available in Hive Pizza discord')
-#             return
-#         guild_members = get_sl_guild_member_list()
-
-#         api = 'https://api2.splinterlands.com/settings'
-#         games_settings = requests.get(api).json()
-#         leagues = games_settings['leagues']
-
-#         embed = discord.Embed(title='Collection Power Check for PIZZA Guilds', description='', color=0x336EFF)
-
-#         for member in guild_members:
-#             api = 'https://api2.splinterlands.com/players/details?name=%s' % member
-#             member_info = requests.get(api).json()
-#             member_rating = member_info['rating']
-#             member_power = member_info['collection_power']
-
-#             for league in leagues[::-1]:
-#                 if member_rating > league['min_rating'] and member_power < league['min_power']:
-#                     missing_power = int(league['min_power']) - int(member_power)
-#                     message = '%s can advance to %s league but needs %d more power.' % (member.title(), league['name'], missing_power)
-#                     embed.add_field(name=member.title(),
-#                                     value=message,
-#                                     inline=False)
-#                     break
-
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'guild' and parameter == 'status':
-#         embed = discord.Embed(title='Status for Splinter PIZZA Guilds', description='', color=0x336EFF)
-
-#         total_members = 0
-#         for guild_id in GUILD_IDS:
-#             api = 'https://api2.splinterlands.com/guilds/members?guild_id=' + guild_id
-#             guild_members = requests.get(api).json()
-
-#             api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
-#             guild_details = requests.get(api).json()
-
-#             member_list = [row['player'] for row in guild_members if row['status'] == 'active']
-#             embed.add_field(name=guild_details['name'], value='%d' % len(member_list))
-#             total_members += len(member_list)
-
-#         embed.add_field(name='Total Guildies', value='%d' % total_members, inline=False)
-#         await ctx.send(embed=embed)
-
-#     elif subcommand == 'guild' and parameter == 'members':
-
-#         total_members = 0
-#         for guild_id in GUILD_IDS:
-#             api = 'https://api2.splinterlands.com/guilds/members?guild_id=' + guild_id
-#             guild_members = requests.get(api).json()
-
-#             api = 'https://api2.splinterlands.com/guilds/find?id=%s&ext=brawl' % guild_id
-#             guild_details = requests.get(api).json()
-
-#             member_list = [row['player'] for row in guild_members if row['status'] == 'active']
-
-#             embed = discord.Embed(title='Players in %s' % guild_details['name'], description='', color=0x336EFF)
-#             for member in member_list:
-#                 embed.add_field(name='Player', value='%s' % member)
-
-#             await ctx.send(embed=embed)
-
+    await ctx.response.send_message(embed=embed)
 
 # Exode related commands
-@slash.slash(name="exodecards", description="Get a player's Exode card collection info.",
-             options=[{
-                 "type": 3,
-                 "name": "player",
-                 "description": "Name of player, i.e. thebeardflex.",
-                 "required": "true"
-             }])
-@bot.command()
-async def exodecards(ctx, player):
+
+
+@bot.command(name="exodecards", description="Get a player's Exode card collection info.")
+@app_commands.describe(
+    player="Name of player, i.e. thebeardflex."
+)
+async def exodecards(ctx: discord.Interaction, player: str):
     """<player>: Get a player's Exode card collection info."""
     api = 'https://digitalself.io/api_feed/exode/my_delivery_api.php?account=%s&filter=singleCards' % player
     cards = requests.get(api).json()['elements']
@@ -1447,27 +790,22 @@ async def exodecards(ctx, player):
     embed.add_field(name='Total market value', value='$%0.3f' %
                     (sum(market_prices)+sum(pack_market_prices)), inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
 # Rising Star related commands
-
-@slash.slash(name="rsplayer", description="Check Rising Star Player Stats.",
-             options=[{
-                 "type": 3,
-                 "name": "player",
-                 "description": "Name of player, i.e. thebeardflex.",
-                 "required": "true"
-             }])
-@bot.command()
-async def rsplayer(ctx, player):
+@bot.command(name="rsplayer", description="Check Rising Star Player Stats.")
+@app_commands.describe(
+    player="Name of player, i.e. thebeardflex."
+)
+async def rsplayer(ctx: discord.Interaction, player: str):
     """<player>: Check Rising Star Player Stats."""
     api = 'https://www.risingstargame.com/playerstats.asp?player=%s' % player
 
     try:
         profile = requests.get(api).json()[0]
     except json.decoder.JSONDecodeError:
-        await ctx.send('Error: unable to fetch risingstar data.')
+        await ctx.response.send_message('Error: unable to fetch risingstar data.')
         return
 
     embed = discord.Embed(title='Rising Star Profile for @%s' %
@@ -1493,12 +831,11 @@ async def rsplayer(ctx, player):
 
             embed.add_field(name=prettyname, value=profile[k], inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="links", description="Use these links to support Hive.Pizza.")
-@bot.command()
-async def links(ctx):
+@bot.command(name="links", description="Use these links to support Hive.Pizza.")
+async def links(ctx: discord.Interaction):
     """Use these links to support Hive.Pizza."""
     embed = discord.Embed(title='Hive.Pizza links',
                           description='Please consider supporting Hive.Pizza by using these referral links.', color=0xf3722c)
@@ -1519,18 +856,14 @@ async def links(ctx):
     embed.add_field(name='Terracore',
                     value='https://hive.pizza/terracore', inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="rc", description="Show Hive resource credits status for wallet.",
-             options=[{
-                 "type": 3,
-                 "name": "wallet",
-                 "description": "name of wallet",
-                 "required": "true"
-             }])
-@bot.command()
-async def rc(ctx, wallet):
+@bot.command(name="rc", description="Show Hive resource credits status for wallet.")
+@app_commands.describe(
+    wallet="name of wallet"
+)
+async def rc(ctx: commands.Context, wallet: str):
     """Print Hive resource credits info for wallet."""
     rc = beem.rc.RC(hive_instance=hive)
     comment_cost = rc.comment()
@@ -1556,12 +889,11 @@ async def rc(ctx, wallet):
     embed.add_field(name='Votes', value='~ %d' % possible_votes, inline=True)
     embed.add_field(name='CustomJSONs', value='~ %d' %
                     possible_jsons, inline=True)
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
-@slash.slash(name="status", description="Print bot's status information.")
-@bot.command()
-async def status(ctx):
+@bot.command(name="status", description="Print bot's status information.")
+async def status(ctx: discord.Interaction):
     """Print bot's status information."""
 
     accounts = ['pizza.witness', 'pizza-engine']
@@ -1606,23 +938,16 @@ async def status(ctx):
         embed.add_field(name=account, value=':battery: %d%%%s' %
                         (current_pct, extra_info), inline=True)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 # Hive Content Commands
 
 
-@slash.slash(
-    name="blog",
-    description="Link to latest post from blog.",
-    options=[{
-        "type": 3,
-        "name": "name",
-        "description": "Hive blog name, i.e. hive.pizza.",
-        "required": "true"
-    }]
+@bot.command(name="blog", description="Link to latest post from blog.")
+@app_commands.describe(
+    name="Hive blog name, i.e. hive.pizza."
 )
-@bot.command()
-async def blog(ctx, name):
+async def blog(ctx: discord.Interaction, name: str):
     """<name> : Link to last post from blog."""
     account = beem.account.Account(name)
     latest_blog = account.get_blog(0, 1)[0]
@@ -1635,27 +960,15 @@ async def blog(ctx, name):
         response = 'Latest post from @%s: https://peakd.com/%s' % (
             name, reply_identifier)
 
-    await ctx.send(response)
+    await ctx.response.send_message(response)
 
 
-@slash.slash(name="search", description="Search for Hive content.",
-             options=[{
-                 "type": 3,
-                 "name": "query",
-                 "description": "Search query",
-                 "required": "true"
-             }, {
-                 "type": 3,
-                 "name": "sort",
-                 "description": "How to filter search results.",
-                 "required": "false",
-                 "choices": [
-                     {"name": "newest", "value": "neweset"},
-                     {"name": "relevance", "value": "relevance"}
-                 ]
-             }])
-@bot.command()
-async def search(ctx, query, sort='relevance'):
+@bot.command(name="search", description="Search for Hive content.")
+@app_commands.describe(
+    query="Search query",
+    sort="How to filter search results."
+)
+async def search(ctx: discord.Interaction, query: str, sort: str = 'relevance'):
     """Search for Hive content."""
     HIVESEARCHER_URL = 'https://api.hivesearcher.com/search'
     HIVESEARCHER_API_KEY = os.getenv('HIVESEARCHER_API_KEY')
@@ -1682,18 +995,31 @@ async def search(ctx, query, sort='relevance'):
             embed.add_field(name='%d. %s' % (results.index(
                 result), 'Comment'), value=message, inline=False)
 
-    await ctx.send(embed=embed)
+    await ctx.response.send_message(embed=embed)
 
 
 @bot.event
-async def on_command_error(ctx, error):
-    """Return a nice error message for unrecognized commands."""
+async def on_command_error(ctx: discord.Interaction, error: Exception):
+    """Print out exception for debugging."""
     if isinstance(error, commands.CommandNotFound):
-        prefix = await determine_prefix(bot, ctx.message)
-        await ctx.send('I don\'t recognize the command. Try %shelp to see a list of commands. That command may be a slash command now.' % prefix)
-    else:
         traceback.print_exception(
             type(error), error, error.__traceback__, file=sys.stderr)
+
+
+@bot.event
+async def on_ready():
+    """Event handler for bot comnnection."""
+    print(f'{bot.user} has connected to Discord!')
+    print('Serving %d Discord guilds.' % len(bot.guilds))
+    await update_bot_user_status(bot)
+
+    PizzaCog(bot)
+
+    # bot.tree.clear_commands(guild=None, type=None)
+    # await bot.tree.sync()
+    # await bot.tree.sync(guild=None)
+
+    await bot.tree.sync(guild=None)
 
 
 # Discord initialization
