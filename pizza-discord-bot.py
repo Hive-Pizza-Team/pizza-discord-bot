@@ -256,50 +256,50 @@ async def gif(ctx: discord.Interaction, category: str = ''):
 
     gif_set = PIZZA_GIFS
 
-    if not category:
-        guild = str(ctx.guild.name)
-        if guild == 'Hive Pizza':
-            gif_set = PIZZA_GIFS
-        elif guild == 'Rising Star Game':
-            gif_set = RISINGSTAR_GIFS
-        else:
-            gif_set = PIZZA_GIFS
-    elif category.lower() == 'pizza':
-        gif_set = PIZZA_GIFS
-    elif category.lower() == 'bro':
-        gif_set = BRO_GIFS
-    elif category.lower() == 'risingstar':
-        gif_set = RISINGSTAR_GIFS
-    elif category.lower() == 'pob':
-        gif_set = POB_GIFS
-    elif category.lower() == 'profound':
-        gif_set = PROFOUND_GIFS
-    elif category.lower() == 'battleaxe':
-        gif_set = BATTLEAXE_GIFS
-    elif category.lower() == 'england':
-        gif_set = ENGLAND_GIFS
-    elif category.lower() == 'huzzah':
-        gif_set = HUZZAH_GIFS
-    elif category.lower() == 'beard':
-        gif_set = BEARD_GIFS
-    elif category.lower() == 'lego':
-        gif_set = LEGO_GIFS
-    elif category.lower() == 'blurt':
-        gif_set = BLURT_GIFS
-    elif category.lower() == 'foxon':
-        gif_set = FOXON_GIFS
-    elif category.lower() == 'stickup':
-        gif_set = STICKUP_GIFS
-    elif category.lower() == 'pineapple':
-        gif_set = PINEAPPLE_GIFS
-    elif category.lower() == 'dibblers':
-        gif_set = DIBBLERS_GIFS
-    elif category.lower() == 'cine':
-        gif_set = CINE_GIFS
-    elif category.lower() == '1up':
-        gif_set = ONEUP_GIFS
-    else:
-        gif_set = PIZZA_GIFS
+    # if not category:
+    #     guild = str(ctx.guild.name)
+    #     if guild == 'Hive Pizza':
+    #         gif_set = PIZZA_GIFS
+    #     elif guild == 'Rising Star Game':
+    #         gif_set = RISINGSTAR_GIFS
+    #     else:
+    #         gif_set = PIZZA_GIFS
+    # elif category.lower() == 'pizza':
+    #     gif_set = PIZZA_GIFS
+    # elif category.lower() == 'bro':
+    #     gif_set = BRO_GIFS
+    # elif category.lower() == 'risingstar':
+    #     gif_set = RISINGSTAR_GIFS
+    # elif category.lower() == 'pob':
+    #     gif_set = POB_GIFS
+    # elif category.lower() == 'profound':
+    #     gif_set = PROFOUND_GIFS
+    # elif category.lower() == 'battleaxe':
+    #     gif_set = BATTLEAXE_GIFS
+    # elif category.lower() == 'england':
+    #     gif_set = ENGLAND_GIFS
+    # elif category.lower() == 'huzzah':
+    #     gif_set = HUZZAH_GIFS
+    # elif category.lower() == 'beard':
+    #     gif_set = BEARD_GIFS
+    # elif category.lower() == 'lego':
+    #     gif_set = LEGO_GIFS
+    # elif category.lower() == 'blurt':
+    #     gif_set = BLURT_GIFS
+    # elif category.lower() == 'foxon':
+    #     gif_set = FOXON_GIFS
+    # elif category.lower() == 'stickup':
+    #     gif_set = STICKUP_GIFS
+    # elif category.lower() == 'pineapple':
+    #     gif_set = PINEAPPLE_GIFS
+    # elif category.lower() == 'dibblers':
+    #     gif_set = DIBBLERS_GIFS
+    # elif category.lower() == 'cine':
+    #     gif_set = CINE_GIFS
+    # elif category.lower() == '1up':
+    #     gif_set = ONEUP_GIFS
+    # else:
+    #     gif_set = PIZZA_GIFS
 
     gif_url = random.choice(gif_set)
     await ctx.response.send_message(gif_url)
@@ -328,7 +328,7 @@ async def tokenomics(ctx: discord.Interaction, symbol: str = ''):
         wallets = get_token_holders(
             symbol)
     except hiveengine.exceptions.TokenDoesNotExists:
-        await ctx.response.send_message('Error: the Hive-Engine token symbol does not exist.')
+        await ctx.edit_original_response('Error: the Hive-Engine token symbol does not exist.')
         return
 
     total_wallets = len([x for x in wallets if float(
@@ -394,7 +394,7 @@ async def tokenomics(ctx: discord.Interaction, symbol: str = ''):
 
     embed = discord.Embed(title='$%s Token Distribution' %
                           symbol, description=message, color=0x43aa8b)
-    await ctx.response.send_message(embed=embed)
+    await ctx.edit_original_response(embed=embed)
 
 
 @bot.tree.command(name="top10", description="Print Hive-Engine token rich list top 10.")
@@ -749,8 +749,6 @@ async def sellbook(ctx: discord.Interaction, symbol: str = ''):
     player="Name of player, status, timer."
 )
 async def sl(ctx: discord.Interaction, player: str):
-    await ctx.response.send_message("... thinking ...")
-
     api = 'https://api2.splinterlands.com/players/details?name=%s' % player
 
     profile = requests.get(api).json()
@@ -759,9 +757,18 @@ async def sl(ctx: discord.Interaction, player: str):
                           player, description='', color=0x336EFF)
 
     for k in profile.keys():
+        if len(embed.fields) >= 25:
+            break
+
         if k not in ['guild', 'display_name', 'season_details', 'adv_msg_sent']:
             prettyname = k.replace('_', ' ').title()
-            embed.add_field(name=prettyname, value=profile[k], inline=True)
+            if len(prettyname) > 25:
+                prettyname = prettyname[:22] + '..'
+            prettyvalue = str(profile[k])
+            if len(prettyvalue) > 25:
+                prettyvalue = prettyvalue[:22] + '..'
+
+            embed.add_field(name=prettyname, value=prettyvalue, inline=True)
 
     await ctx.response.send_message(embed=embed)
 
