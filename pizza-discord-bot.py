@@ -63,7 +63,7 @@ async def update_bot_user_status(bot):
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!",
+bot = commands.Bot(command_prefix="!!!",
                    intents=intents)
 
 
