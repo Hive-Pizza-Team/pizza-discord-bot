@@ -62,7 +62,7 @@ async def update_bot_user_status(bot):
         await bot.change_presence(activity=discord.Game('HIVE ~ $%.3f' % last_price_usd))
 
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!!!",
+bot = commands.Bot(command_prefix="!",
                    intents=intents)
 
 
