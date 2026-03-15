@@ -1,0 +1,11 @@
+[run]
+source = .
+omit =
+    tests/*
+    venv/*
+    dev-archive/*
+    pizza-discord-bot.py
+
+[report]
+fail_under = 75
+show_missing = true

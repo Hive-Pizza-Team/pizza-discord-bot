@@ -1,3 +1,4 @@
+dev-archive/*
 .env
 config.json
 .DS_Store
