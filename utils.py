@@ -1,13 +1,15 @@
 """Utility helpers for the pizza discord bot."""
+import logging
+
 from discord import Interaction, Embed
 from pycoingecko import CoinGeckoAPI
 import hiveengine
 from hiveengine.tokenobject import Token
 from utils_hiveengine import get_hiveengine_instance, get_hiveengine_market_instance, get_market_history
+from utils_hive import get_hive_instance
 import requests
 
-hiveengine_api = get_hiveengine_instance()
-market = get_hiveengine_market_instance()
+logger = logging.getLogger(__name__)
 
 
 def determine_native_token(ctx: Interaction, default_token_name: str) -> str:
@@ -55,7 +57,7 @@ def get_token_price_he_cg(coin):
             raise hiveengine.exceptions.TokenDoesNotExists(
                 'skip HE query to avoid empty response')
 
-        Token(coin, api=hiveengine_api)
+        Token(coin, api=get_hiveengine_instance())
         found_in_hiveengine = True
         hive_usd = get_coin_price()[0]
 
@@ -68,22 +70,26 @@ def get_token_price_he_cg(coin):
             last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
 
-        sell_book = market.get_sell_book(symbol=coin, limit=1000)
+        sell_book = get_hiveengine_market_instance().get_sell_book(symbol=coin, limit=1000)
         sell_book = sorted(sell_book, key=lambda a: float(
             a['price']), reverse=False)
         if sell_book:
             lowest_asking_price = float(sell_book[0]['price'])
         ask_usd = lowest_asking_price * hive_usd
 
-        buy_book = market.get_buy_book(symbol=coin, limit=1000)
+        buy_book = get_hiveengine_market_instance().get_buy_book(symbol=coin, limit=1000)
         buy_book = sorted(buy_book, key=lambda a: float(
             a['price']), reverse=True)
         if buy_book:
             highest_bidding_price = float(buy_book[0]['price'])
         bid_usd = highest_bidding_price * hive_usd
 
-        MARKET_HISTORY_URL = 'https://history.hive-engine.com/marketHistory?symbol=%s&volumetoken'
-        volume_data = requests.get(MARKET_HISTORY_URL % coin.upper()).json()
+        MARKET_HISTORY_URL = 'https://history.hive-engine.com/marketHistory'
+        volume_data = requests.get(
+            MARKET_HISTORY_URL,
+            params={'symbol': coin.upper()},
+            timeout=10,
+        ).json()
         volume_str = '%s %s | %s HIVE\n' % (
             volume_data[0]['volumeToken'], volume_data[0]['symbol'], volume_data[0]['volumeHive'])
 
@@ -115,7 +121,35 @@ market price: $%.5f
 
         embed = Embed(title='CoinGecko market info for $%s' %
                       coin.upper(), description=message, color=0xf3722c)
+
+        if coin == 'hive_dollar':
+            internal = get_hive_internal_hbd_price()
+            if internal:
+                hbd_per_hive = 1.0 / internal['hbd_hive_price']
+                hbd_usd = hbd_per_hive * internal['feed_price']
+                embed.add_field(
+                    name='Hive Internal Market',
+                    value='```fix\nHBD price: $%.5f\n```' % hbd_usd,
+                    inline=False)
+
         return embed
+
+
+def get_hive_internal_hbd_price():
+    """Get HBD price info from the Hive internal market."""
+    try:
+        from beem.market import Market
+        hive = get_hive_instance()
+        m = Market(blockchain_instance=hive)
+        ticker = m.ticker()
+        # latest is HIVE/HBD (how many HIVE per 1 HBD)
+        hbd_hive_price = float(ticker['latest'])
+        # median price is HBD/HIVE (the witness feed price for HIVE in USD)
+        feed_price = float(hive.get_median_price())
+        return {'hbd_hive_price': hbd_hive_price, 'feed_price': feed_price}
+    except Exception as e:
+        logger.error('Error getting internal HBD price: %s', e)
+        return None
 
 
 def get_coin_price(coin='hive'):
@@ -125,16 +159,16 @@ def get_coin_price(coin='hive'):
         response = coingecko.get_price(
             ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
     except UnboundLocalError:
-        print('Error calling CoinGeckoAPI for %s price' % coin)
+        logger.error('Error calling CoinGeckoAPI for %s price', coin)
         return (-1, -1, -1)
 
     if coin not in response.keys():
-        print('Error calling CoinGeckoAPI for %s price' % coin)
+        logger.error('Error calling CoinGeckoAPI for %s price', coin)
         return (-1, -1, -1)
 
     subresponse = response[coin]
     if 'usd' not in subresponse.keys():
-        print('Error 2 calling CoinGeckoAPI for %s price' % coin)
+        logger.error('Error calling CoinGeckoAPI for %s price (missing usd)', coin)
         return (-1, -1, -1)
 
     return float(subresponse['usd']), float(subresponse['usd_24h_change']), float(subresponse['usd_24h_vol'])
