@@ -1,4 +1,6 @@
 """Utility helpers related to Hive blockchain."""
+from typing import Any, Optional
+
 import beem
 
 from config import load_config
@@ -6,7 +8,7 @@ from config import load_config
 _hive_instance = None
 
 
-def get_hive_instance():
+def get_hive_instance() -> Any:
     global _hive_instance
     if _hive_instance is None:
         cfg = load_config()
@@ -15,19 +17,21 @@ def get_hive_instance():
     return _hive_instance
 
 
-def get_hive_power_delegations(wallet, hive=None):
+def get_hive_power_delegations(wallet: str,
+                               hive: Optional[Any] = None) -> float:
     """Get a total of incoming HP delegation to wallet."""
     if hive is None:
         hive = get_hive_instance()
     acc = beem.account.Account(wallet, blockchain_instance=hive)
 
-    incoming_delegations_total = 0
+    incoming_delegations_total: float = 0
 
     delegations = acc.get_vesting_delegations()
 
     for delegation in delegations:
+        vests = delegation['vesting_shares']
         hive_power = hive.vests_to_token_power(
-            delegation['vesting_shares']['amount']) / 10 ** delegation['vesting_shares']['precision']
+            vests['amount']) / 10 ** vests['precision']
         incoming_delegations_total += hive_power
 
     return incoming_delegations_total

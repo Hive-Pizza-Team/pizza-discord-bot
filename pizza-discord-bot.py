@@ -121,8 +121,8 @@ async def bal(ctx: discord.Interaction, wallet: str, symbol: str = ''):
             delegation_in = float(wallet_token_info['delegationsIn'])
             delegation_out = float(wallet_token_info['delegationsOut'])
 
-    embed = discord.Embed(title='Balances for @%s' %
-                          wallet, description='$%s' % symbol, color=0x336EFF)
+    embed = make_embed(title='Balances for @%s' %
+                       wallet, description='$%s' % symbol)
     embed.add_field(name='Liquid', value='%0.3f' % (balance), inline=False)
     embed.add_field(name='Staked', value='%0.3f' % (staked), inline=False)
 
@@ -190,8 +190,8 @@ async def bals(ctx: discord.Interaction, wallet: str):
 
     message_body += '```'
 
-    embed = discord.Embed(title='First 10 balances for @%s' %
-                          wallet, description=message_body, color=0x90be6d)
+    embed = make_embed(title='First 10 balances for @%s' %
+                       wallet, description=message_body)
     await ctx.response.send_message(embed=embed)
 
 
@@ -311,8 +311,8 @@ async def tokenomics(ctx: discord.Interaction, symbol: str = ''):
 %.4d wallets hold >= 100,000,000 $%s
 ```''' % (total_wallets, symbol, wallets_20plus, symbol, wallets_200plus, symbol, wallets_1000plus, symbol, wallets_3000plus, symbol, wallets_5000plus, symbol, wallets_10000plus, symbol, wallets_100000plus, symbol, wallets_1000000plus, symbol, wallets_10000000plus, symbol, wallets_100000000plus, symbol)
 
-    embed = discord.Embed(title='$%s Token Distribution' %
-                          symbol, description=message, color=0x43aa8b)
+    embed = make_embed(title='$%s Token Distribution' %
+                       symbol, description=message)
     await ctx.edit_original_response(embed=embed)
 
 
@@ -337,8 +337,7 @@ async def top10(ctx: discord.Interaction, symbol: str = ''):
     # identify the top 10 token holders
     symbol = symbol.upper()
 
-    embed = discord.Embed(title='Top 10 $%s Holders' %
-                          symbol, description='', color=0xf8961e)
+    embed = make_embed(title='Top 10 $%s Holders' % symbol)
 
     accounts_stake = sorted(
         accounts, key=lambda a: float(a['stake']), reverse=True)
@@ -400,8 +399,8 @@ async def history(ctx: discord.Interaction, symbol: str = ''):
 
     message += '```'
 
-    embed = discord.Embed(title='Latest 10 $%s Hive-Engine Transactions' %
-                          symbol, description=message, color=0x277da1)
+    embed = make_embed(title='Latest 10 $%s Hive-Engine Transactions' %
+                       symbol, description=message)
     await ctx.response.send_message(embed=embed)
 
 
@@ -460,8 +459,8 @@ async def witness(ctx: discord.Interaction, witnessname: str = 'pizza.witness'):
             time_diff_est = "%.2f seconds" % next_block_s
         est_time_to_next_block = time_diff_est
 
-    embed = discord.Embed(title='Hive Witness info for @%s' %
-                          witnessname, description='', color=0xf3722c)
+    embed = make_embed(title='Hive Witness info for @%s' %
+                       witnessname)
     embed.add_field(name='Running Version',
                     value=witness_json['running_version'], inline=False)
     embed.add_field(name='Missed Blocks',
@@ -491,8 +490,8 @@ async def hewitness(ctx: discord.Interaction, witnessname: str = 'pizza-engine')
     results = sorted(results, key=lambda a: float(
         a['approvalWeight']['$numberDecimal']), reverse=True)
 
-    embed = discord.Embed(title='Hive-Engine Witness info for @%s' %
-                          witnessname, description='', color=0xf3722c)
+    embed = make_embed(title='Hive-Engine Witness info for @%s' %
+                       witnessname)
 
     if len(results) == 0:
         embed.add_field(name='Hive-Engine Witness %s' %
@@ -522,8 +521,7 @@ async def pools(ctx: discord.Interaction, wallet: str):
     results = get_hiveengine_instance().find(
         'marketpools', 'liquidityPositions',
         query={"account": "%s" % wallet})
-    embed = discord.Embed(title='DIESEL Pool info for @%s' %
-                          wallet, description='', color=0xf3722c)
+    embed = make_embed(title='DIESEL Pool info for @%s' % wallet)
 
     for result in results:
         embed.add_field(name=result['tokenPair'], value='%0.3f shares' % float(
@@ -544,8 +542,7 @@ async def pool(ctx: discord.Interaction, pool: str = DEFAULT_DIESEL_POOL):
         'marketpools', 'pools',
         query={"tokenPair": {"$in": ["%s" % pool]}})
 
-    embed = discord.Embed(title='DIESEL Pool info for %s' %
-                          pool, description='', color=0xf3722c)
+    embed = make_embed(title='DIESEL Pool info for %s' % pool)
 
     if len(results) == 0:
         embed.add_field(name='DIESEL Pool %s' % pool, value='Not Found')
@@ -584,8 +581,7 @@ async def poolrewards(ctx: discord.Interaction, pool: str = DEFAULT_DIESEL_POOL)
 
     results = get_hiveengine_instance().find('distribution', 'batches', query=query)
 
-    embed = discord.Embed(title='DIESEL Pool Rewards for %s' %
-                          pool, description='', color=0xf3722c)
+    embed = make_embed(title='DIESEL Pool Rewards for %s' % pool)
 
     if len(results) == 0:
         embed.add_field(name='DIESEL Pool %s' % pool, value='Not Found')
@@ -625,8 +621,8 @@ async def buybook(ctx: discord.Interaction, symbol: str = ''):
     buy_book = sorted(buy_book, key=lambda a: float(a['price']), reverse=True)
     buy_book = buy_book[0:10]
 
-    embed = discord.Embed(title='Buy Book for $%s (first 10 orders)' %
-                          symbol.upper(), description='', color=0xf3722c)
+    embed = make_embed(title='Buy Book for $%s (first 10 orders)' %
+                       symbol.upper())
 
     for row in buy_book:
         embed.add_field(value=row['account'], name='%0.3f @ %0.3f HIVE' %
@@ -654,8 +650,8 @@ async def sellbook(ctx: discord.Interaction, symbol: str = ''):
         a['price']), reverse=False)
     sell_book = sell_book[0:10]
 
-    embed = discord.Embed(title='Sell Book for $%s (first 10 orders)' %
-                          symbol.upper(), description='', color=0xf3722c)
+    embed = make_embed(title='Sell Book for $%s (first 10 orders)' %
+                       symbol.upper())
 
     for row in sell_book:
         embed.add_field(value=row['account'], name='%0.3f @ %0.3f HIVE' %
@@ -677,8 +673,8 @@ async def sl(ctx: discord.Interaction, player: str):
         timeout=10,
     ).json()
 
-    embed = discord.Embed(title='Splinterlands profile for %s:' %
-                          player, description='', color=0x336EFF)
+    embed = make_embed(title='Splinterlands profile for %s:' %
+                       player)
 
     for k in profile.keys():
         if len(embed.fields) >= 25:
@@ -718,8 +714,7 @@ async def exodecards(ctx: discord.Interaction, player: str):
     ).json()['elements']
     pack_market_prices = [pack['market_price'] for pack in packs]
 
-    embed = discord.Embed(title='Exode cards for %s:' %
-                          player, description='', color=0x336EFF)
+    embed = make_embed(title='Exode cards for %s:' % player)
     embed.add_field(name='Card count', value=len(cards), inline=True)
     embed.add_field(name='Elite card count',
                     value=len(elite_cards), inline=True)
@@ -747,8 +742,8 @@ async def rsplayer(ctx: discord.Interaction, player: str):
         await ctx.response.send_message('Error: unable to fetch risingstar data.')
         return
 
-    embed = discord.Embed(title='Rising Star Profile for @%s' %
-                          player, description='', color=0xf3722c)
+    embed = make_embed(title='Rising Star Profile for @%s' %
+                       player)
 
     for k in profile.keys():
         if k not in ['name']:
@@ -776,8 +771,10 @@ async def rsplayer(ctx: discord.Interaction, player: str):
 @bot.tree.command(name="links", description="Use these links to support Hive.Pizza.")
 async def links(ctx: discord.Interaction):
     """Use these links to support Hive.Pizza."""
-    embed = discord.Embed(title='Hive.Pizza links',
-                          description='Please consider supporting Hive.Pizza by using these referral links.', color=0xf3722c)
+    embed = make_embed(
+        title='Hive.Pizza links',
+        description='Please consider supporting Hive.Pizza '
+                    'by using these referral links.')
     embed.add_field(name='Hive Signup (1)',
                     value='https://hive.pizza/hiveonboard', inline=False)
     embed.add_field(name='Hive Signup (2)',
@@ -819,8 +816,9 @@ async def rc(ctx: commands.Context, wallet: str):
     possible_accounts = int(mana / account_cost)
 
     current_pct = float(acc.get_rc_manabar()['current_pct'])
-    embed = discord.Embed(title='Hive Resource Credits for @%s' % wallet,
-                          description='RC manabar is at %0.3f%%' % current_pct, color=0xf3722c)
+    embed = make_embed(
+        title='Hive Resource Credits for @%s' % wallet,
+        description='RC manabar is at %0.3f%%' % current_pct)
     embed.add_field(name='Account Claims ', value='~ %d' %
                     possible_accounts, inline=True)
     embed.add_field(name='Comments/Posts', value='~ %d' %
@@ -839,8 +837,10 @@ async def status(ctx: discord.Interaction):
     accounts += ['pizza-dlux', 'pizza-rewards', 'hive.pizza', 'pizzabot']
     accounts += ['badge-912244']
 
-    embed = discord.Embed(title='Hive Pizza Systems Status',
-                          description='PizzaNet Systems are Operational. :green_circle:', color=0xE31337)
+    embed = make_embed(
+        title='Hive Pizza Systems Status',
+        description='PizzaNet Systems are Operational. '
+                    ':green_circle:')
 
     embed.add_field(name=bot.user, value='Serving %d Discord guilds.\n' % (
         len(bot.guilds)), inline=False)
@@ -922,8 +922,10 @@ async def search(ctx: discord.Interaction, query: str, sort: str = 'relevance'):
     ).json()
     results = response['results']
 
-    embed = discord.Embed(title='Hive Content Search Results from HiveSearcher',
-                          description='Showing 10 results for %s, sorted by %s\n' % (query, sort), color=0xE31337)
+    embed = make_embed(
+        title='Hive Content Search Results from HiveSearcher',
+        description='Showing 10 results for %s, sorted by %s\n'
+                    % (query, sort))
     for result in results[0:10]:
         if result['title']:
             message = 'by %s. <https://peakd.com/@%s/%s>\n' % (

@@ -1,6 +1,8 @@
 """Centralized configuration for the pizza discord bot."""
 import os
 from dataclasses import dataclass
+from typing import Tuple
+
 from dotenv import load_dotenv
 
 
@@ -10,7 +12,7 @@ class Config:
     hive_engine_api_node: str
     hive_engine_api_node_rpc: str
     hivesearcher_api_key: str
-    hive_api_nodes: tuple
+    hive_api_nodes: Tuple[str, ...]
 
 
 def load_config() -> Config:
