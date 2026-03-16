@@ -1,18 +1,41 @@
 """Utility helpers for the pizza discord bot."""
 import logging
+from typing import Dict, Optional, Tuple
 
-from discord import Interaction, Embed
+from discord import Embed, Interaction
 from pycoingecko import CoinGeckoAPI
 import hiveengine
 from hiveengine.tokenobject import Token
-from utils_hiveengine import get_hiveengine_instance, get_hiveengine_market_instance, get_market_history
+from utils_hiveengine import (
+    get_hiveengine_instance,
+    get_hiveengine_market_instance,
+    get_market_history,
+)
 from utils_hive import get_hive_instance
 import requests
 
 logger = logging.getLogger(__name__)
 
+BRAND_COLOR = 0xf3722c
+FOOTER_TEXT = 'Hive.Pizza | hive.pizza'
+FOOTER_ICON = ('https://files.peakd.com/file/peakd-hive/'
+               'thebeardflex/AJnimmfn-pizza-logo-smaller.png')
 
-def determine_native_token(ctx: Interaction, default_token_name: str) -> str:
+
+def make_embed(title: str = '', description: str = '',
+               color: Optional[int] = None) -> Embed:
+    """Create an Embed with consistent branding."""
+    embed = Embed(
+        title=title,
+        description=description,
+        color=color or BRAND_COLOR,
+    )
+    embed.set_footer(text=FOOTER_TEXT, icon_url=FOOTER_ICON)
+    return embed
+
+
+def determine_native_token(ctx: Interaction,
+                           default_token_name: str) -> str:
     """Determine which token symbol to use by default in the server."""
 
     if not hasattr(ctx.user, 'guild'):
@@ -36,7 +59,7 @@ def determine_native_token(ctx: Interaction, default_token_name: str) -> str:
         return default_token_name
 
 
-def get_token_price_he_cg(coin):
+def get_token_price_he_cg(coin: str) -> Embed:
     """Get prices of token from Hive-Engine or CoinGecko."""
     coin = coin.lower()
 
@@ -70,38 +93,44 @@ def get_token_price_he_cg(coin):
             last_price = float(trade_history[-1]['price'])
         last_usd = last_price * hive_usd
 
-        sell_book = get_hiveengine_market_instance().get_sell_book(symbol=coin, limit=1000)
+        sell_book = get_hiveengine_market_instance().get_sell_book(
+            symbol=coin, limit=1000)
         sell_book = sorted(sell_book, key=lambda a: float(
             a['price']), reverse=False)
         if sell_book:
             lowest_asking_price = float(sell_book[0]['price'])
         ask_usd = lowest_asking_price * hive_usd
 
-        buy_book = get_hiveengine_market_instance().get_buy_book(symbol=coin, limit=1000)
+        buy_book = get_hiveengine_market_instance().get_buy_book(
+            symbol=coin, limit=1000)
         buy_book = sorted(buy_book, key=lambda a: float(
             a['price']), reverse=True)
         if buy_book:
             highest_bidding_price = float(buy_book[0]['price'])
         bid_usd = highest_bidding_price * hive_usd
 
-        MARKET_HISTORY_URL = 'https://history.hive-engine.com/marketHistory'
+        url = 'https://history.hive-engine.com/marketHistory'
         volume_data = requests.get(
-            MARKET_HISTORY_URL,
+            url,
             params={'symbol': coin.upper()},
             timeout=10,
         ).json()
         volume_str = '%s %s | %s HIVE\n' % (
-            volume_data[0]['volumeToken'], volume_data[0]['symbol'], volume_data[0]['volumeHive'])
+            volume_data[0]['volumeToken'],
+            volume_data[0]['symbol'],
+            volume_data[0]['volumeHive'],
+        )
 
-        embed = Embed(title='Hive-Engine market info for $%s' %
-                      coin.upper(), color=0xf3722c)
+        embed = make_embed(
+            title='Hive-Engine market info for $%s' % coin.upper())
         embed.add_field(name='Last', value='%.5f HIVE | $%.5f' %
                         (last_price, last_usd), inline=False)
         embed.add_field(name='Ask', value='%.5f HIVE | $%.5f' %
                         (lowest_asking_price, ask_usd), inline=False)
         embed.add_field(name='Bid', value='%.5f HIVE | $%.5f' %
                         (highest_bidding_price, bid_usd), inline=False)
-        embed.add_field(name='Today Volume', value=volume_str, inline=False)
+        embed.add_field(
+            name='Today Volume', value=volume_str, inline=False)
         return embed
 
     except hiveengine.exceptions.TokenDoesNotExists:
@@ -119,8 +148,9 @@ market price: $%.5f
 24 hour volume: $%s
 ```''' % (price, daily_change, "{:,.2f}".format(daily_volume))
 
-        embed = Embed(title='CoinGecko market info for $%s' %
-                      coin.upper(), description=message, color=0xf3722c)
+        embed = make_embed(
+            title='CoinGecko market info for $%s' % coin.upper(),
+            description=message)
 
         if coin == 'hive_dollar':
             internal = get_hive_internal_hbd_price()
@@ -135,29 +165,34 @@ market price: $%.5f
         return embed
 
 
-def get_hive_internal_hbd_price():
+def get_hive_internal_hbd_price() -> Optional[Dict[str, float]]:
     """Get HBD price info from the Hive internal market."""
     try:
         from beem.market import Market
         hive = get_hive_instance()
         m = Market(blockchain_instance=hive)
         ticker = m.ticker()
-        # latest is HIVE/HBD (how many HIVE per 1 HBD)
         hbd_hive_price = float(ticker['latest'])
-        # median price is HBD/HIVE (the witness feed price for HIVE in USD)
         feed_price = float(hive.get_median_price())
-        return {'hbd_hive_price': hbd_hive_price, 'feed_price': feed_price}
+        return {
+            'hbd_hive_price': hbd_hive_price,
+            'feed_price': feed_price,
+        }
     except Exception as e:
         logger.error('Error getting internal HBD price: %s', e)
         return None
 
 
-def get_coin_price(coin='hive'):
-    """Call into coingeck to get price of coins i.e. HIVE."""
+def get_coin_price(
+    coin: str = 'hive',
+) -> Tuple[float, float, float]:
+    """Call into CoinGecko to get price of coins i.e. HIVE."""
     coingecko = CoinGeckoAPI()
     try:
         response = coingecko.get_price(
-            ids=coin, vs_currencies='usd', include_24hr_change='true', include_24hr_vol='true')
+            ids=coin, vs_currencies='usd',
+            include_24hr_change='true',
+            include_24hr_vol='true')
     except UnboundLocalError:
         logger.error('Error calling CoinGeckoAPI for %s price', coin)
         return (-1, -1, -1)
@@ -168,7 +203,13 @@ def get_coin_price(coin='hive'):
 
     subresponse = response[coin]
     if 'usd' not in subresponse.keys():
-        logger.error('Error calling CoinGeckoAPI for %s price (missing usd)', coin)
+        logger.error(
+            'Error calling CoinGeckoAPI for %s price (missing usd)',
+            coin)
         return (-1, -1, -1)
 
-    return float(subresponse['usd']), float(subresponse['usd_24h_change']), float(subresponse['usd_24h_vol'])
+    return (
+        float(subresponse['usd']),
+        float(subresponse['usd_24h_change']),
+        float(subresponse['usd_24h_vol']),
+    )

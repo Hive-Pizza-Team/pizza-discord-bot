@@ -6,7 +6,35 @@ from utils import (
     get_coin_price,
     get_hive_internal_hbd_price,
     get_token_price_he_cg,
+    make_embed,
+    BRAND_COLOR,
+    FOOTER_TEXT,
+    FOOTER_ICON,
 )
+
+
+# ---------------------------------------------------------------------------
+# make_embed
+# ---------------------------------------------------------------------------
+
+class TestMakeEmbed:
+    def test_default_color_and_footer(self):
+        embed = make_embed(title='Test', description='desc')
+        assert embed.title == 'Test'
+        assert embed.description == 'desc'
+        assert embed.color.value == BRAND_COLOR
+        assert embed.footer.text == FOOTER_TEXT
+        assert embed.footer.icon_url == FOOTER_ICON
+
+    def test_custom_color(self):
+        embed = make_embed(title='X', color=0xFF0000)
+        assert embed.color.value == 0xFF0000
+
+    def test_empty_defaults(self):
+        embed = make_embed()
+        assert embed.title == ''
+        assert embed.description == ''
+        assert embed.footer.text == FOOTER_TEXT
 
 
 # ---------------------------------------------------------------------------
