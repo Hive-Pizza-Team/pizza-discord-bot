@@ -49,6 +49,36 @@ def get_market_history(symbol: str,
     return orders
 
 
+def get_wallet_balances(account: str,
+                        api: Optional[Api] = None) -> List[Dict]:
+    """Get all Hive-Engine token balances for an account.
+
+    Paginates past the API's 1000-row limit and handles the library quirk
+    where Api.find() unwraps a single-element result list into a plain dict.
+    """
+    if api is None:
+        api = get_hiveengine_instance()
+    balance_count = 1000
+    balances: List[Dict] = []
+    while balance_count == 1000:
+        response = api.find(
+            "tokens", "balances",
+            query={"account": account},
+            limit=1000,
+            offset=len(balances),
+        )
+        if isinstance(response, dict):
+            # Api.find() unwraps a single-element list to a dict
+            balances.append(response)
+            balance_count = 1
+        elif response:
+            balances.extend(response)
+            balance_count = len(response)
+        else:
+            balance_count = 0
+    return balances
+
+
 def get_token_holders(symbol: str,
                       api: Optional[Api] = None) -> List[Dict]:
     """Get a list of wallets holding a Hive-Engine token."""
