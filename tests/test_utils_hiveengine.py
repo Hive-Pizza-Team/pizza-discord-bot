@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from utils_hiveengine import (
     get_market_history,
     get_token_holders,
+    get_wallet_balances,
     get_hiveengine_instance,
     get_hiveengine_market_instance,
 )
@@ -60,6 +61,52 @@ class TestGetTokenHolders:
 
         result = get_token_holders('PIZZA')
         assert len(result) == 1001
+
+
+class TestGetWalletBalances:
+    def test_single_page(self):
+        mock_api = MagicMock()
+        mock_api.find.return_value = [
+            {'symbol': 'PIZZA', 'balance': '10'},
+            {'symbol': 'BEE', 'balance': '5'},
+        ]
+        result = get_wallet_balances('alice', api=mock_api)
+        assert len(result) == 2
+        mock_api.find.assert_called_once_with(
+            'tokens', 'balances', query={'account': 'alice'}, limit=1000, offset=0)
+
+    def test_multi_page(self):
+        mock_api = MagicMock()
+        page1 = [{'symbol': f'TOK{i}', 'balance': '1'} for i in range(1000)]
+        page2 = [{'symbol': 'PAKX', 'balance': '42'}]
+        mock_api.find.side_effect = [page1, page2]
+        result = get_wallet_balances('alice', api=mock_api)
+        assert len(result) == 1001
+        assert result[-1]['symbol'] == 'PAKX'
+
+    def test_single_result_dict_unwrap(self):
+        """Api.find() returns a dict (not a list) when there is exactly one result."""
+        mock_api = MagicMock()
+        mock_api.find.return_value = {'symbol': 'PAKX', 'balance': '42'}
+        result = get_wallet_balances('alice', api=mock_api)
+        assert len(result) == 1
+        assert result[0]['symbol'] == 'PAKX'
+
+    def test_last_page_single_dict_unwrap(self):
+        """Last page has exactly 1 result — Api.find() returns a dict, not a list."""
+        mock_api = MagicMock()
+        page1 = [{'symbol': f'TOK{i}', 'balance': '1'} for i in range(1000)]
+        page2 = {'symbol': 'PAKX', 'balance': '42'}  # dict, not list
+        mock_api.find.side_effect = [page1, page2]
+        result = get_wallet_balances('alice', api=mock_api)
+        assert len(result) == 1001
+        assert result[-1]['symbol'] == 'PAKX'
+
+    def test_empty_wallet(self):
+        mock_api = MagicMock()
+        mock_api.find.return_value = []
+        result = get_wallet_balances('newaccount', api=mock_api)
+        assert result == []
 
 
 class TestGetInstances:

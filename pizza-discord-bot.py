@@ -7,7 +7,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import hiveengine
-from hiveengine.wallet import Wallet
 import json as json_lib
 import logging
 import os
@@ -106,9 +105,14 @@ async def bal(ctx: discord.Interaction, wallet: str, symbol: str = ''):
         delegation_in = acc.get_token_power() + delegation_out - staked
 
     else:
-        # hive engine token
-        wallet_token_info = Wallet(
-            wallet, blockchain_instance=get_hive_instance(), api=get_hiveengine_instance()).get_token(symbol)
+        # hive engine token — use find_one (single targeted RPC call) to avoid
+        # the 1000-result page limit that Wallet.get_balances() hits for tokens
+        # with a high internal ID (e.g. PAKX).
+        results = get_hiveengine_instance().find_one(
+            "tokens", "balances",
+            query={"account": wallet, "symbol": symbol},
+        )
+        wallet_token_info = results[0] if results else None
 
         if not wallet_token_info:
             balance = 0
@@ -150,11 +154,14 @@ async def bals(ctx: discord.Interaction, wallet: str):
     wallet_token_info = None
 
     try:
-        wallet_token_info = Wallet(
-            wallet, blockchain_instance=get_hive_instance(), api=get_hiveengine_instance())
+        beem.account.Account(wallet, blockchain_instance=get_hive_instance())
     except beem.exceptions.AccountDoesNotExistsException:
         await ctx.response.send_message('Error: the wallet doesnt exist.')
         return
+
+    # Paginate past the 1000-result cap so tokens with a high internal ID
+    # (e.g. PAKX) are not silently dropped.
+    wallet_token_info = get_wallet_balances(wallet)
 
     # sort by stake then balance
     wallet_token_info.sort(key=lambda elem: float(
