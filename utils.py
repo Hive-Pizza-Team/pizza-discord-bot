@@ -17,7 +17,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 BRAND_COLOR = 0xf3722c
-FOOTER_TEXT = 'Hive.Pizza | hive.pizza'
+FOOTER_TEXT = 'by hive.pizza team'
 FOOTER_ICON = 'https://hive.pizza/wp-content/uploads/2022/01/cropped-officialpizzalogo1-32x32.png'
 
 
