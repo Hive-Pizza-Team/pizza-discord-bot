@@ -1,4 +1,7 @@
 # pizza-discord-bot
+
+[![Powered By Hive](https://img.shields.io/static/v1?label=Hive&message=Powered%20By%20Hive&color=E31337&labelColor=212529&logo=hive_blockchain&logoColor=white&style=flat)](https://hive.io/)
+
 A Discord bot with Hive (https://hive.io) and Hive-Engine (https://hive-engine.com) L2 token features. Implemented in python.
 
 ## Commands
