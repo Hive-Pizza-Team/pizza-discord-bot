@@ -16,6 +16,13 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# Discord guild IDs. Server names change; these do not.
+GUILD_DEFAULT_SYMBOLS: Dict[int, str] = {
+    689265414714163208: 'HIVE',       # Hive Blockchain (formerly Hive)
+    687226016128696341: 'STARBITS',   # Rising Star Game
+    975747909029093417: 'ONEUP',      # The Cartel
+}
+
 BRAND_COLOR = 0xf3722c
 FOOTER_TEXT = 'by hive.pizza team'
 FOOTER_ICON = 'https://hive.pizza/wp-content/uploads/2022/01/cropped-officialpizzalogo1-32x32.png'
@@ -35,27 +42,21 @@ def make_embed(title: str = '', description: str = '',
 
 def determine_native_token(ctx: Interaction,
                            default_token_name: str) -> str:
-    """Determine which token symbol to use by default in the server."""
+    """Return the default token symbol for this Discord server.
 
-    if not hasattr(ctx.user, 'guild'):
+    Matched by guild ID so a rename does not change the symbol.
+    """
+    guild_id = getattr(ctx, 'guild_id', None)
+    if guild_id is None:
+        guild = getattr(ctx, 'guild', None)
+        guild_id = getattr(guild, 'id', None) if guild is not None else None
+    if guild_id is None:
         return default_token_name
-
-    guild = str(ctx.user.guild.name)
-
-    if guild == 'Hive Pizza':
+    try:
+        guild_id = int(guild_id)
+    except (TypeError, ValueError):
         return default_token_name
-    elif guild == 'Hive':
-        return 'HIVE'
-    elif guild == 'Rising Star Game':
-        return 'STARBITS'
-    elif guild == 'The Man Cave':
-        return 'BRO'
-    elif guild == 'CTP Talk':
-        return 'CTP'
-    elif guild == 'The Cartel':
-        return 'ONEUP'
-    else:
-        return default_token_name
+    return GUILD_DEFAULT_SYMBOLS.get(guild_id, default_token_name)
 
 
 def get_token_price_he_cg(coin: str) -> Embed:
