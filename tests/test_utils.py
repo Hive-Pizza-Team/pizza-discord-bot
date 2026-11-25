@@ -10,6 +10,7 @@ from utils import (
     BRAND_COLOR,
     FOOTER_TEXT,
     FOOTER_ICON,
+    GUILD_DEFAULT_SYMBOLS,
 )
 
 
@@ -42,45 +43,73 @@ class TestMakeEmbed:
 # ---------------------------------------------------------------------------
 
 class TestDetermineNativeToken:
-    def _make_ctx(self, guild_name=None):
+    HIVE_BLOCKCHAIN = 689265414714163208
+    RISING_STAR = 687226016128696341
+    THE_CARTEL = 975747909029093417
+    HIVE_PIZZA = 818372276516683796
+
+    def _make_ctx(self, guild_id=None, guild_name=None, use_guild_object=False):
         ctx = MagicMock()
-        if guild_name is None:
-            del ctx.user.guild  # hasattr will return False
+        if use_guild_object:
+            ctx.guild_id = None
+            if guild_id is None:
+                ctx.guild = None
+            else:
+                ctx.guild.id = guild_id
+                ctx.guild.name = guild_name
         else:
-            ctx.user.guild.name = guild_name
+            ctx.guild_id = guild_id
+            if guild_id is None:
+                ctx.guild = None
+            else:
+                ctx.guild.id = guild_id
+                ctx.guild.name = guild_name
         return ctx
 
     def test_no_guild(self):
         ctx = self._make_ctx(None)
         assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
 
-    def test_hive_pizza_guild(self):
-        ctx = self._make_ctx('Hive Pizza')
-        assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
-
-    def test_hive_guild(self):
-        ctx = self._make_ctx('Hive')
+    def test_guild_id_from_guild_object(self):
+        ctx = self._make_ctx(self.HIVE_BLOCKCHAIN, 'Hive Blockchain', use_guild_object=True)
         assert determine_native_token(ctx, 'PIZZA') == 'HIVE'
 
+    def test_missing_guild_object(self):
+        ctx = self._make_ctx(use_guild_object=True)
+        assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
+
+    def test_hive_blockchain_renamed(self):
+        ctx = self._make_ctx(self.HIVE_BLOCKCHAIN, 'Hive Blockchain')
+        assert determine_native_token(ctx, 'PIZZA') == 'HIVE'
+
+    def test_old_hive_name_on_another_server(self):
+        ctx = self._make_ctx(1, 'Hive')
+        assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
+
+    def test_hive_pizza_uses_default(self):
+        ctx = self._make_ctx(self.HIVE_PIZZA, 'Hive Pizza | MOONSiege.com')
+        assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
+
     def test_rising_star(self):
-        ctx = self._make_ctx('Rising Star Game')
+        ctx = self._make_ctx(self.RISING_STAR, 'Something Else')
         assert determine_native_token(ctx, 'PIZZA') == 'STARBITS'
 
-    def test_man_cave(self):
-        ctx = self._make_ctx('The Man Cave')
-        assert determine_native_token(ctx, 'PIZZA') == 'BRO'
-
-    def test_ctp_talk(self):
-        ctx = self._make_ctx('CTP Talk')
-        assert determine_native_token(ctx, 'PIZZA') == 'CTP'
-
     def test_the_cartel(self):
-        ctx = self._make_ctx('The Cartel')
+        ctx = self._make_ctx(self.THE_CARTEL, 'Renamed Cartel')
         assert determine_native_token(ctx, 'PIZZA') == 'ONEUP'
 
     def test_unknown_guild(self):
-        ctx = self._make_ctx('Some Other Server')
+        ctx = self._make_ctx(42, 'Some Other Server')
         assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
+
+    def test_invalid_guild_id(self):
+        ctx = self._make_ctx('not-a-guild')
+        assert determine_native_token(ctx, 'PIZZA') == 'PIZZA'
+
+    def test_map_covers_known_symbols(self):
+        assert GUILD_DEFAULT_SYMBOLS[self.HIVE_BLOCKCHAIN] == 'HIVE'
+        assert GUILD_DEFAULT_SYMBOLS[self.RISING_STAR] == 'STARBITS'
+        assert GUILD_DEFAULT_SYMBOLS[self.THE_CARTEL] == 'ONEUP'
 
 
 # ---------------------------------------------------------------------------
